@@ -125,7 +125,7 @@ fn handle_invalid_msg(txt: String) {
 }
 
 fn handle_restore_response_msg(txt: String) {
-    _bolt_log(&format!("received restore resp"));
+    // _bolt_log(&format!("received restore resp"));
 
    let msg: RestoreStateMsg = serde_json::from_str(&txt).unwrap();
 
