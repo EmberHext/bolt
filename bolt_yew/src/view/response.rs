@@ -12,11 +12,11 @@ pub fn response(bctx: &mut BoltContext) -> Html {
     let can_display = (bctx.page == Page::Collections
         && !bctx.collections.is_empty()
         && !bctx.collections[bctx.col_current[0]].requests.is_empty())
-        || (bctx.page == Page::Home && !bctx.main_col.requests.is_empty());
+        || (bctx.page == Page::HttpPage && !bctx.main_col.requests.is_empty());
 
     let mut request = Request::new();
 
-    if bctx.page == Page::Home && can_display {
+    if bctx.page == Page::HttpPage && can_display {
         request = bctx.main_col.requests[bctx.main_current].clone();
     }
 

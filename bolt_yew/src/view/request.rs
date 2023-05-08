@@ -16,12 +16,12 @@ pub fn request(bctx: &mut BoltContext) -> Html {
     let can_display = (bctx.page == Page::Collections
         && !bctx.collections.is_empty()
         && !bctx.collections[bctx.col_current[0]].requests.is_empty())
-        || (bctx.page == Page::Home && !bctx.main_col.requests.is_empty());
+        || (bctx.page == Page::HttpPage && !bctx.main_col.requests.is_empty());
 
     let mut request = Request::new();
 
     if can_display {
-        request = if bctx.page == Page::Home {
+        request = if bctx.page == Page::HttpPage {
             bctx.main_col.requests[bctx.main_current].clone()
         } else if bctx.page == Page::Collections {
             bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone()

@@ -310,6 +310,7 @@ dependencies = [
  "bolt_ws",
  "dirs 5.0.1",
  "getrandom",
+ "lazy_static",
  "reqwest",
  "serde",
  "serde_json",

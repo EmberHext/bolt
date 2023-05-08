@@ -9,8 +9,8 @@ pub fn collections_view(bctx: &mut BoltContext) -> Html {
 
             <div class="main">
                 <div class="sidebars">
-                    {view::sidebar1::sidebar(bctx, 1)}
-                    {view::sidebar2::sidebar_col(bctx)}
+                    {view::sidebar1::sidebar(bctx, bctx.page)}
+                    {view::sidebar2::sidebar_collections(bctx)}
                 </div>
 
                 <div class="resizer"></div>

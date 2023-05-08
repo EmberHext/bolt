@@ -12,7 +12,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::Nothing => false,
 
         Msg::SelectedMethod(meth) => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].method = meth;
             } else {
@@ -24,7 +24,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::SendPressed => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let req = &mut bctx.main_col.requests[bctx.main_current];
                 send_request(req);
             } else {
@@ -37,13 +37,19 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::HelpPressed => {
+            open_link("https://github.com/hiro-codes/bolt/tree/master/docs".to_string());
+
+            true
+        }
+
+        Msg::GithubPressed => {
             open_link("https://github.com/hiro-codes/bolt".to_string());
 
             true
         }
 
         Msg::ReqBodyPressed => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let req = &mut bctx.main_col.requests[bctx.main_current];
 
                 req.req_tab = 1;
@@ -57,7 +63,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::ReqHeadersPressed => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let req = &mut bctx.main_col.requests[bctx.main_current];
 
                 req.req_tab = 3;
@@ -71,7 +77,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::ReqParamsPressed => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let req = &mut bctx.main_col.requests[bctx.main_current];
 
                 req.req_tab = 2;
@@ -85,7 +91,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RespBodyPressed => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let mut req = &mut bctx.main_col.requests[bctx.main_current];
 
                 req.resp_tab = 1;
@@ -99,7 +105,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RespHeadersPressed => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let req = &mut bctx.main_col.requests[bctx.main_current];
 
                 req.resp_tab = 2;
@@ -115,7 +121,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::ReceivedResponse => true,
 
         Msg::AddHeader => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current]
                     .headers
@@ -130,7 +136,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RemoveHeader(index) => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].headers.remove(index);
             } else {
@@ -145,7 +151,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::AddParam => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current]
                     .params
@@ -177,7 +183,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RemoveParam(index) => {
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].params.remove(index);
             } else {
@@ -193,7 +199,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::MethodChanged => {
             let method = get_method();
 
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].method = method;
             } else {
@@ -207,7 +213,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::UrlChanged => {
             let url = get_url();
 
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].url = url.clone();
                 bctx.main_col.requests[current].name = url;
@@ -223,7 +229,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::BodyChanged => {
             let body = get_body();
 
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].body = body;
             } else {
@@ -237,7 +243,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::HeaderChanged(index) => {
             let header = get_header(index);
 
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].headers[index] = header;
             } else {
@@ -251,7 +257,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::ParamChanged(index) => {
             let param = get_param(index);
 
-            if bctx.page == Page::Home {
+            if bctx.page == Page::HttpPage {
                 let current = bctx.main_current;
                 bctx.main_col.requests[current].params[index] = param;
             } else {

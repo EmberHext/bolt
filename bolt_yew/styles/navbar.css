@@ -22,6 +22,10 @@
 	flex-direction: row;
 }
 
-.nav-links div {
+.helpicon {
 	margin-right: 5px;
+}
+
+.githubicon {
+	margin-right: 15px;
 }

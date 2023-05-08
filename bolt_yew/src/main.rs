@@ -59,6 +59,7 @@ pub enum Msg {
 
     Update,
     HelpPressed,
+    GithubPressed,
     SwitchPage(Page),
 
     Nothing,
@@ -66,8 +67,12 @@ pub enum Msg {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum Page {
-    Home,
+    HttpPage,
     Collections,
+    Websockets,
+    Tcp,
+    Udp,
+    Servers
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
@@ -199,7 +204,7 @@ impl BoltContext {
 
             main_col: Collection::new(),
             collections: vec![],
-            page: Page::Home,
+            page: Page::HttpPage,
 
             main_current: 0,
             col_current: vec![0, 0],
@@ -283,12 +288,20 @@ impl Component for BoltApp {
 
         let page = state.bctx.page;
 
-        if page == Page::Home {
-            view::home::home_view(&mut state.bctx)
+        if page == Page::HttpPage {
+            view::http::http_view(&mut state.bctx)
         } else if page == Page::Collections {
             view::collections::collections_view(&mut state.bctx)
+        } else if page == Page::Tcp {
+            view::tcp::tcp_view(&mut state.bctx)
+        } else if page == Page::Udp {
+            view::udp::udp_view(&mut state.bctx)
+        } else if page == Page::Websockets {
+            view::websockets::websockets_view(&mut state.bctx)
+        } else if page == Page::Servers {
+            view::servers::servers_view(&mut state.bctx)
         } else {
-            view::home::home_view(&mut state.bctx)
+            view::http::http_view(&mut state.bctx)
         }
     }
 }
@@ -313,7 +326,7 @@ pub fn receive_response(data: String) {
         response.body = highlight_body(&response.body);
     }
 
-    if bctx.page == Page::Home {
+    if bctx.page == Page::HttpPage {
         let current = response.request_index;
         state.bctx.main_col.requests[current].response = response;
         state.bctx.main_col.requests[current].loading = false;
