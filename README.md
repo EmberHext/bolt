@@ -60,8 +60,6 @@ cargo install boltcli
 
 ### Install from source
 
-### Build from source
-
 > ⚠️ Prerequisites
 > 
 > * [Rust](https://www.rust-lang.org/tools/install)
