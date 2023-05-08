@@ -30,12 +30,12 @@ pub fn sidebar_servers(bctx: &mut BoltContext) -> Html {
     html! {
         <div class="sidebar2">
             <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddCollection)}>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
                     <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
                 </div>
             </div>
 
-            { for bctx.collections.iter().enumerate().map(|(index, col)| render_collection(&mut bctx.link.as_ref().unwrap(), index, bctx.col_current.clone(), col))}
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
 
         </div>
     }
@@ -47,12 +47,12 @@ pub fn sidebar_udp(bctx: &mut BoltContext) -> Html {
     html! {
         <div class="sidebar2">
             <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddCollection)}>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
                     <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
                 </div>
             </div>
 
-            { for bctx.collections.iter().enumerate().map(|(index, col)| render_collection(&mut bctx.link.as_ref().unwrap(), index, bctx.col_current.clone(), col))}
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
 
         </div>
     }
@@ -64,12 +64,12 @@ pub fn sidebar_tcp(bctx: &mut BoltContext) -> Html {
     html! {
         <div class="sidebar2">
             <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddCollection)}>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
                     <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
                 </div>
             </div>
 
-            { for bctx.collections.iter().enumerate().map(|(index, col)| render_collection(&mut bctx.link.as_ref().unwrap(), index, bctx.col_current.clone(), col))}
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
 
         </div>
     }
@@ -81,12 +81,12 @@ pub fn sidebar_websockets(bctx: &mut BoltContext) -> Html {
     html! {
         <div class="sidebar2">
             <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddCollection)}>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
                     <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
                 </div>
             </div>
 
-            { for bctx.collections.iter().enumerate().map(|(index, col)| render_collection(&mut bctx.link.as_ref().unwrap(), index, bctx.col_current.clone(), col))}
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
 
         </div>
     }

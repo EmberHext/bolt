@@ -214,7 +214,7 @@ pub fn receive_response(data: String) {
         response.body = highlight_body(&response.body);
     }
 
-    let current = get_current_request(&mut state.bctx);
+    let current = get_current_request(bctx);
     current.response = response;
     current.loading = false;
 
