@@ -1,6 +1,8 @@
 mod session;
 mod utils;
 
+use std::sync::{Arc, Mutex};
+
 static VERSION: &str = "0.11.11";
 static HELP: &str = r#"
 Bolt CLI (Build and test APIs)
@@ -16,6 +18,21 @@ Options:
     "#;
 
 static ADDRESS: &str = "127.0.0.1";
+
+// Create a shared global state variable
+lazy_static::lazy_static! {
+    static ref GLOBAL_STATE: Arc<Mutex<CoreState>> = Arc::new(Mutex::new(CoreState::new()));
+}
+
+pub struct CoreState {
+    online: bool,
+}
+
+impl CoreState {
+    pub fn new() -> Self {
+        Self { online: true }
+    }
+}
 
 pub fn start(args: Vec<String>, port: u16) {
     let mut args = args;
@@ -90,7 +107,11 @@ pub fn start(args: Vec<String>, port: u16) {
 
         // Launch services
         std::thread::spawn(move || {
-            // bolt_http::launch_http_service();
+            bolt_http::launch_http_service();
+        });
+
+        std::thread::spawn(move || {
+            bolt_ws::launch_ws_service(port, ADDRESS.to_string());
         });
 
         session::server::launch_core_server(port, ADDRESS.to_string());

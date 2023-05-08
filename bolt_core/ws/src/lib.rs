@@ -1,7 +1,7 @@
 mod utils;
 
-use utils::*;
+pub fn launch_ws_service(port: u16, address: String) {
+    println!("Starting WS service on {} port {}", address, port);
 
-pub async fn launch_server(port: u16, address: String) {
-    println!("Starting Websocket server on {} port {}", address, port);
+    std::thread::park();
 }

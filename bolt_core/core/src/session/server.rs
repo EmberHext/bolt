@@ -80,69 +80,13 @@ async fn handle_send_http(websocket: &mut WebSocket<TcpStream>, _session_id: &St
         request_index: msg.index,
     };
 
-    let resp = http_send(request).await;
+    let resp = bolt_http::http_send(request).await;
 
     let response = serde_json::to_string(&resp).unwrap();
 
     // println!("{}", response);
 
     ws_write(websocket, response);
-}
-
-async fn http_send(mut req: SendHttpRequest) -> SendHttpResponse {
-    if !req.url.contains("http") {
-        let new_url = "http://".to_string() + &req.url;
-
-        req.url = new_url;
-    }
-
-    let mut request = prepare_request(req.clone());
-
-    for h in req.headers {
-        if h[0] != "" && h[1] != "" {
-            request = request.header(h[0].clone(), h[1].clone());
-        }
-    }
-
-    let start = get_timestamp();
-    let response = request.send().await;
-    let end = get_timestamp();
-
-    let mut http_response = match response {
-        Ok(resp) => {
-            let mut new_response = SendHttpResponse::new();
-
-            new_response.headers = extract_headers(resp.headers());
-            new_response.status = resp.status().as_u16();
-            new_response.time = (end - start) as u32;
-            new_response.body = resp.text().await.unwrap();
-            new_response.size = new_response.body.len() as u64;
-
-            for header in &new_response.headers {
-                if header[0] == "content-type" {
-                    if header[1].contains("application/json") {
-                        new_response.response_type = SendHttpResponseType::JSON;
-                    }
-                }
-            }
-
-            new_response
-        }
-
-        Err(err) => {
-            let mut err_resp = SendHttpResponse::new();
-
-            err_resp.failed = true;
-
-            err_resp.body = err.to_string();
-
-            err_resp
-        }
-    };
-
-    http_response.request_index = req.request_index;
-
-    return http_response;
 }
 
 fn handle_save_state(_websocket: &mut WebSocket<TcpStream>, _session_id: &String, txt: String) {
