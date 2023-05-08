@@ -46,17 +46,17 @@ watch-tauri:
 bump-version:
 	ls
 
-publish:
-	cd bolt_core/common && cargo publish &
+publish-libs:
+	cd bolt_core/common && cargo publish
 	cd bolt_core/http && cargo publish
 	cd bolt_core/ws && cargo publish
 	cd bolt_core/servers && cargo publish
 	cd bolt_core/tcp && cargo publish
 	cd bolt_core/udp && cargo publish
 	cd bolt_core/core && cargo publish
-	
-# cd bolt_cli && cargo publish
 
+publish-cli: publish-libs
+	cd bolt_cli && cargo publish
 
 # Clean temporary build files
 clean: clean-yew clean-tauri clean-cli
