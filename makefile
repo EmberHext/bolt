@@ -43,9 +43,20 @@ build-tauri:
 watch-tauri:
 	cargo tauri dev
 
+bump-version:
+	ls
+
 publish:
-	cd bolt_server && cargo publish
-	cd bolt_cli && cargo publish
+	cd bolt_core/common && cargo publish &
+	cd bolt_core/http && cargo publish
+	cd bolt_core/ws && cargo publish
+	cd bolt_core/servers && cargo publish
+	cd bolt_core/tcp && cargo publish
+	cd bolt_core/udp && cargo publish
+	cd bolt_core/core && cargo publish
+	
+# cd bolt_cli && cargo publish
+
 
 # Clean temporary build files
 clean: clean-yew clean-tauri clean-cli
