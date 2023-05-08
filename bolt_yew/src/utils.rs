@@ -1,9 +1,6 @@
 use crate::BoltContext;
 use crate::Msg;
-use crate::Page;
-// use crate::Request;
 use crate::SaveState;
-// use crate::BACKEND;
 use crate::GLOBAL_STATE;
 
 use crate::receive_response;
@@ -20,14 +17,9 @@ use syntect::parsing::SyntaxSet;
 
 use bolt_common::prelude::*;
 
-pub fn get_current_request(bctx: &mut BoltContext) -> &mut HttpRequest {
-    if bctx.page == Page::HttpPage {
-        let current = bctx.http_current;
-        return &mut bctx.http_requests[current];
-    } else {
-        let current = &bctx.col_current;
-        return &mut bctx.collections[current[0]].requests[current[1]];
-    }
+pub fn _get_current_request(bctx: &mut BoltContext) -> &mut HttpRequest {
+    let current = bctx.http_current;
+    return &mut bctx.http_requests[current];
 }
 
 pub fn _bolt_log(log: &str) {
@@ -163,7 +155,7 @@ pub fn invoke_send(request: &mut HttpRequest) {
 pub fn save_state(bctx: &mut BoltContext) {
     let save_state = SaveState {
         page: bctx.page.clone(),
-        
+
         http_current: bctx.http_current.clone(),
         ws_current: bctx.ws_current.clone(),
         col_current: bctx.col_current.clone(),

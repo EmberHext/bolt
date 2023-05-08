@@ -21,28 +21,47 @@ use bolt_common::prelude::*;
 // Define the possible messages which can be sent to the component
 #[derive(Clone)]
 pub enum Msg {
-    SelectedMethod(HttpMethod),
-    SendPressed,
-    ReqBodyPressed,
-    ReqHeadersPressed,
-    ReqParamsPressed,
+    HttpReqSelectedMethod(HttpMethod),
 
-    RespBodyPressed,
-    RespHeadersPressed,
+    SendHttpPressed,
+    ConnectWsPressed,
 
-    AddHeader,
-    RemoveHeader(usize),
+    HttpReqBodyPressed,
+    HttpReqHeadersPressed,
+    HttpReqParamsPressed,
 
-    AddParam,
-    RemoveParam(usize),
+    WsOutMessagePressed,
+    WsOutHeadersPressed,
+    WsOutParamsPressed,
 
-    ReceivedResponse,
+    HttpRespBodyPressed,
+    HttpRespHeadersPressed,
 
-    MethodChanged,
+    HttpReqAddHeader,
+    HttpReqRemoveHeader(usize),
+
+    HttpReqAddParam,
+    HttpReqRemoveParam(usize),
+
+    WsOutAddHeader,
+    WsOutRemoveHeader(usize),
+
+    WsOutAddParam,
+    WsOutRemoveParam(usize),
+
+    HttpReceivedResponse,
+
+    HttpReqMethodChanged,
     UrlChanged,
-    BodyChanged,
-    HeaderChanged(usize),
-    ParamChanged(usize),
+    
+    HttpReqBodyChanged,
+    WsOutMessageChanged,
+    
+    HttpReqHeaderChanged(usize),
+    WsOutHeaderChanged(usize),
+    
+    HttpReqParamChanged(usize),
+    WsOutParamChanged(usize),
 
     AddHttpRequest,
     AddWsRequest,
@@ -206,9 +225,14 @@ impl Component for BoltApp {
     }
 }
 
-fn send_request(request: &mut HttpRequest) {
+fn send_http_request(request: &mut HttpRequest) {
     request.loading = true;
     invoke_send(request);
+}
+
+fn connect_ws(_connection: &mut WsConnection) {
+
+    _bolt_log("connect ws was pressed");
 }
 
 pub fn receive_response(data: String) {
@@ -226,7 +250,7 @@ pub fn receive_response(data: String) {
         response.body = highlight_body(&response.body);
     }
 
-    let current = get_current_request(bctx);
+    let current =  &mut bctx.http_requests[bctx.http_current];
     current.response = response;
     current.loading = false;
 

@@ -1,52 +1,100 @@
 // use bolt_ws::prelude::HttpMethod;
 
-pub enum RequestTabs {
+pub enum HttpReqTabs {
     Body,
     Params,
     Headers,
 }
 
-impl From<u8> for RequestTabs {
+impl From<u8> for HttpReqTabs {
     fn from(value: u8) -> Self {
         match value {
-            1 => RequestTabs::Body,
-            2 => RequestTabs::Params,
-            3 => RequestTabs::Headers,
-            _ => panic!("Invalid value for RequestTabs"),
+            1 => HttpReqTabs::Body,
+            2 => HttpReqTabs::Params,
+            3 => HttpReqTabs::Headers,
+            _ => panic!("Invalid value for HttpReqTabs"),
         }
     }
 }
 
-impl From<RequestTabs> for u8 {
-    fn from(tab: RequestTabs) -> Self {
+impl From<HttpReqTabs> for u8 {
+    fn from(tab: HttpReqTabs) -> Self {
         match tab {
-            RequestTabs::Body => 1,
-            RequestTabs::Params => 2,
-            RequestTabs::Headers => 3,
+            HttpReqTabs::Body => 1,
+            HttpReqTabs::Params => 2,
+            HttpReqTabs::Headers => 3,
         }
     }
 }
 
-pub enum ResponseTabs {
+pub enum HttpRespTabs {
     Body,
     Headers,
 }
 
-impl From<u8> for ResponseTabs {
+impl From<u8> for HttpRespTabs {
     fn from(value: u8) -> Self {
         match value {
-            1 => ResponseTabs::Body,
-            2 => ResponseTabs::Headers,
-            _ => panic!("Invalid value for ResponseTabs"),
+            1 => HttpRespTabs::Body,
+            2 => HttpRespTabs::Headers,
+            _ => panic!("Invalid value for HttpRespTabs"),
         }
     }
 }
 
-impl From<ResponseTabs> for u8 {
-    fn from(tab: ResponseTabs) -> Self {
+impl From<HttpRespTabs> for u8 {
+    fn from(tab: HttpRespTabs) -> Self {
         match tab {
-            ResponseTabs::Body => 1,
-            ResponseTabs::Headers => 2,
+            HttpRespTabs::Body => 1,
+            HttpRespTabs::Headers => 2,
+        }
+    }
+}
+
+pub enum WsOutTabs {
+    Message,
+    Params,
+    Headers,
+}
+
+impl From<u8> for WsOutTabs {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => WsOutTabs::Message,
+            2 => WsOutTabs::Params,
+            3 => WsOutTabs::Headers,
+            _ => panic!("Invalid value for WsOutTabs"),
+        }
+    }
+}
+
+impl From<WsOutTabs> for u8 {
+    fn from(tab: WsOutTabs) -> Self {
+        match tab {
+            WsOutTabs::Message => 1,
+            WsOutTabs::Params => 2,
+            WsOutTabs::Headers => 3,
+        }
+    }
+}
+
+pub enum WsInTabs {
+    Messages,
+}
+
+impl From<u8> for WsInTabs {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => WsInTabs::Messages,
+            _ => panic!("Invalid value for WsInTabs"),
+        }
+    }
+}
+
+impl From<WsInTabs> for u8 {
+    fn from(tab: WsInTabs) -> Self {
+        match tab {
+            WsInTabs::Messages => 1,
         }
     }
 }

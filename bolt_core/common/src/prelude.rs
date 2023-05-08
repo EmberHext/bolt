@@ -39,6 +39,14 @@ pub struct WsConnection {
     pub url: String,
     pub name: String,
     pub loading: bool,
+    pub failed: bool,
+    pub connected: bool,
+
+    pub out_tab: u8,
+    pub in_tab: u8,
+    pub out_message: String,
+    pub out_headers: Vec<Vec<String>>,
+    pub out_params: Vec<Vec<String>>,
 }
 
 impl WsConnection {
@@ -47,6 +55,14 @@ impl WsConnection {
             url: String::new(),
             name: "Ws connection ".to_string(),
             loading: false,
+            failed: false,
+            connected: false,
+
+            out_tab: 1,
+            in_tab: 1,
+            out_message: String::new(),
+            out_headers: vec![vec![String::new(), String::new()]],
+            out_params: vec![vec![String::new(), String::new()]],
         }
     }
 }

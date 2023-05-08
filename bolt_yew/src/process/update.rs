@@ -1,26 +1,34 @@
-// use crate::save_state;
-use crate::send_request;
+use crate::connect_ws;
+use crate::send_http_request;
 use crate::utils::*;
 use crate::BoltContext;
 use crate::Collection;
 use crate::Msg;
-// use crate::Page;
 use bolt_common::prelude::*;
 
 pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
     let should_render = match msg {
         Msg::Nothing => false,
 
-        Msg::SelectedMethod(meth) => {
-            let current = get_current_request(bctx);
+        Msg::HttpReqSelectedMethod(meth) => {
+            let current = &mut bctx.http_requests[bctx.http_current];
             current.method = meth;
 
             true
         }
 
-        Msg::SendPressed => {
-            let current = get_current_request(bctx);
-            send_request(current);
+        Msg::SendHttpPressed => {
+            let current = &mut bctx.http_requests[bctx.http_current];
+
+            send_http_request(current);
+
+            true
+        }
+
+        Msg::ConnectWsPressed => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            connect_ws(current);
 
             true
         }
@@ -37,63 +45,124 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-        Msg::ReqBodyPressed => {
-            let current = get_current_request(bctx);
+        Msg::HttpReqBodyPressed => {
+            let current = &mut bctx.http_requests[bctx.http_current];
             current.req_tab = 1;
 
             true
         }
 
-        Msg::ReqHeadersPressed => {
-            let current = get_current_request(bctx);
+        Msg::HttpReqHeadersPressed => {
+            let current = &mut bctx.http_requests[bctx.http_current];
             current.req_tab = 3;
 
             true
         }
 
-        Msg::ReqParamsPressed => {
-            let current = get_current_request(bctx);
+        Msg::HttpReqParamsPressed => {
+            let current = &mut bctx.http_requests[bctx.http_current];
             current.req_tab = 2;
 
             true
         }
 
-        Msg::RespBodyPressed => {
-            let current = get_current_request(bctx);
+        Msg::WsOutMessagePressed => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+            current.out_tab = 1;
+
+            true
+        }
+
+        Msg::WsOutHeadersPressed => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+            current.out_tab = 3;
+
+            true
+        }
+
+        Msg::WsOutParamsPressed => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+            current.out_tab = 2;
+
+            true
+        }
+
+        Msg::HttpRespBodyPressed => {
+            let current = &mut bctx.http_requests[bctx.http_current];
             current.resp_tab = 1;
 
             true
         }
 
-        Msg::RespHeadersPressed => {
-            let current = get_current_request(bctx);
+        Msg::HttpRespHeadersPressed => {
+            let current = &mut bctx.http_requests[bctx.http_current];
             current.resp_tab = 2;
 
             true
         }
 
-        Msg::ReceivedResponse => true,
+        Msg::HttpReceivedResponse => true,
 
-        Msg::AddHeader => {
-            let current = get_current_request(bctx);
+        Msg::HttpReqAddHeader => {
+            let current = &mut bctx.http_requests[bctx.http_current];
 
             current.headers.push(vec!["".to_string(), "".to_string()]);
 
             true
         }
 
-        Msg::RemoveHeader(index) => {
-            let current = get_current_request(bctx);
+        Msg::HttpReqRemoveHeader(index) => {
+            let current = &mut bctx.http_requests[bctx.http_current];
 
             current.headers.remove(index);
 
             true
         }
 
-        Msg::AddParam => {
-            let current = get_current_request(bctx);
+        Msg::WsOutAddHeader => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            current.out_headers.push(vec!["".to_string(), "".to_string()]);
+
+            true
+        }
+
+        Msg::WsOutRemoveHeader(index) => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            current.out_headers.remove(index);
+
+            true
+        }
+
+        Msg::HttpReqAddParam => {
+            let current = &mut bctx.http_requests[bctx.http_current];
 
             current.params.push(vec!["".to_string(), "".to_string()]);
+            true
+        }
+
+
+        Msg::HttpReqRemoveParam(index) => {
+            let current = &mut bctx.http_requests[bctx.http_current];
+
+            current.params.remove(index);
+            true
+        }
+
+
+        Msg::WsOutAddParam => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            current.out_params.push(vec!["".to_string(), "".to_string()]);
+            true
+        }
+
+
+        Msg::WsOutRemoveParam(index) => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            current.out_params.remove(index);
             true
         }
 
@@ -114,17 +183,10 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-        Msg::RemoveParam(index) => {
-            let current = get_current_request(bctx);
-
-            current.params.remove(index);
-            true
-        }
-
-        Msg::MethodChanged => {
+        Msg::HttpReqMethodChanged => {
             let method = get_method();
 
-            let current = get_current_request(bctx);
+            let current = &mut bctx.http_requests[bctx.http_current];
 
             current.method = method;
             true
@@ -133,36 +195,73 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::UrlChanged => {
             let url = get_url();
 
-            let current = get_current_request(bctx);
-            current.url = url.clone();
-            current.name = url;
+            if bctx.page == Page::HttpPage {
+                let current = &mut bctx.http_requests[bctx.http_current];
+
+                current.url = url.clone();
+                current.name = url;
+            } else if bctx.page == Page::Websockets {
+                let current = &mut bctx.ws_connections[bctx.ws_current];
+
+                current.url = url.clone();
+                current.name = url;
+            }
 
             true
         }
 
-        Msg::BodyChanged => {
+        Msg::HttpReqBodyChanged => {
             let body = get_body();
-            let current = get_current_request(bctx);
+            let current = &mut bctx.http_requests[bctx.http_current];
             current.body = body;
 
             true
         }
 
-        Msg::HeaderChanged(index) => {
-            let header = get_header(index);
+        Msg::WsOutMessageChanged => {
+            let message = get_body();
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+            current.out_message = message;
 
-            let current = get_current_request(bctx);
-
-            current.headers[index] = header;
             true
         }
 
-        Msg::ParamChanged(index) => {
+        Msg::HttpReqHeaderChanged(index) => {
+            let header = get_header(index);
+
+            let current = &mut bctx.http_requests[bctx.http_current];
+
+            current.headers[index] = header;
+
+            true
+        }
+
+        Msg::WsOutHeaderChanged(index) => {
+            let header = get_header(index);
+
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            current.out_headers[index] = header;
+
+            true
+        }
+
+        Msg::HttpReqParamChanged(index) => {
             let param = get_param(index);
 
-            let current = get_current_request(bctx);
+            let current = &mut bctx.http_requests[bctx.http_current];
 
             current.params[index] = param;
+
+            true
+        }
+
+        Msg::WsOutParamChanged(index) => {
+            let param = get_param(index);
+
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            current.out_params[index] = param;
 
             true
         }
