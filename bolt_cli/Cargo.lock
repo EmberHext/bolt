@@ -306,6 +306,7 @@ dependencies = [
  "actix-files",
  "actix-web",
  "bolt_common",
+ "bolt_http",
  "dirs 5.0.1",
  "getrandom",
  "reqwest",
@@ -316,6 +317,10 @@ dependencies = [
  "uuid",
  "webbrowser",
 ]
+
+[[package]]
+name = "bolt_http"
+version = "0.11.11"
 
 [[package]]
 name = "boltcli"

@@ -83,13 +83,16 @@ pub fn start(args: Vec<String>, port: u16) {
         if !is_tauri && !is_headless {
             std::thread::spawn(move || {
                 session::asset::launch_asset_server(port + 1, ADDRESS.to_string());
+
+                std::process::exit(0);
             });
         }
 
-        // std::thread::spawn(move || {
-        // session::session::launch_core_server(5555, ADDRESS.to_string());
-        // });
+        // Launch services
+        std::thread::spawn(move || {
+            // bolt_http::launch_http_service();
+        });
 
-        session::server::launch_core_server(5555, ADDRESS.to_string());
+        session::server::launch_core_server(port, ADDRESS.to_string());
     }
 }

@@ -227,7 +227,8 @@ lazy_static::lazy_static! {
 }
 
 // static BACKEND: &str = "http://127.0.0.1:3344/";
-static BACKEND_WS: &str = "ws://127.0.0.1:5555/";
+static BACKEND_WS: &str = "ws://127.0.0.1";
+static WS_PORT: u16 = 3344;
 
 impl Component for BoltApp {
     type Message = Msg;
@@ -241,7 +242,7 @@ impl Component for BoltApp {
 
         state.bctx.main_col.requests.push(Request::new());
 
-        let ws = WebSocket::open(BACKEND_WS).unwrap();
+        let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
         let (write, mut read) = ws.split();
 
         state.bctx.ws_tx = Some(write);

@@ -66,7 +66,7 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
     }
 }
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn handle_send_http(websocket: &mut WebSocket<TcpStream>, _session_id: &String, txt: String) {
     // println!("{txt}");
 
