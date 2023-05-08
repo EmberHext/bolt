@@ -16,11 +16,11 @@ pub fn collections_view(bctx: &mut BoltContext) -> Html {
                 <div class="resizer"></div>
         
                 <div class="content">
-                    {view::request::request(bctx)}
+                    {view::request::collection_request(bctx)}
                                 
                     <div class="resizer2"></div>     
         
-                    {view::response::response(bctx)}
+                    {view::response::collection_response(bctx)}
                 </div>
             </div>
 
