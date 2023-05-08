@@ -2,32 +2,32 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
-pub enum ResponseType {
+pub enum HttpResponseType {
     TEXT,
     JSON,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Response {
+pub struct HttpResponse {
     pub status: u16,
     pub body: String,
     pub headers: Vec<Vec<String>>,
     pub time: u32,
     pub size: u64,
-    pub response_type: ResponseType,
+    pub response_type: HttpResponseType,
     pub request_index: usize,
     pub failed: bool,
 }
 
-impl Response {
+impl HttpResponse {
     fn new() -> Self {
-        Response {
+        HttpResponse {
             status: 0,
             body: String::new(),
             headers: Vec::new(),
             time: 0,
             size: 0,
-            response_type: ResponseType::TEXT,
+            response_type: HttpResponseType::TEXT,
             request_index: 0,
             failed: false,
         }
@@ -35,14 +35,31 @@ impl Response {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct Request {
+pub struct WsRequest {
+    pub url: String,
+    pub name: String,
+    pub loading: bool,
+}
+
+impl WsRequest {
+    pub fn new() -> Self {
+        Self {
+            url: String::new(),
+            name: "Ws connection ".to_string(),
+            loading: false
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct HttpRequest {
     pub url: String,
     pub body: String,
     pub headers: Vec<Vec<String>>,
     pub params: Vec<Vec<String>>,
     pub method: HttpMethod,
 
-    pub response: Response,
+    pub response: HttpResponse,
 
     // META
     pub name: String,
@@ -53,16 +70,16 @@ pub struct Request {
     pub loading: bool,
 }
 
-impl Request {
-    pub fn new() -> Request {
-        Request {
+impl HttpRequest {
+    pub fn new() -> HttpRequest {
+        HttpRequest {
             url: String::new(),
             body: String::new(),
             headers: vec![vec![String::new(), String::new()]],
             params: vec![vec![String::new(), String::new()]],
             method: HttpMethod::GET,
 
-            response: Response::new(),
+            response: HttpResponse::new(),
 
             // META
             name: "New Request ".to_string(),
@@ -88,7 +105,7 @@ pub enum Page {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Collection {
     pub name: String,
-    pub requests: Vec<Request>,
+    pub requests: Vec<HttpRequest>,
     pub collapsed: bool,
 }
 
@@ -106,10 +123,12 @@ impl Collection {
 pub struct SaveState {
     pub page: Page,
 
-    pub main_current: usize,
+    pub http_current: usize,
+    pub ws_current: usize,
     pub col_current: Vec<usize>,
 
-    pub http_requests: Vec<Request>,
+    pub http_requests: Vec<HttpRequest>,
+    pub ws_connections: Vec<WsRequest>,
     pub collections: Vec<Collection>,
 }
 
@@ -117,9 +136,14 @@ impl SaveState {
     pub fn new() -> Self {
         Self {
             page: Page::HttpPage,
-            main_current: 0,
+            
+            http_current: 0,
+            ws_current: 0,
             col_current: vec![0, 0],
-            http_requests: vec![Request::new()],
+            
+            
+            http_requests: vec![HttpRequest::new()],
+            ws_connections: vec![WsRequest::new()],
             collections: vec![],
         }
     }

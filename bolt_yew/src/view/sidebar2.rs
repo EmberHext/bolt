@@ -4,7 +4,7 @@ use yew::html::Scope;
 use crate::BoltContext;
 use crate::Collection;
 use crate::Msg;
-use crate::Request;
+use bolt_common::prelude::*;
 use yew::{html, Html};
 
 pub fn sidebar_http(bctx: &mut BoltContext) -> Html {
@@ -13,63 +13,12 @@ pub fn sidebar_http(bctx: &mut BoltContext) -> Html {
     html! {
         <div class="sidebar2">
             <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddHttpRequest)}>
                     <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
                 </div>
             </div>
 
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
-
-        </div>
-    }
-}
-
-pub fn sidebar_servers(bctx: &mut BoltContext) -> Html {
-    let link = bctx.link.as_ref().unwrap();
-
-    html! {
-        <div class="sidebar2">
-            <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
-                    <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
-                </div>
-            </div>
-
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
-
-        </div>
-    }
-}
-
-pub fn sidebar_udp(bctx: &mut BoltContext) -> Html {
-    let link = bctx.link.as_ref().unwrap();
-
-    html! {
-        <div class="sidebar2">
-            <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
-                    <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
-                </div>
-            </div>
-
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
-
-        </div>
-    }
-}
-
-pub fn sidebar_tcp(bctx: &mut BoltContext) -> Html {
-    let link = bctx.link.as_ref().unwrap();
-
-    html! {
-        <div class="sidebar2">
-            <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
-                    <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
-                </div>
-            </div>
-
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
 
         </div>
     }
@@ -81,12 +30,63 @@ pub fn sidebar_websockets(bctx: &mut BoltContext) -> Html {
     html! {
         <div class="sidebar2">
             <div>
-                <div class="pointer" onclick={link.callback(|_| Msg::AddRequest)}>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddWsRequest)}>
                     <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
                 </div>
             </div>
 
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
+            { for bctx.ws_connections.iter().enumerate().map(|(index, req)| render_ws_request(bctx.link.as_ref().unwrap(), bctx.ws_current, index, req))}
+
+        </div>
+    }
+}
+
+pub fn sidebar_servers(bctx: &mut BoltContext) -> Html {
+    let link = bctx.link.as_ref().unwrap();
+
+    html! {
+        <div class="sidebar2">
+            <div>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddHttpRequest)}>
+                    <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
+                </div>
+            </div>
+
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
+
+        </div>
+    }
+}
+
+pub fn sidebar_udp(bctx: &mut BoltContext) -> Html {
+    let link = bctx.link.as_ref().unwrap();
+
+    html! {
+        <div class="sidebar2">
+            <div>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddHttpRequest)}>
+                    <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
+                </div>
+            </div>
+
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
+
+        </div>
+    }
+}
+
+pub fn sidebar_tcp(bctx: &mut BoltContext) -> Html {
+    let link = bctx.link.as_ref().unwrap();
+
+    html! {
+        <div class="sidebar2">
+            <div>
+                <div class="pointer" onclick={link.callback(|_| Msg::AddHttpRequest)}>
+                    <svg viewBox="0 0 1024 1024" fill="currentColor" height="20px" width="20px" ><defs><style /></defs><path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z" /><path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z" /></svg>
+                </div>
+            </div>
+
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
 
         </div>
     }
@@ -147,7 +147,7 @@ fn render_collection(
     }
 }
 
-fn render_request(link: &Scope<BoltApp>, current: usize, index: usize, req: &Request) -> Html {
+fn render_http_request(link: &Scope<BoltApp>, current: usize, index: usize, req: &HttpRequest) -> Html {
     // let link = bctx.link.as_ref().unwrap();
     let request_name = req.name.clone();
 
@@ -158,9 +158,29 @@ fn render_request(link: &Scope<BoltApp>, current: usize, index: usize, req: &Req
     };
 
     html! {
-        <div onclick={link.callback(move |_| Msg::SelectRequest(index))} id={"request".to_string() + &index.to_string()} class={if index == current { "pointer sidebar2item sidebar2item-selected" } else { "pointer sidebar2item" }} >
+        <div onclick={link.callback(move |_| Msg::SelectHttpRequest(index))} id={"request".to_string() + &index.to_string()} class={if index == current { "pointer sidebar2item sidebar2item-selected" } else { "pointer sidebar2item" }} >
             <div class="requestname">{request_name}</div>
-            <div class="pointer bin-req" onclick={link.callback(move |_| Msg::RemoveRequest(index))}>
+            <div class="pointer bin-req" onclick={link.callback(move |_| Msg::RemoveHttpRequest(index))}>
+                <svg viewBox="0 0 1024 1024" fill="currentColor" height="1em" width="1em"> <path d="M864 256H736v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zm-200 0H360v-72h304v72z" /> </svg>
+            </div>
+        </div>
+    }
+}
+
+fn render_ws_request(link: &Scope<BoltApp>, current: usize, index: usize, req: &WsRequest) -> Html {
+    // let link = bctx.link.as_ref().unwrap();
+    let request_name = req.name.clone();
+
+    let request_name = if request_name.len() > 20 {
+        format!("{}...", &request_name[0..20])
+    } else {
+        request_name
+    };
+
+    html! {
+        <div onclick={link.callback(move |_| Msg::SelectWsRequest(index))} id={"request".to_string() + &index.to_string()} class={if index == current { "pointer sidebar2item sidebar2item-selected" } else { "pointer sidebar2item" }} >
+            <div class="requestname">{request_name}</div>
+            <div class="pointer bin-req" onclick={link.callback(move |_| Msg::RemoveWsRequest(index))}>
                 <svg viewBox="0 0 1024 1024" fill="currentColor" height="1em" width="1em"> <path d="M864 256H736v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zm-200 0H360v-72h304v72z" /> </svg>
             </div>
         </div>
@@ -172,7 +192,7 @@ fn render_col_request(
     req_index: usize,
     col_index: usize,
     current: Vec<usize>,
-    req: &Request,
+    req: &HttpRequest,
 ) -> Html {
     // let link = bctx.link.as_ref().unwrap();
 

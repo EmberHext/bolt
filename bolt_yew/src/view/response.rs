@@ -2,8 +2,8 @@ use crate::view;
 use crate::BoltContext;
 use crate::Msg;
 use crate::Page;
-use crate::Request;
-use crate::ResponseType;
+use bolt_common::prelude::HttpRequest;
+use bolt_common::prelude::HttpResponseType;
 use yew::{html, AttrValue, Html};
 
 pub fn response(bctx: &mut BoltContext) -> Html {
@@ -14,10 +14,10 @@ pub fn response(bctx: &mut BoltContext) -> Html {
         && !bctx.collections[bctx.col_current[0]].requests.is_empty())
         || (bctx.page == Page::HttpPage && !bctx.http_requests.is_empty());
 
-    let mut request = Request::new();
+    let mut request = HttpRequest::new();
 
     if bctx.page == Page::HttpPage && can_display {
-        request = bctx.http_requests[bctx.main_current].clone();
+        request = bctx.http_requests[bctx.http_current].clone();
     }
 
     if bctx.page == Page::Collections && can_display {
@@ -43,7 +43,7 @@ pub fn response(bctx: &mut BoltContext) -> Html {
             <div class="tabcontent">
                 if request.resp_tab == 1 {
                     <div id="respbody" class="respbody" >
-                        if request.response.response_type == ResponseType::JSON {
+                        if request.response.response_type == HttpResponseType::JSON {
                             {Html::from_html_unchecked(AttrValue::from(request.response.body.clone()))}
                         } else {
                             {request.response.body.clone()}

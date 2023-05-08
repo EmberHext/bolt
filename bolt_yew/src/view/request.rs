@@ -4,7 +4,7 @@ use crate::view;
 use crate::BoltContext;
 use crate::Msg;
 use crate::Page;
-use crate::Request;
+use bolt_common::prelude::HttpRequest;
 use yew::KeyboardEvent;
 use yew::{html, Html};
 
@@ -18,15 +18,15 @@ pub fn request(bctx: &mut BoltContext) -> Html {
         && !bctx.collections[bctx.col_current[0]].requests.is_empty())
         || (bctx.page == Page::HttpPage && !bctx.http_requests.is_empty());
 
-    let mut request = Request::new();
+    let mut request = HttpRequest::new();
 
     if can_display {
         request = if bctx.page == Page::HttpPage {
-            bctx.http_requests[bctx.main_current].clone()
+            bctx.http_requests[bctx.http_current].clone()
         } else if bctx.page == Page::Collections {
             bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone()
         } else {
-            Request::new()
+            HttpRequest::new()
         };
     }
 

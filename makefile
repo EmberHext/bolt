@@ -28,7 +28,7 @@ run-cli: build-yew
 	cd bolt_cli && BOLT_DEV=1 cargo run
 
 # Run Bolt Core in headless mode
-run-headless:
+run-headless: build-yew
 	cd bolt_cli && BOLT_DEV=1 cargo run -- --headless
 
 build-yew:

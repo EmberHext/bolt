@@ -1,7 +1,7 @@
 use crate::BoltContext;
 use crate::Msg;
 use crate::Page;
-use crate::Request;
+// use crate::Request;
 use crate::SaveState;
 // use crate::BACKEND;
 use crate::GLOBAL_STATE;
@@ -20,9 +20,9 @@ use syntect::parsing::SyntaxSet;
 
 use bolt_common::prelude::*;
 
-pub fn get_current_request(bctx: &mut BoltContext) -> &mut Request {
+pub fn get_current_request(bctx: &mut BoltContext) -> &mut HttpRequest {
     if bctx.page == Page::HttpPage {
-        let current = bctx.main_current;
+        let current = bctx.http_current;
         return &mut bctx.http_requests[current];
     } else {
         let current = &bctx.col_current;
@@ -143,7 +143,7 @@ fn handle_restore_response_msg(txt: String) {
     set_save_state(msg.save);
 }
 
-pub fn invoke_send(request: &mut Request) {
+pub fn invoke_send(request: &mut HttpRequest) {
     let msg = SendHttpMsg {
         msg_type: MsgType::SEND_HTTP,
         url: parse_url(request.url.clone(), request.params.clone()),
@@ -163,10 +163,13 @@ pub fn invoke_send(request: &mut Request) {
 pub fn save_state(bctx: &mut BoltContext) {
     let save_state = SaveState {
         page: bctx.page.clone(),
-        main_current: bctx.main_current.clone(),
+        
+        http_current: bctx.http_current.clone(),
+        ws_current: bctx.ws_current.clone(),
         col_current: bctx.col_current.clone(),
 
         http_requests: bctx.http_requests.clone(),
+        ws_connections: bctx.ws_connections.clone(),
         collections: bctx.collections.clone(),
     };
 
@@ -188,10 +191,12 @@ fn set_save_state(state: String) {
     let mut global_state = GLOBAL_STATE.lock().unwrap();
 
     global_state.bctx.http_requests = new_state.http_requests;
+    global_state.bctx.ws_connections = new_state.ws_connections;
     global_state.bctx.collections = new_state.collections;
 
     global_state.bctx.col_current = new_state.col_current;
-    global_state.bctx.main_current = new_state.main_current;
+    global_state.bctx.http_current = new_state.http_current;
+    global_state.bctx.ws_current = new_state.ws_current;
 
     global_state.bctx.page = new_state.page;
 

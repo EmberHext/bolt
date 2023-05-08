@@ -5,7 +5,7 @@ use crate::BoltContext;
 use crate::Collection;
 use crate::Msg;
 // use crate::Page;
-use crate::Request;
+use bolt_common::prelude::*;
 
 pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
     let should_render = match msg {
@@ -167,8 +167,8 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-        Msg::AddRequest => {
-            let mut new_request = Request::new();
+        Msg::AddHttpRequest => {
+            let mut new_request = HttpRequest::new();
             new_request.name = new_request.name + &(bctx.http_requests.len() + 1).to_string();
 
             bctx.http_requests.push(new_request);
@@ -176,10 +176,19 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
+        Msg::AddWsRequest => {
+            let mut new_request = WsRequest::new();
+            new_request.name = new_request.name + &(bctx.ws_connections.len() + 1).to_string();
+
+            bctx.ws_connections.push(new_request);
+
+            true
+        }
+
         Msg::AddToCollection(index) => {
             let collection = &mut bctx.collections[index];
 
-            let mut new_request = Request::new();
+            let mut new_request = HttpRequest::new();
             new_request.name = new_request.name + &(collection.requests.len() + 1).to_string();
 
             collection.requests.push(new_request);
@@ -195,12 +204,19 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-        Msg::RemoveRequest(index) => {
+        Msg::RemoveHttpRequest(index) => {
             bctx.http_requests.remove(index);
-            if !bctx.http_requests.is_empty()
-                && bctx.main_current > bctx.http_requests.len() - 1
-            {
-                bctx.main_current = bctx.http_requests.len() - 1;
+            if !bctx.http_requests.is_empty() && bctx.http_current > bctx.http_requests.len() - 1 {
+                bctx.http_current = bctx.http_requests.len() - 1;
+            }
+
+            true
+        }
+
+        Msg::RemoveWsRequest(index) => {
+            bctx.ws_connections.remove(index);
+            if !bctx.ws_connections.is_empty() && bctx.ws_current > bctx.ws_connections.len() - 1 {
+                bctx.ws_current = bctx.ws_connections.len() - 1;
             }
 
             true
@@ -213,23 +229,42 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-        Msg::SelectRequest(index) => {
+        Msg::SelectHttpRequest(index) => {
             let mut new_index = index;
 
             if bctx.http_requests.len() == 0 {
-                bctx.main_current = new_index;
+                bctx.http_current = new_index;
 
                 // bctx.main_col.requests[new_index].response.request_index = new_index;
             } else {
                 if index >= bctx.http_requests.len() {
                     new_index = bctx.http_requests.len() - 1;
-                    bctx.main_current = new_index;
+                    bctx.http_current = new_index;
 
                     bctx.http_requests[new_index].response.request_index = new_index;
                 } else {
-                    bctx.main_current = new_index;
+                    bctx.http_current = new_index;
 
                     bctx.http_requests[new_index].response.request_index = new_index;
+                }
+            }
+
+            true
+        }
+
+        Msg::SelectWsRequest(index) => {
+            let mut new_index = index;
+
+            if bctx.ws_connections.len() == 0 {
+                bctx.ws_current = new_index;
+
+                // bctx.main_col.requests[new_index].response.request_index = new_index;
+            } else {
+                if index >= bctx.ws_connections.len() {
+                    new_index = bctx.ws_connections.len() - 1;
+                    bctx.ws_current = new_index;
+                } else {
+                    bctx.ws_current = new_index;
                 }
             }
 

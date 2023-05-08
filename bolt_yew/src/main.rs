@@ -44,9 +44,14 @@ pub enum Msg {
     HeaderChanged(usize),
     ParamChanged(usize),
 
-    AddRequest,
-    RemoveRequest(usize),
-    SelectRequest(usize),
+    AddHttpRequest,
+    AddWsRequest,
+
+    RemoveHttpRequest(usize),
+    SelectHttpRequest(usize),
+
+    RemoveWsRequest(usize),
+    SelectWsRequest(usize),
 
     AddCollection,
     RemoveCollection(usize),
@@ -77,11 +82,15 @@ pub struct BoltContext {
     link: Option<Scope<BoltApp>>,
 
     page: Page,
-    main_current: usize,
+    
+    http_current: usize,
+    ws_current: usize,
     col_current: Vec<usize>,
 
-    http_requests: Vec<Request>,
+    http_requests: Vec<HttpRequest>,
+    ws_connections: Vec<WsRequest>,
     collections: Vec<Collection>,
+
     ws_tx: Option<SplitSink<gloo_net::websocket::futures::WebSocket, WSMessage>>,
 }
 
@@ -91,10 +100,13 @@ impl BoltContext {
             link: None,
 
             http_requests: vec![],
+            ws_connections: vec![],
             collections: vec![],
+
             page: Page::HttpPage,
 
-            main_current: 0,
+            http_current: 0,
+            ws_current: 0,
             col_current: vec![0, 0],
             ws_tx: None,
         }
@@ -133,7 +145,7 @@ impl Component for BoltApp {
         let mut state = GLOBAL_STATE.lock().unwrap();
         state.bctx.link = Some(ctx.link().clone());
 
-        state.bctx.http_requests.push(Request::new());
+        state.bctx.http_requests.push(HttpRequest::new());
 
         let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
         let (write, mut read) = ws.split();
@@ -194,7 +206,7 @@ impl Component for BoltApp {
     }
 }
 
-fn send_request(request: &mut Request) {
+fn send_request(request: &mut HttpRequest) {
     request.loading = true;
     invoke_send(request);
 }
@@ -205,11 +217,11 @@ pub fn receive_response(data: String) {
 
     // bolt_log("received a response");
 
-    let mut response: Response = serde_json::from_str(&data).unwrap();
+    let mut response: HttpResponse = serde_json::from_str(&data).unwrap();
 
     // _bolt_log(&format!("{:?}", response));
 
-    if response.response_type == ResponseType::JSON {
+    if response.response_type == HttpResponseType::JSON {
         response.body = format_json(&response.body);
         response.body = highlight_body(&response.body);
     }
