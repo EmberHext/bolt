@@ -7,12 +7,9 @@ use bolt_common::prelude::HttpResponseType;
 use yew::{html, AttrValue, Html};
 
 pub fn http_response(bctx: &mut BoltContext) -> Html {
-   let link = bctx.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
-    let can_display = (bctx.page == Page::Collections
-        && !bctx.collections.is_empty()
-        && !bctx.collections[bctx.col_current[0]].requests.is_empty())
-        || (bctx.page == Page::HttpPage && !bctx.http_requests.is_empty());
+    let can_display = !bctx.http_requests.is_empty();
 
     let mut request = HttpRequest::new();
 
@@ -32,7 +29,7 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
                     <div id="resp_body_tab" class={if request.resp_tab == 1  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespBodyPressed)}>{"Body"}</div>
                     <div id="resp_headers_tab" class={if request.resp_tab == 2  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespHeadersPressed)}>{"Headers"}</div>
                 </div>
-    
+
                 <div class="respstats">
                     <div id="status" class="respstat">{"Status: "} {request.response.status}</div>
                     <div id="time" class="respstat">{"Time: "} {request.response.time} {" ms"}</div>
@@ -61,24 +58,21 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
                     </div>
                 }
             </div>
-        } else if can_display && request.loading { 
+        } else if can_display && request.loading {
             <div class="resploading"><img src="/icon/icon.png" /></div>
         } else if request.response.failed {
             <div class="resperror">{request.response.body.clone()}</div>
         }
-        
+
     </div>
     }
 }
 
-
 pub fn collection_response(bctx: &mut BoltContext) -> Html {
-   let link = bctx.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
-    let can_display = (bctx.page == Page::Collections
-        && !bctx.collections.is_empty()
-        && !bctx.collections[bctx.col_current[0]].requests.is_empty())
-        || (bctx.page == Page::HttpPage && !bctx.http_requests.is_empty());
+    let can_display =
+        !bctx.collections.is_empty() && !bctx.collections[bctx.col_current[0]].requests.is_empty();
 
     let mut request = HttpRequest::new();
 
@@ -98,7 +92,7 @@ pub fn collection_response(bctx: &mut BoltContext) -> Html {
                     <div id="resp_body_tab" class={if request.resp_tab == 1  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespBodyPressed)}>{"Body"}</div>
                     <div id="resp_headers_tab" class={if request.resp_tab == 2  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespHeadersPressed)}>{"Headers"}</div>
                 </div>
-    
+
                 <div class="respstats">
                     <div id="status" class="respstat">{"Status: "} {request.response.status}</div>
                     <div id="time" class="respstat">{"Time: "} {request.response.time} {" ms"}</div>
@@ -127,23 +121,20 @@ pub fn collection_response(bctx: &mut BoltContext) -> Html {
                     </div>
                 }
             </div>
-        } else if can_display && request.loading { 
+        } else if can_display && request.loading {
             <div class="resploading"><img src="/icon/icon.png" /></div>
         } else if request.response.failed {
             <div class="resperror">{request.response.body.clone()}</div>
         }
-        
+
     </div>
     }
 }
 
 pub fn ws_messages(bctx: &mut BoltContext) -> Html {
-   let link = bctx.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
-    let can_display = (bctx.page == Page::Collections
-        && !bctx.collections.is_empty()
-        && !bctx.collections[bctx.col_current[0]].requests.is_empty())
-        || (bctx.page == Page::HttpPage && !bctx.http_requests.is_empty());
+    let can_display = !bctx.ws_connections.is_empty();
 
     let mut request = HttpRequest::new();
 
@@ -163,7 +154,7 @@ pub fn ws_messages(bctx: &mut BoltContext) -> Html {
                     <div id="resp_body_tab" class={if request.resp_tab == 1  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespBodyPressed)}>{"Body"}</div>
                     <div id="resp_headers_tab" class={if request.resp_tab == 2  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespHeadersPressed)}>{"Headers"}</div>
                 </div>
-    
+
                 <div class="respstats">
                     <div id="status" class="respstat">{"Status: "} {request.response.status}</div>
                     <div id="time" class="respstat">{"Time: "} {request.response.time} {" ms"}</div>
@@ -192,12 +183,12 @@ pub fn ws_messages(bctx: &mut BoltContext) -> Html {
                     </div>
                 }
             </div>
-        } else if can_display && request.loading { 
+        } else if can_display && request.loading {
             <div class="resploading"><img src="/icon/icon.png" /></div>
         } else if request.response.failed {
             <div class="resperror">{request.response.body.clone()}</div>
         }
-        
+
     </div>
     }
 }

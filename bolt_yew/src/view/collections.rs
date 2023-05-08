@@ -1,5 +1,5 @@
-use crate::BoltContext;
 use crate::view;
+use crate::BoltContext;
 use yew::{html, Html};
 
 pub fn collections_view(bctx: &mut BoltContext) -> Html {
@@ -14,12 +14,12 @@ pub fn collections_view(bctx: &mut BoltContext) -> Html {
                 </div>
 
                 <div class="resizer"></div>
-        
+
                 <div class="content">
                     {view::request::collection_request(bctx)}
-                                
-                    <div class="resizer2"></div>     
-        
+
+                    <div class="resizer2"></div>
+
                     {view::response::collection_response(bctx)}
                 </div>
             </div>

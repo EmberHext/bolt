@@ -101,10 +101,7 @@ fn is_tab_selected(request_tab: &u8, tab: RequestTabs) -> bool {
 pub fn ws_connection(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
-    let can_display = (bctx.page == Page::Collections
-        && !bctx.collections.is_empty()
-        && !bctx.collections[bctx.col_current[0]].requests.is_empty())
-        || (bctx.page == Page::HttpPage && !bctx.http_requests.is_empty());
+    let can_display = !bctx.ws_connections.is_empty();
 
     let mut request = HttpRequest::new();
 
@@ -184,7 +181,8 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
 pub fn collection_request(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
-    let can_display = !bctx.collections[bctx.col_current[0]].requests.is_empty();
+    let can_display =
+        !bctx.collections.is_empty() && !bctx.collections[bctx.col_current[0]].requests.is_empty();
 
     let mut request = HttpRequest::new();
 
@@ -260,4 +258,3 @@ pub fn collection_request(bctx: &mut BoltContext) -> Html {
 
     }
 }
-
