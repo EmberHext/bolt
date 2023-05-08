@@ -1,6 +1,8 @@
 use std::path::Path;
 use std::process::Command;
 
+use bolt_common::prelude::*;
+
 // downloads the dist from github
 pub fn build_dist() {
     println!("Downloading static files");
@@ -96,8 +98,9 @@ pub fn file_exists(path: &String) -> bool {
 }
 
 pub fn create_state(path: &String) {
-    let new_state = r#"{"page":"Home","main_current":0,"col_current":[0,0],"main_col":{"name":"New Collection ","requests":[{"url":"","body":"","headers":[["",""]],"params":[["",""]],"method":"GET","response":{"status":0,"body":"","headers":[],"time":0,"size":0,"response_type":"TEXT","request_index":0,"failed":false},"name":"New Request 1","req_tab":1,"resp_tab":1,"loading":false}],"collapsed":false},"collections":[]}"#;
-
+    let new_state = SaveState::new();
+    
+    let new_state = serde_json::to_string(&new_state).unwrap();
     std::fs::write(path, new_state).unwrap();
 }
 

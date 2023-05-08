@@ -18,7 +18,7 @@ pub fn sidebar_http(bctx: &mut BoltContext) -> Html {
                 </div>
             </div>
 
-            { for bctx.main_col.requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
+            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_request(bctx.link.as_ref().unwrap(), bctx.main_current, index, req))}
 
         </div>
     }

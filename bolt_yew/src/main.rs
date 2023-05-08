@@ -1,6 +1,6 @@
 use crate::utils::*;
 use futures::stream::SplitSink;
-use serde::{Deserialize, Serialize};
+// use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use yew::{html::Scope, Component, Context, Html};
 
@@ -13,7 +13,7 @@ mod style;
 mod utils;
 mod view;
 
-use bolt_common::prelude::HttpMethod;
+use bolt_common::prelude::*;
 
 // TODO: Copy response body button
 // FIXME: request headers and params do not scroll
@@ -65,109 +65,8 @@ pub enum Msg {
     Nothing,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
-pub enum Page {
-    HttpPage,
-    Collections,
-    Websockets,
-    Tcp,
-    Udp,
-    Servers
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
-pub enum ResponseType {
-    TEXT,
-    JSON,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct BoltApp {}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Response {
-    status: u16,
-    body: String,
-    headers: Vec<Vec<String>>,
-    time: u32,
-    size: u64,
-    response_type: ResponseType,
-    request_index: usize,
-    failed: bool,
-}
-
-impl Response {
-    fn new() -> Self {
-        Response {
-            status: 0,
-            body: String::new(),
-            headers: Vec::new(),
-            time: 0,
-            size: 0,
-            response_type: ResponseType::TEXT,
-            request_index: 0,
-            failed: false,
-        }
-    }
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct Request {
-    url: String,
-    body: String,
-    headers: Vec<Vec<String>>,
-    params: Vec<Vec<String>>,
-    method: HttpMethod,
-
-    response: Response,
-
-    // META
-    name: String,
-
-    req_tab: u8,
-    resp_tab: u8,
-
-    loading: bool,
-}
-
-impl Request {
-    fn new() -> Request {
-        Request {
-            url: String::new(),
-            body: String::new(),
-            headers: vec![vec![String::new(), String::new()]],
-            params: vec![vec![String::new(), String::new()]],
-            method: HttpMethod::GET,
-
-            response: Response::new(),
-
-            // META
-            name: "New Request ".to_string(),
-
-            req_tab: 1,
-            resp_tab: 1,
-
-            loading: false,
-        }
-    }
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-struct Collection {
-    name: String,
-    requests: Vec<Request>,
-    collapsed: bool,
-}
-
-impl Collection {
-    fn new() -> Collection {
-        Collection {
-            name: "New Collection ".to_string(),
-            requests: vec![],
-            collapsed: false,
-        }
-    }
-}
 
 pub struct BoltState {
     bctx: BoltContext,
@@ -181,20 +80,9 @@ pub struct BoltContext {
     main_current: usize,
     col_current: Vec<usize>,
 
-    main_col: Collection,
+    http_requests: Vec<Request>,
     collections: Vec<Collection>,
     ws_tx: Option<SplitSink<gloo_net::websocket::futures::WebSocket, WSMessage>>,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct SaveState {
-    page: Page,
-
-    main_current: usize,
-    col_current: Vec<usize>,
-
-    main_col: Collection,
-    collections: Vec<Collection>,
 }
 
 impl BoltContext {
@@ -202,7 +90,7 @@ impl BoltContext {
         BoltContext {
             link: None,
 
-            main_col: Collection::new(),
+            http_requests: vec![],
             collections: vec![],
             page: Page::HttpPage,
 
@@ -245,7 +133,7 @@ impl Component for BoltApp {
         let mut state = GLOBAL_STATE.lock().unwrap();
         state.bctx.link = Some(ctx.link().clone());
 
-        state.bctx.main_col.requests.push(Request::new());
+        state.bctx.http_requests.push(Request::new());
 
         let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
         let (write, mut read) = ws.split();
@@ -326,15 +214,9 @@ pub fn receive_response(data: String) {
         response.body = highlight_body(&response.body);
     }
 
-    if bctx.page == Page::HttpPage {
-        let current = response.request_index;
-        state.bctx.main_col.requests[current].response = response;
-        state.bctx.main_col.requests[current].loading = false;
-    } else {
-        let current = &bctx.col_current;
-        bctx.collections[current[0]].requests[current[1]].response = response;
-        bctx.collections[current[0]].requests[current[1]].loading = false;
-    }
+    let current = get_current_request(&mut state.bctx);
+    current.response = response;
+    current.loading = false;
 
     let link = state.bctx.link.as_ref().unwrap();
 

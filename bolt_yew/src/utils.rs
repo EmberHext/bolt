@@ -1,5 +1,6 @@
 use crate::BoltContext;
 use crate::Msg;
+use crate::Page;
 use crate::Request;
 use crate::SaveState;
 // use crate::BACKEND;
@@ -18,6 +19,16 @@ use syntect::html::highlighted_html_for_string;
 use syntect::parsing::SyntaxSet;
 
 use bolt_common::prelude::*;
+
+pub fn get_current_request(bctx: &mut BoltContext) -> &mut Request {
+    if bctx.page == Page::HttpPage {
+        let current = bctx.main_current;
+        return &mut bctx.http_requests[current];
+    } else {
+        let current = &bctx.col_current;
+        return &mut bctx.collections[current[0]].requests[current[1]];
+    }
+}
 
 pub fn _bolt_log(log: &str) {
     let log = log.to_string();
@@ -127,7 +138,7 @@ fn handle_invalid_msg(txt: String) {
 fn handle_restore_response_msg(txt: String) {
     // _bolt_log(&format!("received restore resp"));
 
-   let msg: RestoreStateMsg = serde_json::from_str(&txt).unwrap();
+    let msg: RestoreStateMsg = serde_json::from_str(&txt).unwrap();
 
     set_save_state(msg.save);
 }
@@ -155,7 +166,7 @@ pub fn save_state(bctx: &mut BoltContext) {
         main_current: bctx.main_current.clone(),
         col_current: bctx.col_current.clone(),
 
-        main_col: bctx.main_col.clone(),
+        http_requests: bctx.http_requests.clone(),
         collections: bctx.collections.clone(),
     };
 
@@ -176,7 +187,7 @@ fn set_save_state(state: String) {
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
 
-    global_state.bctx.main_col = new_state.main_col;
+    global_state.bctx.http_requests = new_state.http_requests;
     global_state.bctx.collections = new_state.collections;
 
     global_state.bctx.col_current = new_state.col_current;
@@ -191,7 +202,7 @@ fn set_save_state(state: String) {
 pub fn restore_state() {
     let msg = RestoreStateMsg {
         msg_type: MsgType::RESTORE_STATE,
-        save: "".to_string()
+        save: "".to_string(),
     };
 
     let msg = serde_json::to_string(&msg).unwrap();

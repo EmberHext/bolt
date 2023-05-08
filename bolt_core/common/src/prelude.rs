@@ -1,6 +1,130 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
+pub enum ResponseType {
+    TEXT,
+    JSON,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Response {
+    pub status: u16,
+    pub body: String,
+    pub headers: Vec<Vec<String>>,
+    pub time: u32,
+    pub size: u64,
+    pub response_type: ResponseType,
+    pub request_index: usize,
+    pub failed: bool,
+}
+
+impl Response {
+    fn new() -> Self {
+        Response {
+            status: 0,
+            body: String::new(),
+            headers: Vec::new(),
+            time: 0,
+            size: 0,
+            response_type: ResponseType::TEXT,
+            request_index: 0,
+            failed: false,
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Request {
+    pub url: String,
+    pub body: String,
+    pub headers: Vec<Vec<String>>,
+    pub params: Vec<Vec<String>>,
+    pub method: HttpMethod,
+
+    pub response: Response,
+
+    // META
+    pub name: String,
+
+    pub req_tab: u8,
+    pub resp_tab: u8,
+
+    pub loading: bool,
+}
+
+impl Request {
+    pub fn new() -> Request {
+        Request {
+            url: String::new(),
+            body: String::new(),
+            headers: vec![vec![String::new(), String::new()]],
+            params: vec![vec![String::new(), String::new()]],
+            method: HttpMethod::GET,
+
+            response: Response::new(),
+
+            // META
+            name: "New Request ".to_string(),
+
+            req_tab: 1,
+            resp_tab: 1,
+
+            loading: false,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
+pub enum Page {
+    HttpPage,
+    Collections,
+    Websockets,
+    Tcp,
+    Udp,
+    Servers,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Collection {
+    pub name: String,
+    pub requests: Vec<Request>,
+    pub collapsed: bool,
+}
+
+impl Collection {
+    pub fn new() -> Collection {
+        Collection {
+            name: "New Collection ".to_string(),
+            requests: vec![],
+            collapsed: false,
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct SaveState {
+    pub page: Page,
+
+    pub main_current: usize,
+    pub col_current: Vec<usize>,
+
+    pub http_requests: Vec<Request>,
+    pub collections: Vec<Collection>,
+}
+
+impl SaveState {
+    pub fn new() -> Self {
+        Self {
+            page: Page::HttpPage,
+            main_current: 0,
+            col_current: vec![0, 0],
+            http_requests: vec![Request::new()],
+            collections: vec![],
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct ReceivedMessage {
     pub msg_type: MsgType,
@@ -16,7 +140,7 @@ pub enum MsgType {
     SAVE_STATE,
     SEND_HTTP,
     HTTP_RESPONSE,
-    RESTORE_STATE
+    RESTORE_STATE,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -123,7 +247,6 @@ pub struct OpenLinkMsg {
     pub link: String,
 }
 
-
 #[derive(Serialize, Deserialize)]
 pub struct RestoreStateMsg {
     pub msg_type: MsgType,
@@ -190,4 +313,3 @@ impl SendHttpResponse {
         }
     }
 }
-

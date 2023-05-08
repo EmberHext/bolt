@@ -4,7 +4,7 @@ use crate::utils::*;
 use crate::BoltContext;
 use crate::Collection;
 use crate::Msg;
-use crate::Page;
+// use crate::Page;
 use crate::Request;
 
 pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
@@ -12,26 +12,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::Nothing => false,
 
         Msg::SelectedMethod(meth) => {
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].method = meth;
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]].method = meth;
-            }
+            let current = get_current_request(bctx);
+            current.method = meth;
 
             true
         }
 
         Msg::SendPressed => {
-            if bctx.page == Page::HttpPage {
-                let req = &mut bctx.main_col.requests[bctx.main_current];
-                send_request(req);
-            } else {
-                let current = &bctx.col_current;
-                let req = &mut bctx.collections[current[0]].requests[current[1]];
-                send_request(req);
-            }
+            let current = get_current_request(bctx);
+            send_request(current);
 
             true
         }
@@ -49,71 +38,36 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::ReqBodyPressed => {
-            if bctx.page == Page::HttpPage {
-                let req = &mut bctx.main_col.requests[bctx.main_current];
-
-                req.req_tab = 1;
-            } else {
-                let current = &bctx.col_current;
-                let req = &mut bctx.collections[current[0]].requests[current[1]];
-                req.req_tab = 1;
-            }
+            let current = get_current_request(bctx);
+            current.req_tab = 1;
 
             true
         }
 
         Msg::ReqHeadersPressed => {
-            if bctx.page == Page::HttpPage {
-                let req = &mut bctx.main_col.requests[bctx.main_current];
-
-                req.req_tab = 3;
-            } else {
-                let current = &bctx.col_current;
-                let req = &mut bctx.collections[current[0]].requests[current[1]];
-                req.req_tab = 3;
-            }
+            let current = get_current_request(bctx);
+            current.req_tab = 3;
 
             true
         }
 
         Msg::ReqParamsPressed => {
-            if bctx.page == Page::HttpPage {
-                let req = &mut bctx.main_col.requests[bctx.main_current];
-
-                req.req_tab = 2;
-            } else {
-                let current = &bctx.col_current;
-                let req = &mut bctx.collections[current[0]].requests[current[1]];
-                req.req_tab = 2;
-            }
+            let current = get_current_request(bctx);
+            current.req_tab = 2;
 
             true
         }
 
         Msg::RespBodyPressed => {
-            if bctx.page == Page::HttpPage {
-                let mut req = &mut bctx.main_col.requests[bctx.main_current];
-
-                req.resp_tab = 1;
-            } else {
-                let current = &bctx.col_current;
-                let req = &mut bctx.collections[current[0]].requests[current[1]];
-                req.resp_tab = 1;
-            }
+            let current = get_current_request(bctx);
+            current.resp_tab = 1;
 
             true
         }
 
         Msg::RespHeadersPressed => {
-            if bctx.page == Page::HttpPage {
-                let req = &mut bctx.main_col.requests[bctx.main_current];
-
-                req.resp_tab = 2;
-            } else {
-                let current = &bctx.col_current;
-                let req = &mut bctx.collections[current[0]].requests[current[1]];
-                req.resp_tab = 2;
-            }
+            let current = get_current_request(bctx);
+            current.resp_tab = 2;
 
             true
         }
@@ -121,47 +75,25 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::ReceivedResponse => true,
 
         Msg::AddHeader => {
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current]
-                    .headers
-                    .push(vec!["".to_string(), "".to_string()]);
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]]
-                    .headers
-                    .push(vec!["".to_string(), "".to_string()]);
-            }
+            let current = get_current_request(bctx);
+
+            current.headers.push(vec!["".to_string(), "".to_string()]);
+
             true
         }
 
         Msg::RemoveHeader(index) => {
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].headers.remove(index);
-            } else {
-                let current = &bctx.col_current;
+            let current = get_current_request(bctx);
 
-                bctx.collections[current[0]].requests[current[1]]
-                    .headers
-                    .remove(index);
-            }
+            current.headers.remove(index);
 
             true
         }
 
         Msg::AddParam => {
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current]
-                    .params
-                    .push(vec!["".to_string(), "".to_string()]);
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]]
-                    .params
-                    .push(vec!["".to_string(), "".to_string()]);
-            }
+            let current = get_current_request(bctx);
+
+            current.params.push(vec!["".to_string(), "".to_string()]);
             true
         }
 
@@ -183,59 +115,35 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RemoveParam(index) => {
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].params.remove(index);
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]]
-                    .params
-                    .remove(index);
-            }
+            let current = get_current_request(bctx);
 
+            current.params.remove(index);
             true
         }
 
         Msg::MethodChanged => {
             let method = get_method();
 
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].method = method;
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]].method = method;
-            }
+            let current = get_current_request(bctx);
 
+            current.method = method;
             true
         }
 
         Msg::UrlChanged => {
             let url = get_url();
 
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].url = url.clone();
-                bctx.main_col.requests[current].name = url;
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]].url = url.clone();
-                bctx.collections[current[0]].requests[current[1]].name = url;
-            }
+            let current = get_current_request(bctx);
+            current.url = url.clone();
+            current.name = url;
 
             true
         }
 
         Msg::BodyChanged => {
             let body = get_body();
-
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].body = body;
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]].body = body;
-            }
+            let current = get_current_request(bctx);
+            current.body = body;
 
             true
         }
@@ -243,36 +151,27 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::HeaderChanged(index) => {
             let header = get_header(index);
 
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].headers[index] = header;
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]].headers[index] = header;
-            }
+            let current = get_current_request(bctx);
 
+            current.headers[index] = header;
             true
         }
 
         Msg::ParamChanged(index) => {
             let param = get_param(index);
 
-            if bctx.page == Page::HttpPage {
-                let current = bctx.main_current;
-                bctx.main_col.requests[current].params[index] = param;
-            } else {
-                let current = &bctx.col_current;
-                bctx.collections[current[0]].requests[current[1]].params[index] = param;
-            }
+            let current = get_current_request(bctx);
+
+            current.params[index] = param;
 
             true
         }
 
         Msg::AddRequest => {
             let mut new_request = Request::new();
-            new_request.name = new_request.name + &(bctx.main_col.requests.len() + 1).to_string();
+            new_request.name = new_request.name + &(bctx.http_requests.len() + 1).to_string();
 
-            bctx.main_col.requests.push(new_request);
+            bctx.http_requests.push(new_request);
 
             true
         }
@@ -297,11 +196,11 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RemoveRequest(index) => {
-            bctx.main_col.requests.remove(index);
-            if !bctx.main_col.requests.is_empty()
-                && bctx.main_current > bctx.main_col.requests.len() - 1
+            bctx.http_requests.remove(index);
+            if !bctx.http_requests.is_empty()
+                && bctx.main_current > bctx.http_requests.len() - 1
             {
-                bctx.main_current = bctx.main_col.requests.len() - 1;
+                bctx.main_current = bctx.http_requests.len() - 1;
             }
 
             true
@@ -317,20 +216,20 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::SelectRequest(index) => {
             let mut new_index = index;
 
-            if bctx.main_col.requests.len() == 0 {
+            if bctx.http_requests.len() == 0 {
                 bctx.main_current = new_index;
 
                 // bctx.main_col.requests[new_index].response.request_index = new_index;
             } else {
-                if index >= bctx.main_col.requests.len() {
-                    new_index = bctx.main_col.requests.len() - 1;
+                if index >= bctx.http_requests.len() {
+                    new_index = bctx.http_requests.len() - 1;
                     bctx.main_current = new_index;
 
-                    bctx.main_col.requests[new_index].response.request_index = new_index;
+                    bctx.http_requests[new_index].response.request_index = new_index;
                 } else {
                     bctx.main_current = new_index;
 
-                    bctx.main_col.requests[new_index].response.request_index = new_index;
+                    bctx.http_requests[new_index].response.request_index = new_index;
                 }
             }
 
