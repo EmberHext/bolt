@@ -35,18 +35,18 @@ impl HttpResponse {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct WsRequest {
+pub struct WsConnection {
     pub url: String,
     pub name: String,
     pub loading: bool,
 }
 
-impl WsRequest {
+impl WsConnection {
     pub fn new() -> Self {
         Self {
             url: String::new(),
             name: "Ws connection ".to_string(),
-            loading: false
+            loading: false,
         }
     }
 }
@@ -128,7 +128,7 @@ pub struct SaveState {
     pub col_current: Vec<usize>,
 
     pub http_requests: Vec<HttpRequest>,
-    pub ws_connections: Vec<WsRequest>,
+    pub ws_connections: Vec<WsConnection>,
     pub collections: Vec<Collection>,
 }
 
@@ -136,14 +136,13 @@ impl SaveState {
     pub fn new() -> Self {
         Self {
             page: Page::HttpPage,
-            
+
             http_current: 0,
             ws_current: 0,
             col_current: vec![0, 0],
-            
-            
+
             http_requests: vec![HttpRequest::new()],
-            ws_connections: vec![WsRequest::new()],
+            ws_connections: vec![WsConnection::new()],
             collections: vec![],
         }
     }

@@ -147,7 +147,12 @@ fn render_collection(
     }
 }
 
-fn render_http_request(link: &Scope<BoltApp>, current: usize, index: usize, req: &HttpRequest) -> Html {
+fn render_http_request(
+    link: &Scope<BoltApp>,
+    current: usize,
+    index: usize,
+    req: &HttpRequest,
+) -> Html {
     // let link = bctx.link.as_ref().unwrap();
     let request_name = req.name.clone();
 
@@ -167,7 +172,12 @@ fn render_http_request(link: &Scope<BoltApp>, current: usize, index: usize, req:
     }
 }
 
-fn render_ws_request(link: &Scope<BoltApp>, current: usize, index: usize, req: &WsRequest) -> Html {
+fn render_ws_request(
+    link: &Scope<BoltApp>,
+    current: usize,
+    index: usize,
+    req: &WsConnection,
+) -> Html {
     // let link = bctx.link.as_ref().unwrap();
     let request_name = req.name.clone();
 

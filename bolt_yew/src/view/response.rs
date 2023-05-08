@@ -151,16 +151,9 @@ pub fn ws_messages(bctx: &mut BoltContext) -> Html {
         if can_display && !request.response.failed && !request.loading {
             <div class="respline">
                 <div class="resptabs">
-                    <div id="resp_body_tab" class={if request.resp_tab == 1  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespBodyPressed)}>{"Body"}</div>
-                    <div id="resp_headers_tab" class={if request.resp_tab == 2  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespHeadersPressed)}>{"Headers"}</div>
+                    <div id="resp_body_tab" class={if request.resp_tab == 1  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespBodyPressed)}>{"Messages"}</div>
                 </div>
-
-                <div class="respstats">
-                    <div id="status" class="respstat">{"Status: "} {request.response.status}</div>
-                    <div id="time" class="respstat">{"Time: "} {request.response.time} {" ms"}</div>
-                    <div id="size" class="respstat">{"Size: "} {request.response.size} {" B"}</div>
-                </div>
-            </div>
+           </div>
 
             <div class="tabcontent">
                 if request.resp_tab == 1 {

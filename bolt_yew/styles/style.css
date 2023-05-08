@@ -354,7 +354,7 @@ td {
 .resizer2 {
   height: 5px;
   z-index: 2;
-  cursor: col-resize;
+  cursor: ns-resize;
   background: rgb(27, 28, 28);
 }
 

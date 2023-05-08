@@ -3,7 +3,6 @@ use crate::helpers::enums::RequestTabs::{self, Body, Headers, Params};
 use crate::view;
 use crate::BoltContext;
 use crate::Msg;
-use crate::Page;
 use bolt_common::prelude::HttpRequest;
 use yew::KeyboardEvent;
 use yew::{html, Html};
@@ -18,13 +17,7 @@ pub fn http_request(bctx: &mut BoltContext) -> Html {
     let mut request = HttpRequest::new();
 
     if can_display {
-        request = if bctx.page == Page::HttpPage {
-            bctx.http_requests[bctx.http_current].clone()
-        } else if bctx.page == Page::Collections {
-            bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone()
-        } else {
-            HttpRequest::new()
-        };
+        request = bctx.http_requests[bctx.http_current].clone()
     }
 
     let selected_method = request.method.to_string();
@@ -106,13 +99,7 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
     let mut request = HttpRequest::new();
 
     if can_display {
-        request = if bctx.page == Page::HttpPage {
-            bctx.http_requests[bctx.http_current].clone()
-        } else if bctx.page == Page::Collections {
-            bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone()
-        } else {
-            HttpRequest::new()
-        };
+        request = bctx.http_requests[bctx.http_current].clone();
     }
 
     let selected_method = request.method.to_string();
@@ -121,32 +108,20 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
         <div class="req">
         if can_display {
             <div class="requestbar">
-                <div class="">
-                    <select id="methodselect" class="methodselect pointer" onchange={link.callback(|_| Msg::MethodChanged)}>
-                        { for (0..HttpMethod::count()).map(|index| {
-                            let current_method_option: HttpMethod = HttpMethod::from(index);
-                            let value = current_method_option.to_string().to_lowercase();
-                            html! {
-                                <option value={value.clone()} selected={is_selected(&selected_method, &value)}>{current_method_option}</option>
-                            }
-                        })}
-                    </select>
-                </div>
+                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={request.url.clone()} placeholder="ws://" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::SendPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
 
-                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={request.url.clone()} placeholder="http://" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::SendPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
-
-                <button class="sendbtn pointer" type="button" onclick={link.callback(|_| Msg::SendPressed)}>{"Send"}</button>
+                <button class="sendbtn pointer" type="button" onclick={link.callback(|_| Msg::SendPressed)}>{"Connect"}</button>
             </div>
 
             <div class="reqtabs">
-                <div id="req_body_tab" class={if is_tab_selected(&request.req_tab, Body) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::ReqBodyPressed)}>{"Body"}</div>
+                <div id="req_body_tab" class={if is_tab_selected(&request.req_tab, Body) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::ReqBodyPressed)}>{"Message"}</div>
                 <div id="req_params_tab" class={if is_tab_selected(&request.req_tab, Params) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::ReqParamsPressed)}>{"Params"}</div>
                 <div id="req_headers_tab" class={if is_tab_selected(&request.req_tab, Headers) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::ReqHeadersPressed)}>{"Headers"}</div>
             </div>
 
             <div class="tabcontent">
                 if is_tab_selected(&request.req_tab, Body) {
-                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={request.body.clone()} placeholder="Request body" onchange={link.callback(|_| Msg::BodyChanged)}>
+                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={request.body.clone()} placeholder="Compose Message" onchange={link.callback(|_| Msg::BodyChanged)}>
 
                     </textarea>
                 } else if is_tab_selected(&request.req_tab, Params) {
@@ -187,13 +162,7 @@ pub fn collection_request(bctx: &mut BoltContext) -> Html {
     let mut request = HttpRequest::new();
 
     if can_display {
-        request = if bctx.page == Page::HttpPage {
-            bctx.http_requests[bctx.http_current].clone()
-        } else if bctx.page == Page::Collections {
-            bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone()
-        } else {
-            HttpRequest::new()
-        };
+        request = bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone()
     }
 
     let selected_method = request.method.to_string();

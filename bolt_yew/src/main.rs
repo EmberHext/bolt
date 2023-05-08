@@ -82,13 +82,13 @@ pub struct BoltContext {
     link: Option<Scope<BoltApp>>,
 
     page: Page,
-    
+
     http_current: usize,
     ws_current: usize,
     col_current: Vec<usize>,
 
     http_requests: Vec<HttpRequest>,
-    ws_connections: Vec<WsRequest>,
+    ws_connections: Vec<WsConnection>,
     collections: Vec<Collection>,
 
     ws_tx: Option<SplitSink<gloo_net::websocket::futures::WebSocket, WSMessage>>,

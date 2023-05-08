@@ -177,7 +177,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::AddWsRequest => {
-            let mut new_request = WsRequest::new();
+            let mut new_request = WsConnection::new();
             new_request.name = new_request.name + &(bctx.ws_connections.len() + 1).to_string();
 
             bctx.ws_connections.push(new_request);
