@@ -4,6 +4,9 @@ mod utils;
 use std::sync::{Arc, Mutex};
 
 use bolt_common::prelude::*;
+use tungstenite::stream::MaybeTlsStream;
+use tungstenite::{connect, WebSocket};
+use url::Url;
 
 static VERSION: &str = "0.11.11";
 static HELP: &str = r#"
@@ -34,6 +37,7 @@ struct WsService {
 
 pub struct CoreState {
     main_state: MainState,
+    // session_websocket: Option<WebSocket<std::net::TcpStream>>,
     ws_services: Vec<WsService>,
 }
 
@@ -41,6 +45,7 @@ impl CoreState {
     pub fn new() -> Self {
         Self {
             main_state: MainState::new(),
+            // session_websocket: None,
             ws_services: vec![],
         }
     }
@@ -117,21 +122,19 @@ pub fn start(args: Vec<String>, port: u16) {
             });
         }
 
-        start_services();
-
         session::server::launch_core_server(port, ADDRESS.to_string());
     }
 }
 
-fn start_services() {
+fn start_services(session_id: String) {
     println!("Starting core services");
 
     std::thread::spawn(move || {
-        start_ws_service();
+        start_ws_service(session_id);
     });
 }
 
-fn start_ws_service() {
+fn start_ws_service(_session_id: String) {
     std::thread::spawn(|| {
         // comment
 
@@ -142,7 +145,7 @@ fn start_ws_service() {
             let ws_services = core_state.ws_services.clone();
 
             // println!("connections: {:?}", connections.len());
-            // println!("active: {:?}", active_connections.len());
+            // println!("services: {:?}", ws_services.len());
 
             for ws_con in connections.clone() {
                 let exists = ws_services
@@ -182,48 +185,105 @@ fn start_ws_service() {
 }
 
 fn spawn_ws_service(connection_id: String) {
-    // println!("started service for {}", con.connection_id);
+    // println!("started service for {}", connection_id);
 
     let _handle = std::thread::Builder::new()
         .name(connection_id.clone())
-        .spawn(move || loop {
-            let mut core_state = CORE_STATE.lock().unwrap();
+        .spawn(move || {
+            // comment
 
-            let mut kill_service = false;
-            let mut service_index = 0;
-            let mut con_index = 0;
+           let mut socket: Option<WebSocket<MaybeTlsStream<std::net::TcpStream>>> = None;
 
-            for (index, ws_service) in core_state
-                .ws_services
-                .iter()
-                .enumerate()
-                .filter(|(_, sv)| sv.connection_id == connection_id)
-            {
-                if ws_service.kill {
-                    // println!("KILLED {}", conn.connection_id);
+            loop {
+                let mut core_state = CORE_STATE.lock().unwrap();
 
-                    service_index = index;
-                    kill_service = true;
+                let mut kill_service = false;
+                let mut service_index = 0;
+                let mut con_index = 0;
+
+                for (index, ws_service) in core_state
+                    .ws_services
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, sv)| sv.connection_id == connection_id)
+                {
+                    if ws_service.kill {
+                        // println!("KILLED {}", conn.connection_id);
+
+                        service_index = index;
+                        kill_service = true;
+                    }
                 }
-            }
 
-            if kill_service {
-                core_state.ws_services.remove(service_index);
-                break;
-            }
-
-            for (index, con) in core_state.main_state.ws_connections.iter().enumerate() {
-                if con.connection_id == connection_id {
-                    con_index = index;
+                if kill_service {
+                    core_state.ws_services.remove(service_index);
+                    break;
                 }
+
+                for (index, con) in core_state.main_state.ws_connections.iter().enumerate() {
+                    if con.connection_id == connection_id {
+                        con_index = index;
+                    }
+                }
+
+                let ws_con = &core_state.main_state.ws_connections[con_index];
+
+                println!("POLL CON {}", ws_con.connection_id);
+
+                if ws_con.connecting {
+                    println!("WS {} CONNECTING", ws_con.connection_id);
+
+                    let (w_socket, _response) = open_ws_connection(ws_con);
+
+                    // TODO: Notify client of successful connection
+                    
+                    // let connected_msg = WsConnectedMsg{
+                        // msg_type: MsgType::WS_CONNECTED,
+                        // connection_id: ws_con.connection_id.clone()
+                    // };
+
+                    // let msg = serde_json::to_string(&connected_msg).unwrap();
+                    // crate::session::server::ws_write(core_state.session_websocket.as_mut().unwrap(), msg);
+
+                    socket = Some(w_socket);
+
+                    socket
+                        .as_mut()
+                        .unwrap()
+                        .write_message(tungstenite::Message::Text("Hello WebSocket".into()))
+                        .unwrap();
+                }
+
+                // let msg = socket
+                // .as_mut()
+                // .unwrap()
+                // .read_message()
+                // .expect("Error reading message");
+                // println!("Received: {}", msg);
+
+                drop(core_state);
+                std::thread::sleep(std::time::Duration::from_millis(1000));
             }
 
-            let ws_con = &mut core_state.main_state.ws_connections[con_index];
-
-            println!("POLL CON {}", ws_con.connection_id);
-
-            drop(core_state);
-            std::thread::sleep(std::time::Duration::from_millis(1000));
+            // cleanup
+            close_ws_connection(socket.as_mut().unwrap());
         })
         .unwrap();
+}
+
+fn open_ws_connection(
+    con: &WsConnection,
+) -> (
+    WebSocket<MaybeTlsStream<std::net::TcpStream>>,
+    tungstenite::http::Response<Option<Vec<u8>>>,
+) {
+    let (socket, response) = connect(Url::parse(&con.url).unwrap()).expect("Can't connect");
+
+    println!("Connected to the server");
+
+    (socket, response)
+}
+
+fn close_ws_connection(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>) {
+    socket.close(None).unwrap();
 }

@@ -94,7 +94,7 @@ fn is_tab_selected(request_tab: &u8, tab: HttpReqTabs) -> bool {
     *request_tab == u8::from(tab)
 }
 
-pub fn ws_connection(bctx: &mut BoltContext) -> Html {
+pub fn ws_out(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
     let can_display = !bctx.main_state.ws_connections.is_empty();
@@ -111,7 +111,13 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
             <div class="requestbar">
                 <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.url.clone()} placeholder="ws://" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectWsPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
 
-                <button class="sendbtn pointer" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Connect"}</button>
+                if connection.connecting {
+                    <button class="ws-connecting-btn disabled-cursor" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Connecting"}</button>
+                } else if connection.connected {
+                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Disconnect"}</button>
+                } else {
+                    <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Connect"}</button>
+                }
             </div>
 
             <div class="reqline">
@@ -121,7 +127,7 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
                     <div id="req_headers_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutHeadersPressed)}>{"Headers"}</div>
                 </div>
 
-                <button class="ws-sendbtn pointer" type="button" onclick={link.callback(|_| Msg::SendWsPressed)}>{"Send"}</button>
+                <button class="ws-send-btn pointer" type="button" onclick={link.callback(|_| Msg::SendWsPressed)}>{"Send"}</button>
             </div>
 
              <div class="tabcontent">

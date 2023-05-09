@@ -16,11 +16,11 @@ pub fn websockets_view(bctx: &mut BoltContext) -> Html {
                 <div class="resizer"></div>
         
                 <div class="content">
-                    {view::request::ws_connection(bctx)}
+                    {view::request::ws_out(bctx)}
                                 
                     <div class="resizer2"></div>     
         
-                    {view::response::ws_messages(bctx)}
+                    {view::response::ws_in(bctx)}
                 </div>
             </div>
 

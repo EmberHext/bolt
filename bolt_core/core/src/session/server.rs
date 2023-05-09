@@ -54,7 +54,7 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
                     handle_restore_state(websocket, session_id, txt);
                 }
 
-                MsgType::HTTP_RESPONSE => {
+                MsgType::HTTP_RESPONSE | MsgType::WS_CONNECTED => {
                     return;
                 }
 
@@ -71,12 +71,14 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
     }
 }
 
-
-fn handle_add_ws_connection(_websocket: &mut WebSocket<TcpStream>, _session_id: &String, txt: String) {
+fn handle_add_ws_connection(
+    _websocket: &mut WebSocket<TcpStream>,
+    _session_id: &String,
+    txt: String,
+) {
     let msg: AddWsConnectionMsg = serde_json::from_str(&txt).unwrap();
 
     println!("adding ws connection with id: {}", &msg.connection_id);
-
 }
 
 #[tokio::main]
@@ -162,7 +164,7 @@ fn handle_ping(websocket: &mut WebSocket<TcpStream>, session_id: &String, _txt: 
     ws_write(websocket, response);
 }
 
-fn ws_write(websocket: &mut WebSocket<TcpStream>, txt: String) {
+pub fn ws_write(websocket: &mut WebSocket<TcpStream>, txt: String) {
     let msg = Message::Text(txt);
 
     websocket.write_message(msg).unwrap();
@@ -194,7 +196,7 @@ fn process_connection(_req: &Request, mut response: Response, _session_id: &Stri
 }
 
 pub fn launch_core_server(port: u16, address: String) {
-    println!("Starting WS server on {} port {}", address, port);
+    println!("Starting WS server on ws://{}:{}", address, port);
 
     let server = TcpListener::bind(address + ":" + &port.to_string()).unwrap();
 
@@ -213,14 +215,24 @@ pub fn launch_core_server(port: u16, address: String) {
                 Ok(response)
             };
 
-            let mut websocket = accept_hdr(stream.unwrap(), callback).unwrap();
+            let mut session_websocket = accept_hdr(stream.unwrap(), callback).unwrap();
+
+            // let mut core_state = CORE_STATE.lock().unwrap();
+            // core_state.session_websocket = Some(session_websocket);
+
+            // drop(core_state);
+
+            crate::start_services(session_id.clone());
 
             loop {
-                let msg = websocket.read_message();
+                // let mut core_state = CORE_STATE.lock().unwrap();
+
+                // let mut ws = core_state.session_websocket.as_mut().unwrap();
+                let msg = session_websocket.read_message();
 
                 match msg {
                     Ok(msg) => {
-                        process_message(&mut websocket, &session_id, msg);
+                        process_message(&mut session_websocket, &session_id, msg);
                     }
 
                     Err(err) => {

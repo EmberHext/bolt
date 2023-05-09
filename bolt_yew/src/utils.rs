@@ -105,10 +105,29 @@ pub fn handle_ws_message(txt: String) {
             MsgType::RESTORE_STATE => {
                 handle_restore_response_msg(txt);
             }
+
+            MsgType::WS_CONNECTED => {
+                handle_ws_connected_msg(txt);
+            }
+            
         },
 
         Err(_err) => {
             handle_invalid_msg(txt);
+        }
+    }
+}
+
+
+fn handle_ws_connected_msg(txt: String) {
+    let msg: WsConnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if msg.connection_id == con.connection_id {
+            con.connecting = false;
+            con.connected = true;
         }
     }
 }

@@ -220,8 +220,10 @@ fn send_http_request(request: &mut HttpRequest) {
     invoke_send(request);
 }
 
-fn connect_ws(_connection: &mut WsConnection) {
-    _bolt_log("connect ws was pressed");
+fn connect_ws(connection: &mut WsConnection) {
+    connection.connecting = true;
+
+    // _bolt_log("connect ws was pressed");
 }
 
 fn send_ws(_connection: &mut WsConnection) {

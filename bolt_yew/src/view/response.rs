@@ -132,7 +132,7 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
 //     }
 // }
 
-pub fn ws_messages(bctx: &mut BoltContext) -> Html {
+pub fn ws_in(bctx: &mut BoltContext) -> Html {
     // let link = bctx.main_state.link.as_ref().unwrap();
 
     let can_display = !bctx.main_state.ws_connections.is_empty();
@@ -145,7 +145,7 @@ pub fn ws_messages(bctx: &mut BoltContext) -> Html {
 
     html! {
         <div class="resp">
-            if can_display && !connection.failed && !connection.loading {
+            if can_display && !connection.connecting && !connection.failed {
                 <div class="respline">
                     <div class="resptabs">
                         <div id="resp_body_tab" class={if connection.in_tab == 1  {"tab tabSelected"} else {"tab pointer"}}>{"Messages"}</div>
@@ -154,6 +154,8 @@ pub fn ws_messages(bctx: &mut BoltContext) -> Html {
                     <div class="respstats">
                         if connection.connected {
                             <div id="status" class="respstat">{"Connected"}</div>
+                        } else if connection.connecting {
+                            <div id="status" class="respstat">{"Connecting"}</div>
                         } else {
                             <div id="status" class="respstat">{"Disconnected"}</div>
                         }
@@ -171,7 +173,7 @@ pub fn ws_messages(bctx: &mut BoltContext) -> Html {
                         </table>
                     </div>
                </div>
-            } else if can_display && connection.loading {
+            } else if can_display && connection.connecting {
                 <div class="resploading"><img src="/icon/icon.png" /></div>
             } else if connection.failed {
                 <div class="resperror">{"failed"}</div>

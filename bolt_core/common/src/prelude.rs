@@ -53,12 +53,14 @@ pub struct WsConnection {
     pub connection_id: String,
     pub url: String,
     pub name: String,
-    pub loading: bool,
-    pub failed: bool,
-    pub connected: bool,
 
     pub out_tab: u8,
     pub in_tab: u8,
+
+    pub connecting: bool,
+    pub failed: bool,
+    pub connected: bool,
+
     pub out_message: String,
     pub out_headers: Vec<Vec<String>>,
     pub out_params: Vec<Vec<String>>,
@@ -79,7 +81,7 @@ impl WsConnection {
             connection_id: con_id,
             url: String::new(),
             name: "Ws connection ".to_string(),
-            loading: false,
+            connecting: false,
             failed: false,
             connected: false,
 
@@ -208,6 +210,7 @@ pub enum MsgType {
     HTTP_RESPONSE,
     RESTORE_STATE,
     ADD_WS_CONNECTION,
+    WS_CONNECTED
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -385,4 +388,10 @@ impl SendHttpResponse {
 pub struct AddWsConnectionMsg {
     pub msg_type: MsgType,
     pub connection_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WsConnectedMsg {
+    pub msg_type: MsgType,
+    pub connection_id: String
 }
