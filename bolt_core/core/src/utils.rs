@@ -98,7 +98,7 @@ pub fn file_exists(path: &String) -> bool {
 }
 
 pub fn create_state(path: &String) {
-    let new_state = SaveState::new();
+    let new_state = MainState::new();
     
     let new_state = serde_json::to_string(&new_state).unwrap();
     std::fs::write(path, new_state).unwrap();

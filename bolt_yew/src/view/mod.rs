@@ -7,6 +7,7 @@ pub mod udp;
 pub mod servers;
 pub mod navbar;
 pub mod param;
+pub mod msg;
 mod request;
 mod response;
 pub mod sidebar1;

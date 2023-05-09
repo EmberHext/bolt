@@ -1,6 +1,6 @@
 use crate::BoltContext;
 use crate::Msg;
-use crate::SaveState;
+// use crate::SaveState;
 use crate::GLOBAL_STATE;
 
 use crate::receive_response;
@@ -153,19 +153,7 @@ pub fn invoke_send(request: &mut HttpRequest) {
 }
 
 pub fn save_state(bctx: &mut BoltContext) {
-    let save_state = SaveState {
-        page: bctx.page.clone(),
-
-        http_current: bctx.http_current.clone(),
-        ws_current: bctx.ws_current.clone(),
-        col_current: bctx.col_current.clone(),
-
-        http_requests: bctx.http_requests.clone(),
-        ws_connections: bctx.ws_connections.clone(),
-        collections: bctx.collections.clone(),
-    };
-
-    let save = serde_json::to_string(&save_state).unwrap();
+    let save = serde_json::to_string(&bctx.main_state).unwrap();
 
     let msg = SaveStateMsg {
         msg_type: MsgType::SAVE_STATE,
@@ -178,20 +166,12 @@ pub fn save_state(bctx: &mut BoltContext) {
 }
 
 fn set_save_state(state: String) {
-    let new_state: SaveState = serde_json::from_str(&state).unwrap();
+    let new_state: MainState = serde_json::from_str(&state).unwrap();
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
 
-    global_state.bctx.http_requests = new_state.http_requests;
-    global_state.bctx.ws_connections = new_state.ws_connections;
-    global_state.bctx.collections = new_state.collections;
-
-    global_state.bctx.col_current = new_state.col_current;
-    global_state.bctx.http_current = new_state.http_current;
-    global_state.bctx.ws_current = new_state.ws_current;
-
-    global_state.bctx.page = new_state.page;
-
+    global_state.bctx.main_state = new_state;
+ 
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
 }

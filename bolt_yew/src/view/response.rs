@@ -159,14 +159,16 @@ pub fn ws_messages(bctx: &mut BoltContext) -> Html {
                  </div>
 
                 <div class="tabcontent">
-                       // <div id="respbody" class="respbody" >
-                       //      if request.response.response_type == HttpResponseType::JSON {
-                       //          {Html::from_html_unchecked(AttrValue::from(request.response.body.clone()))}
-                       //      } else {
-                       //          {request.response.body.clone()}
-                       //      }
-                       //  </div>
-                </div>
+                   <div class="respheaders">
+                        <table>
+                            <tr>
+                                <th>{"Direction"}</th>
+                                <th>{"TXT"}</th>
+                            </tr>
+                            { for connection.messages.iter().map(|msg| view::msg::render_ws_msg(&msg)) }
+                        </table>
+                    </div>
+               </div>
             } else if can_display && connection.loading {
                 <div class="resploading"><img src="/icon/icon.png" /></div>
             } else if connection.failed {

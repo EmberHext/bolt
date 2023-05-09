@@ -25,6 +25,7 @@ pub enum Msg {
 
     SendHttpPressed,
     ConnectWsPressed,
+    SendWsPressed,
 
     HttpReqBodyPressed,
     HttpReqHeadersPressed,
@@ -53,13 +54,13 @@ pub enum Msg {
 
     HttpReqMethodChanged,
     UrlChanged,
-    
+
     HttpReqBodyChanged,
     WsOutMessageChanged,
-    
+
     HttpReqHeaderChanged(usize),
     WsOutHeaderChanged(usize),
-    
+
     HttpReqParamChanged(usize),
     WsOutParamChanged(usize),
 
@@ -98,6 +99,8 @@ pub struct BoltState {
 
 // #[derive(Clone)]
 pub struct BoltContext {
+    main_state: MainState,
+    
     link: Option<Scope<BoltApp>>,
 
     page: Page,
@@ -116,6 +119,8 @@ pub struct BoltContext {
 impl BoltContext {
     fn new() -> Self {
         BoltContext {
+            main_state: MainState::new(),
+            
             link: None,
 
             http_requests: vec![],
@@ -231,8 +236,11 @@ fn send_http_request(request: &mut HttpRequest) {
 }
 
 fn connect_ws(_connection: &mut WsConnection) {
-
     _bolt_log("connect ws was pressed");
+}
+
+fn send_ws(_connection: &mut WsConnection) {
+    _bolt_log("send ws was pressed");
 }
 
 pub fn receive_response(data: String) {
@@ -250,7 +258,7 @@ pub fn receive_response(data: String) {
         response.body = highlight_body(&response.body);
     }
 
-    let current =  &mut bctx.http_requests[bctx.http_current];
+    let current = &mut bctx.http_requests[bctx.http_current];
     current.response = response;
     current.loading = false;
 

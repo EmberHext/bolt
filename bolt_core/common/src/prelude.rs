@@ -35,6 +35,20 @@ impl HttpResponse {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub enum WsMsgType {
+    IN,
+    OUT,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct WsMessage {
+    pub txt: String,
+    pub timestamp: u64,
+
+    pub msg_type: WsMsgType,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct WsConnection {
     pub url: String,
     pub name: String,
@@ -47,6 +61,8 @@ pub struct WsConnection {
     pub out_message: String,
     pub out_headers: Vec<Vec<String>>,
     pub out_params: Vec<Vec<String>>,
+
+    pub messages: Vec<WsMessage>,
 }
 
 impl WsConnection {
@@ -63,6 +79,8 @@ impl WsConnection {
             out_message: String::new(),
             out_headers: vec![vec![String::new(), String::new()]],
             out_params: vec![vec![String::new(), String::new()]],
+
+            messages: vec![],
         }
     }
 }
@@ -136,7 +154,7 @@ impl Collection {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct SaveState {
+pub struct MainState {
     pub page: Page,
 
     pub http_current: usize,
@@ -148,7 +166,7 @@ pub struct SaveState {
     pub collections: Vec<Collection>,
 }
 
-impl SaveState {
+impl MainState {
     pub fn new() -> Self {
         Self {
             page: Page::HttpPage,

@@ -115,13 +115,17 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
                 <button class="sendbtn pointer" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Connect"}</button>
             </div>
 
-            <div class="reqtabs">
-                <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutMessagePressed)}>{"Message"}</div>
-                <div id="req_params_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutParamsPressed)}>{"Params"}</div>
-                <div id="req_headers_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutHeadersPressed)}>{"Headers"}</div>
-            </div>
+            <div class="reqline">
+                <div class="reqtabs">
+                    <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutMessagePressed)}>{"Message"}</div>
+                    <div id="req_params_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutParamsPressed)}>{"Params"}</div>
+                    <div id="req_headers_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutHeadersPressed)}>{"Headers"}</div>
+                </div>
 
-            <div class="tabcontent">
+                <button class="ws-sendbtn pointer" type="button" onclick={link.callback(|_| Msg::SendWsPressed)}>{"Send"}</button>
+            </div>
+            
+             <div class="tabcontent">
                 if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {
                     <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_message.clone()} placeholder="Compose Message" onchange={link.callback(|_| Msg::WsOutMessageChanged)}>
 

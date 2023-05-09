@@ -119,6 +119,23 @@ body {
 	 background: rgb(186, 123, 6);
 }
 
+.ws-sendbtn {
+	height: 30px;
+	width: 80px;
+	background: rgb(171, 113, 7);
+	border: 0px;
+	color: white;
+	margin-left: 5px;
+	margin-right: 15px;
+	font-size: 15px;
+
+	border-radius: 8px;
+}
+
+.ws-sendbtn:hover {
+	 background: rgb(186, 123, 6);
+}
+
 .req {
 	min-height: 150px;
 	height: 325px;
@@ -265,6 +282,14 @@ body {
 
 
 .respline {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+  background-color: rgb(3, 7, 13);
+}
+
+.reqline {
 	display: flex;
 	flex-direction: row;
 	align-items: center;

@@ -1,5 +1,6 @@
 use crate::connect_ws;
 use crate::send_http_request;
+use crate::send_ws;
 use crate::utils::*;
 use crate::BoltContext;
 use crate::Collection;
@@ -33,6 +34,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
+        Msg::SendWsPressed => {
+            let current = &mut bctx.ws_connections[bctx.ws_current];
+
+            send_ws(current);
+
+            true
+        }
+
+        
         Msg::HelpPressed => {
             open_link("https://github.com/hiro-codes/bolt/tree/master/docs".to_string());
 
