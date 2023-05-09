@@ -28,12 +28,14 @@ lazy_static::lazy_static! {
 
 pub struct CoreState {
     main_state: MainState,
+    active_connections: Vec<String>,
 }
 
 impl CoreState {
     pub fn new() -> Self {
         Self {
             main_state: MainState::new(),
+            active_connections: vec![],
         }
     }
 }
@@ -124,13 +126,56 @@ fn start_services() {
 }
 
 fn start_ws_service() {
-    std::thread::spawn(|| loop {
-        let core_state = CORE_STATE.lock().unwrap();
-        let connections = core_state.main_state.ws_connections.clone();
-        drop(core_state);
+    std::thread::spawn(|| {
+        // comment
 
-        
+        loop {
+            let mut core_state = CORE_STATE.lock().unwrap();
 
-        std::thread::sleep(std::time::Duration::from_millis(500));
+            let connections = core_state.main_state.ws_connections.clone();
+            let active_connections = core_state.active_connections.clone();
+
+            println!("connections: {:?}", connections.len());
+            println!("active: {:?}", active_connections.len());
+
+            for con in connections.clone() {
+                if !active_connections.contains(&con.connection_id) {
+                    spawn_ws_service(con.clone());
+                    core_state.active_connections.push(con.connection_id);
+                }
+            }
+
+            for active_con in active_connections {
+                let exists = connections.iter().any(|x| x.connection_id == active_con);
+
+                if !exists {
+                    stop_ws_service(active_con);
+                }
+            }
+
+            drop(core_state);
+            std::thread::sleep(std::time::Duration::from_millis(2000));
+        }
     });
+}
+
+fn spawn_ws_service(con: WsConnection) {
+    println!("started service for {}", con.connection_id);
+
+    let handle = std::thread::Builder::new()
+        .name(con.connection_id.clone())
+        .spawn(move || {
+            loop {
+                // comment
+
+                println!("POLL CON {}", con.connection_id);
+
+                std::thread::sleep(std::time::Duration::from_millis(2000));
+            }
+        })
+        .unwrap();
+}
+
+fn stop_ws_service(active_con: String) {
+    println!("STOP {} service", active_con);
 }

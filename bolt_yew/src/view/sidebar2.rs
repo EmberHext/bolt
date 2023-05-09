@@ -179,7 +179,8 @@ fn render_ws_request(
     req: &WsConnection,
 ) -> Html {
     // let link = bctx.main_state.link.as_ref().unwrap();
-    let request_name = req.name.clone();
+    // let request_name = req.name.clone();
+    let request_name = req.connection_id.clone();
 
     let request_name = if request_name.len() > 20 {
         format!("{}...", &request_name[0..20])

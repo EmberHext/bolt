@@ -34,13 +34,13 @@ impl HttpResponse {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum WsMsgType {
     IN,
     OUT,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WsMessage {
     pub txt: String,
     pub timestamp: u64,
@@ -48,7 +48,7 @@ pub struct WsMessage {
     pub msg_type: WsMsgType,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WsConnection {
     pub connection_id: String,
     pub url: String,
@@ -207,7 +207,7 @@ pub enum MsgType {
     SEND_HTTP,
     HTTP_RESPONSE,
     RESTORE_STATE,
-    ADD_WS_CONNECTION
+    ADD_WS_CONNECTION,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
