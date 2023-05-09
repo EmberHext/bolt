@@ -109,15 +109,28 @@ pub fn start(args: Vec<String>, port: u16) {
             });
         }
 
-        // Launch services
-        std::thread::spawn(move || {
-            bolt_http::launch_http_service();
-        });
-
-        std::thread::spawn(move || {
-            bolt_ws::launch_ws_service(port, ADDRESS.to_string());
-        });
+        start_services();
 
         session::server::launch_core_server(port, ADDRESS.to_string());
     }
+}
+
+fn start_services() {
+    println!("Starting services");
+
+    std::thread::spawn(move || {
+        start_ws_service();
+    });
+}
+
+fn start_ws_service() {
+    std::thread::spawn(|| loop {
+        let core_state = CORE_STATE.lock().unwrap();
+        let connections = core_state.main_state.ws_connections.clone();
+        drop(core_state);
+
+        
+
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    });
 }

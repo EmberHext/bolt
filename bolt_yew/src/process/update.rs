@@ -42,7 +42,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-        
         Msg::HelpPressed => {
             open_link("https://github.com/hiro-codes/bolt/tree/master/docs".to_string());
 
@@ -132,7 +131,9 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::WsOutAddHeader => {
             let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
-            current.out_headers.push(vec!["".to_string(), "".to_string()]);
+            current
+                .out_headers
+                .push(vec!["".to_string(), "".to_string()]);
 
             true
         }
@@ -152,7 +153,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-
         Msg::HttpReqRemoveParam(index) => {
             let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
@@ -160,14 +160,14 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
 
-
         Msg::WsOutAddParam => {
             let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
-            current.out_params.push(vec!["".to_string(), "".to_string()]);
+            current
+                .out_params
+                .push(vec!["".to_string(), "".to_string()]);
             true
         }
-
 
         Msg::WsOutRemoveParam(index) => {
             let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
@@ -179,7 +179,8 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::AddCollection => {
             let mut new_collection = Collection::new();
 
-            new_collection.name = new_collection.name + &(bctx.main_state.collections.len() + 1).to_string();
+            new_collection.name =
+                new_collection.name + &(bctx.main_state.collections.len() + 1).to_string();
             bctx.main_state.collections.push(new_collection);
 
             true
@@ -278,16 +279,27 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
         Msg::AddHttpRequest => {
             let mut new_request = HttpRequest::new();
-            new_request.name = new_request.name + &(bctx.main_state.http_requests.len() + 1).to_string();
+            new_request.name =
+                new_request.name + &(bctx.main_state.http_requests.len() + 1).to_string();
 
             bctx.main_state.http_requests.push(new_request);
 
             true
         }
 
-        Msg::AddWsRequest => {
+        Msg::AddWsConnection => {
             let mut new_request = WsConnection::new();
-            new_request.name = new_request.name + &(bctx.main_state.ws_connections.len() + 1).to_string();
+            new_request.name =
+                new_request.name + &(bctx.main_state.ws_connections.len() + 1).to_string();
+
+            let msg = AddWsConnectionMsg {
+                msg_type: MsgType::ADD_WS_CONNECTION,
+                connection_id: new_request.connection_id.clone(),
+            };
+
+            let msg = serde_json::to_string(&msg).unwrap();
+
+            ws_write(msg);
 
             bctx.main_state.ws_connections.push(new_request);
 
@@ -315,7 +327,9 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
         Msg::RemoveHttpRequest(index) => {
             bctx.main_state.http_requests.remove(index);
-            if !bctx.main_state.http_requests.is_empty() && bctx.main_state.http_current > bctx.main_state.http_requests.len() - 1 {
+            if !bctx.main_state.http_requests.is_empty()
+                && bctx.main_state.http_current > bctx.main_state.http_requests.len() - 1
+            {
                 bctx.main_state.http_current = bctx.main_state.http_requests.len() - 1;
             }
 
@@ -324,7 +338,9 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
         Msg::RemoveWsRequest(index) => {
             bctx.main_state.ws_connections.remove(index);
-            if !bctx.main_state.ws_connections.is_empty() && bctx.main_state.ws_current > bctx.main_state.ws_connections.len() - 1 {
+            if !bctx.main_state.ws_connections.is_empty()
+                && bctx.main_state.ws_current > bctx.main_state.ws_connections.len() - 1
+            {
                 bctx.main_state.ws_current = bctx.main_state.ws_connections.len() - 1;
             }
 
@@ -332,7 +348,9 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RemoveFromCollection(col_index, req_index) => {
-            bctx.main_state.collections[col_index].requests.remove(req_index);
+            bctx.main_state.collections[col_index]
+                .requests
+                .remove(req_index);
             bctx.main_state.col_current = vec![0, 0];
 
             true
@@ -350,11 +368,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
                     new_index = bctx.main_state.http_requests.len() - 1;
                     bctx.main_state.http_current = new_index;
 
-                    bctx.main_state.http_requests[new_index].response.request_index = new_index;
+                    bctx.main_state.http_requests[new_index]
+                        .response
+                        .request_index = new_index;
                 } else {
                     bctx.main_state.http_current = new_index;
 
-                    bctx.main_state.http_requests[new_index].response.request_index = new_index;
+                    bctx.main_state.http_requests[new_index]
+                        .response
+                        .request_index = new_index;
                 }
             }
 

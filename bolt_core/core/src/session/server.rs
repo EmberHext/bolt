@@ -57,6 +57,10 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
                 MsgType::HTTP_RESPONSE => {
                     return;
                 }
+
+                MsgType::ADD_WS_CONNECTION => {
+                    handle_add_ws_connection(websocket, session_id, txt);
+                }
             },
 
             Err(_err) => {
@@ -65,6 +69,14 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
         }
     } else {
     }
+}
+
+
+fn handle_add_ws_connection(_websocket: &mut WebSocket<TcpStream>, _session_id: &String, txt: String) {
+    let msg: AddWsConnectionMsg = serde_json::from_str(&txt).unwrap();
+
+    println!("adding ws connection with id: {}", &msg.connection_id);
+
 }
 
 #[tokio::main]

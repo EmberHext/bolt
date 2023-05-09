@@ -12,3 +12,4 @@ categories = ["command-line-utilities"]
 
 
 [dependencies]
+bolt_common = { path= "../common" }

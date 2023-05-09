@@ -94,7 +94,7 @@ pub fn handle_ws_message(txt: String) {
             | MsgType::SAVE_STATE
             | MsgType::LOG
             | MsgType::PANIC
-            | MsgType::OPEN_LINK => {
+            | MsgType::OPEN_LINK | MsgType::ADD_WS_CONNECTION => {
                 return;
             }
 

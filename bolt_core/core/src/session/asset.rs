@@ -26,7 +26,7 @@ pub async fn launch_asset_server(port: u16, address: String) {
             .default_service(web::post().to(e404))
     });
 
-    println!("Starting asset server on {} port {}", address, port);
+    println!("Starting asset server on http://{}:{}", address, port);
     asset_server
         .bind((address, port))
         .unwrap()

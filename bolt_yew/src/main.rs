@@ -65,7 +65,7 @@ pub enum Msg {
     WsOutParamChanged(usize),
 
     AddHttpRequest,
-    AddWsRequest,
+    AddWsConnection,
 
     RemoveHttpRequest(usize),
     SelectHttpRequest(usize),
@@ -150,28 +150,7 @@ impl Component for BoltApp {
         let mut state = GLOBAL_STATE.lock().unwrap();
         state.bctx.link = Some(ctx.link().clone());
 
-        state.bctx.main_state.http_requests.push(HttpRequest::new());
-
-        let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
-        let (write, mut read) = ws.split();
-
-        state.bctx.ws_tx = Some(write);
-
-        wasm_bindgen_futures::spawn_local(async move {
-            while let Some(msg) = read.next().await {
-                let txt = msg.unwrap();
-
-                let txt = match txt {
-                    WSMessage::Text(txt) => txt,
-                    WSMessage::Bytes(_) => panic!("got bytes in txt"),
-                };
-
-                handle_ws_message(txt);
-            }
-            _bolt_log("WS: WebSocket Closed");
-        });
-
-        restore_state();
+        init(&mut state.bctx);
 
         Self {}
     }
@@ -209,6 +188,31 @@ impl Component for BoltApp {
             view::http::http_view(&mut state.bctx)
         }
     }
+}
+
+fn init(bctx: &mut BoltContext) {
+    bctx.main_state.http_requests.push(HttpRequest::new());
+
+    let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
+    let (write, mut read) = ws.split();
+
+    bctx.ws_tx = Some(write);
+
+    wasm_bindgen_futures::spawn_local(async move {
+        while let Some(msg) = read.next().await {
+            let txt = msg.unwrap();
+
+            let txt = match txt {
+                WSMessage::Text(txt) => txt,
+                WSMessage::Bytes(_) => panic!("got bytes in txt"),
+            };
+
+            handle_ws_message(txt);
+        }
+        _bolt_log("WS: WebSocket Closed");
+    });
+
+    restore_state();
 }
 
 fn send_http_request(request: &mut HttpRequest) {

@@ -5,7 +5,7 @@ use bolt_common::prelude::*;
 
 // downloads the dist from github
 pub fn build_dist() {
-    println!("Downloading static files");
+    // println!("Downloading static files");
 
     #[cfg(debug_assertions)]
     _clone_repo_dev();
@@ -17,7 +17,7 @@ pub fn build_dist() {
     let dst = get_home() + "bolt/bolt_tauri/" + "../../dist";
     copy_dir(&src, &dst).unwrap();
 
-    println!("Download complete");
+    // println!("Download complete");
 }
 
 pub fn _clone_repo_dev() {
@@ -82,7 +82,7 @@ pub fn run_command(shell_command: String, dir: String) {
 pub fn verify_state() {
     let path = get_home() + "state.json";
     if !file_exists(&path) {
-        println!("Creating state file");
+        // println!("Creating state file");
 
         create_state(&path);
     }
@@ -92,14 +92,14 @@ pub fn file_exists(path: &String) -> bool {
     if Path::new(&path).exists() {
         true
     } else {
-        println!("File {} does not exist", path);
+        // println!("File {} does not exist", path);
         false
     }
 }
 
 pub fn create_state(path: &String) {
     let new_state = MainState::new();
-    
+
     let new_state = serde_json::to_string(&new_state).unwrap();
     std::fs::write(path, new_state).unwrap();
 }
@@ -111,19 +111,23 @@ pub fn open_browser(link: String) {
 }
 
 pub fn reset_home() {
-    println!("reseting dist");
+    println!("reseting home");
 
     let home_path = get_home();
 
     let _reset = match std::fs::remove_dir_all(home_path) {
-        Ok(_) => println!("Deleted bolt home"),
-        Err(err) => println!("could not delete Bolt home: {}", err),
+        Ok(_) => {
+            // println!("Deleted Bolt home")
+        }
+        Err(_err) => {
+            // println!("could not delete Bolt home: {}", err)
+        }
     };
 
     verify_home();
     verify_dist();
 
-    println!("Dist has been reset");
+    println!("Home has been reset");
 }
 
 pub fn get_dist() -> String {
@@ -138,7 +142,7 @@ pub fn get_home() -> String {
 pub fn verify_home() {
     let path = get_home();
     if !dir_exists(&path) {
-        println!("Creating directory {}", path);
+        // println!("Creating directory {}", path);
         create_home(&path);
     }
 }
@@ -146,7 +150,7 @@ pub fn verify_home() {
 pub fn verify_dist() {
     let path = get_dist();
     if !dir_exists(&path) {
-        println!("Creating dist");
+        // println!("Creating dist");
         build_dist();
     }
 }
@@ -155,7 +159,7 @@ pub fn dir_exists(path: &String) -> bool {
     if Path::new(&path).exists() {
         true
     } else {
-        println!("Directory {} does not exist", path);
+        // println!("Directory {} does not exist", path);
         false
     }
 }

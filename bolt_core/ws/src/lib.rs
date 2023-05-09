@@ -1,7 +1,16 @@
 mod utils;
 
-pub fn launch_ws_service(port: u16, address: String) {
-    println!("Starting WS service on {} port {}", address, port);
+// use bolt_common::prelude::*;
 
-    std::thread::park();
-}
+// pub fn launch_ws_service(port: u16, address: String) {
+//     println!("Starting WS service on {} port {}", address, port);
+
+//     let mut connections: Vec<WsConnection> = vec![];
+
+//     loop {
+        
+        
+//     }
+
+//     std::thread::park();
+// }

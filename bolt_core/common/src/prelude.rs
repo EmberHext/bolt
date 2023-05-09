@@ -50,6 +50,7 @@ pub struct WsMessage {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct WsConnection {
+    pub connection_id: String,
     pub url: String,
     pub name: String,
     pub loading: bool,
@@ -67,7 +68,15 @@ pub struct WsConnection {
 
 impl WsConnection {
     pub fn new() -> Self {
+        let con_id = uuid::Uuid::new_v4()
+            .to_string()
+            .splitn(2, '-')
+            .next()
+            .unwrap()
+            .to_string();
+
         Self {
+            connection_id: con_id,
             url: String::new(),
             name: "Ws connection ".to_string(),
             loading: false,
@@ -198,6 +207,7 @@ pub enum MsgType {
     SEND_HTTP,
     HTTP_RESPONSE,
     RESTORE_STATE,
+    ADD_WS_CONNECTION
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -369,4 +379,10 @@ impl SendHttpResponse {
             failed: false,
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct AddWsConnectionMsg {
+    pub msg_type: MsgType,
+    pub connection_id: String,
 }
