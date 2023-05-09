@@ -26,9 +26,15 @@ lazy_static::lazy_static! {
     static ref CORE_STATE: Arc<Mutex<CoreState>> = Arc::new(Mutex::new(CoreState::new()));
 }
 
+#[derive(Clone)]
+struct WsService {
+    connection_id: String,
+    kill: bool,
+}
+
 pub struct CoreState {
     main_state: MainState,
-    active_connections: Vec<String>,
+    active_connections: Vec<WsService>,
 }
 
 impl CoreState {
@@ -135,47 +141,79 @@ fn start_ws_service() {
             let connections = core_state.main_state.ws_connections.clone();
             let active_connections = core_state.active_connections.clone();
 
-            println!("connections: {:?}", connections.len());
-            println!("active: {:?}", active_connections.len());
+            // println!("connections: {:?}", connections.len());
+            // println!("active: {:?}", active_connections.len());
 
             for con in connections.clone() {
-                if !active_connections.contains(&con.connection_id) {
+                let exists = active_connections
+                    .iter()
+                    .any(|x| x.connection_id == con.connection_id);
+
+                if !exists {
                     spawn_ws_service(con.clone());
-                    core_state.active_connections.push(con.connection_id);
+                    core_state.active_connections.push(WsService {
+                        connection_id: con.connection_id,
+                        kill: false,
+                    });
                 }
             }
 
             for active_con in active_connections {
-                let exists = connections.iter().any(|x| x.connection_id == active_con);
+                let exists = connections
+                    .iter()
+                    .any(|x| x.connection_id == active_con.connection_id);
 
                 if !exists {
-                    stop_ws_service(active_con);
+                    for conn in core_state
+                        .active_connections
+                        .iter_mut()
+                        .filter(|conn| conn.connection_id == active_con.connection_id)
+                    {
+                        conn.kill = true;
+                    }
                 }
             }
 
             drop(core_state);
-            std::thread::sleep(std::time::Duration::from_millis(2000));
+            std::thread::sleep(std::time::Duration::from_millis(200));
         }
     });
 }
 
 fn spawn_ws_service(con: WsConnection) {
-    println!("started service for {}", con.connection_id);
+    // println!("started service for {}", con.connection_id);
 
-    let handle = std::thread::Builder::new()
+    let _handle = std::thread::Builder::new()
         .name(con.connection_id.clone())
-        .spawn(move || {
-            loop {
-                // comment
+        .spawn(move || loop {
+            let mut core_state = CORE_STATE.lock().unwrap();
 
-                println!("POLL CON {}", con.connection_id);
+            let mut kill = false;
+            let mut kill_index = 0;
 
-                std::thread::sleep(std::time::Duration::from_millis(2000));
+            for (index, conn) in core_state
+                .active_connections
+                .iter()
+                .enumerate()
+                .filter(|(_index, conn)| conn.connection_id == con.connection_id)
+            {
+                if conn.kill {
+                    // println!("KILLED {}", conn.connection_id);
+
+                    kill_index = index;
+                    kill = true;
+                }
             }
+
+            if kill {
+                core_state.active_connections.remove(kill_index);
+                break;
+            }
+
+            println!("POLL CON {}", con.connection_id);
+
+            drop(core_state);
+            std::thread::sleep(std::time::Duration::from_millis(1000));
         })
         .unwrap();
-}
-
-fn stop_ws_service(active_con: String) {
-    println!("STOP {} service", active_con);
 }
