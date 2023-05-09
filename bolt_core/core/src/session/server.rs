@@ -1,6 +1,7 @@
 // pub mod prelude;
 // mod session;
 
+use crate::CORE_STATE;
 use std::{
     net::{TcpListener, TcpStream},
     thread::spawn,
@@ -94,7 +95,13 @@ fn handle_save_state(_websocket: &mut WebSocket<TcpStream>, _session_id: &String
 
     // println!("{}: saving state", _session_id);
 
-    std::fs::write(get_home() + "state.json", msg.save).unwrap();
+    let client_state: MainState = serde_json::from_str(&msg.save).unwrap();
+
+    let save_state = serde_json::to_string(&client_state).unwrap();
+    std::fs::write(get_home() + "state.json", save_state).unwrap();
+
+    let mut core_state = CORE_STATE.lock().unwrap();
+    core_state.main_state = client_state;
 }
 
 fn handle_restore_state(websocket: &mut WebSocket<TcpStream>, _session_id: &String, _txt: String) {

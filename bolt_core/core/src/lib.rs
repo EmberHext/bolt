@@ -3,6 +3,8 @@ mod utils;
 
 use std::sync::{Arc, Mutex};
 
+use bolt_common::prelude::*;
+
 static VERSION: &str = "0.11.11";
 static HELP: &str = r#"
 Bolt CLI (Build and test APIs)
@@ -21,16 +23,18 @@ static ADDRESS: &str = "127.0.0.1";
 
 // Create a shared global state variable
 lazy_static::lazy_static! {
-    static ref GLOBAL_STATE: Arc<Mutex<CoreState>> = Arc::new(Mutex::new(CoreState::new()));
+    static ref CORE_STATE: Arc<Mutex<CoreState>> = Arc::new(Mutex::new(CoreState::new()));
 }
 
 pub struct CoreState {
-    online: bool,
+    main_state: MainState,
 }
 
 impl CoreState {
     pub fn new() -> Self {
-        Self { online: true }
+        Self {
+            main_state: MainState::new(),
+        }
     }
 }
 
