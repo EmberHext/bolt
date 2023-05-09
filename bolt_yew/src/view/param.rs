@@ -9,7 +9,7 @@ pub fn render_http_req_params(
     key: &String,
     value: &String,
 ) -> Html {
-     let link = bctx.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
     html! {
         <tr>
@@ -37,7 +37,7 @@ pub fn render_ws_out_params(
     key: &String,
     value: &String,
 ) -> Html {
-     let link = bctx.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
     html! {
         <tr>

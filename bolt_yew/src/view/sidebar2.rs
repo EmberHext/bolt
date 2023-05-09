@@ -18,7 +18,7 @@ pub fn sidebar_http(bctx: &mut BoltContext) -> Html {
                 </div>
             </div>
 
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
+            { for bctx.main_state.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.main_state.http_current, index, req))}
 
         </div>
     }
@@ -35,7 +35,7 @@ pub fn sidebar_websockets(bctx: &mut BoltContext) -> Html {
                 </div>
             </div>
 
-            { for bctx.ws_connections.iter().enumerate().map(|(index, req)| render_ws_request(bctx.link.as_ref().unwrap(), bctx.ws_current, index, req))}
+            { for bctx.main_state.ws_connections.iter().enumerate().map(|(index, req)| render_ws_request(bctx.link.as_ref().unwrap(), bctx.main_state.ws_current, index, req))}
 
         </div>
     }
@@ -52,7 +52,7 @@ pub fn sidebar_servers(bctx: &mut BoltContext) -> Html {
                 </div>
             </div>
 
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
+            { for bctx.main_state.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.main_state.http_current, index, req))}
 
         </div>
     }
@@ -69,7 +69,7 @@ pub fn sidebar_udp(bctx: &mut BoltContext) -> Html {
                 </div>
             </div>
 
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
+            { for bctx.main_state.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.main_state.http_current, index, req))}
 
         </div>
     }
@@ -86,7 +86,7 @@ pub fn sidebar_tcp(bctx: &mut BoltContext) -> Html {
                 </div>
             </div>
 
-            { for bctx.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.http_current, index, req))}
+            { for bctx.main_state.http_requests.iter().enumerate().map(|(index, req)| render_http_request(bctx.link.as_ref().unwrap(), bctx.main_state.http_current, index, req))}
 
         </div>
     }
@@ -103,7 +103,7 @@ pub fn sidebar_collections(bctx: &mut BoltContext) -> Html {
                 </div>
             </div>
 
-            { for bctx.collections.iter().enumerate().map(|(index, col)| render_collection(&mut bctx.link.as_ref().unwrap(), index, bctx.col_current.clone(), col))}
+            { for bctx.main_state.collections.iter().enumerate().map(|(index, col)| render_collection(&mut bctx.link.as_ref().unwrap(), index, bctx.main_state.col_current.clone(), col))}
 
         </div>
     }
@@ -115,7 +115,7 @@ fn render_collection(
     current: Vec<usize>,
     col: &Collection,
 ) -> Html {
-    // let link = bctx.link.as_ref().unwrap();
+    // let link = bctx.main_state.link.as_ref().unwrap();
 
     html! {
         <>
@@ -153,7 +153,7 @@ fn render_http_request(
     index: usize,
     req: &HttpRequest,
 ) -> Html {
-    // let link = bctx.link.as_ref().unwrap();
+    // let link = bctx.main_state.link.as_ref().unwrap();
     let request_name = req.name.clone();
 
     let request_name = if request_name.len() > 20 {
@@ -178,7 +178,7 @@ fn render_ws_request(
     index: usize,
     req: &WsConnection,
 ) -> Html {
-    // let link = bctx.link.as_ref().unwrap();
+    // let link = bctx.main_state.link.as_ref().unwrap();
     let request_name = req.name.clone();
 
     let request_name = if request_name.len() > 20 {
@@ -204,7 +204,7 @@ fn render_col_request(
     current: Vec<usize>,
     req: &HttpRequest,
 ) -> Html {
-    // let link = bctx.link.as_ref().unwrap();
+    // let link = bctx.main_state.link.as_ref().unwrap();
 
     html! {
         <div id={"request".to_string() + &req_index.to_string()} class={if col_index == current[0] && req_index == current[1] { "sidebar2item-child sidebar2item-selected" } else { "sidebar2item-child" }} >

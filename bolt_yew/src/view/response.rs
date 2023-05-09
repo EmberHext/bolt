@@ -8,16 +8,18 @@ use yew::{html, AttrValue, Html};
 pub fn http_response(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
-    let can_display = !bctx.http_requests.is_empty();
+    let can_display = !bctx.main_state.http_requests.is_empty();
 
     let mut request = HttpRequest::new();
 
-    if bctx.page == Page::HttpPage && can_display {
-        request = bctx.http_requests[bctx.http_current].clone();
+    if bctx.main_state.page == Page::HttpPage && can_display {
+        request = bctx.main_state.http_requests[bctx.main_state.http_current].clone();
     }
 
-    if bctx.page == Page::Collections && can_display {
-        request = bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone();
+    if bctx.main_state.page == Page::Collections && can_display {
+        request = bctx.main_state.collections[bctx.main_state.col_current[0]].requests
+            [bctx.main_state.col_current[1]]
+            .clone();
     }
 
     html! {
@@ -68,19 +70,19 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
 }
 
 // pub fn collection_response(bctx: &mut BoltContext) -> Html {
-//     let link = bctx.link.as_ref().unwrap();
+//     let link = bctx.main_state.link.as_ref().unwrap();
 
 //     let can_display =
-//         !bctx.collections.is_empty() && !bctx.collections[bctx.col_current[0]].requests.is_empty();
+//         !bctx.main_state.collections.is_empty() && !bctx.main_state.collections[bctx.main_state.col_current[0]].requests.is_empty();
 
 //     let mut request = HttpRequest::new();
 
-//     if bctx.page == Page::HttpPage && can_display {
-//         request = bctx.http_requests[bctx.http_current].clone();
+//     if bctx.main_state.page == Page::HttpPage && can_display {
+//         request = bctx.main_state.http_requests[bctx.main_state.http_current].clone();
 //     }
 
-//     if bctx.page == Page::Collections && can_display {
-//         request = bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone();
+//     if bctx.main_state.page == Page::Collections && can_display {
+//         request = bctx.main_state.collections[bctx.main_state.col_current[0]].requests[bctx.main_state.col_current[1]].clone();
 //     }
 
 //     html! {
@@ -131,14 +133,14 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
 // }
 
 pub fn ws_messages(bctx: &mut BoltContext) -> Html {
-    // let link = bctx.link.as_ref().unwrap();
+    // let link = bctx.main_state.link.as_ref().unwrap();
 
-    let can_display = !bctx.ws_connections.is_empty();
+    let can_display = !bctx.main_state.ws_connections.is_empty();
 
     let mut connection = WsConnection::new();
 
     if can_display {
-        connection = bctx.ws_connections[bctx.ws_current].clone();
+        connection = bctx.main_state.ws_connections[bctx.main_state.ws_current].clone();
     }
 
     html! {

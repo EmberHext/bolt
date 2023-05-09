@@ -100,18 +100,8 @@ pub struct BoltState {
 // #[derive(Clone)]
 pub struct BoltContext {
     main_state: MainState,
-    
+
     link: Option<Scope<BoltApp>>,
-
-    page: Page,
-
-    http_current: usize,
-    ws_current: usize,
-    col_current: Vec<usize>,
-
-    http_requests: Vec<HttpRequest>,
-    ws_connections: Vec<WsConnection>,
-    collections: Vec<Collection>,
 
     ws_tx: Option<SplitSink<gloo_net::websocket::futures::WebSocket, WSMessage>>,
 }
@@ -120,18 +110,9 @@ impl BoltContext {
     fn new() -> Self {
         BoltContext {
             main_state: MainState::new(),
-            
+
             link: None,
 
-            http_requests: vec![],
-            ws_connections: vec![],
-            collections: vec![],
-
-            page: Page::HttpPage,
-
-            http_current: 0,
-            ws_current: 0,
-            col_current: vec![0, 0],
             ws_tx: None,
         }
     }
@@ -169,7 +150,7 @@ impl Component for BoltApp {
         let mut state = GLOBAL_STATE.lock().unwrap();
         state.bctx.link = Some(ctx.link().clone());
 
-        state.bctx.http_requests.push(HttpRequest::new());
+        state.bctx.main_state.http_requests.push(HttpRequest::new());
 
         let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
         let (write, mut read) = ws.split();
@@ -210,7 +191,7 @@ impl Component for BoltApp {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         let mut state = GLOBAL_STATE.lock().unwrap();
 
-        let page = state.bctx.page;
+        let page = state.bctx.main_state.page;
 
         if page == Page::HttpPage {
             view::http::http_view(&mut state.bctx)
@@ -258,7 +239,7 @@ pub fn receive_response(data: String) {
         response.body = highlight_body(&response.body);
     }
 
-    let current = &mut bctx.http_requests[bctx.http_current];
+    let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
     current.response = response;
     current.loading = false;
 

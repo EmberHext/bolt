@@ -18,8 +18,8 @@ use syntect::parsing::SyntaxSet;
 use bolt_common::prelude::*;
 
 pub fn _get_current_request(bctx: &mut BoltContext) -> &mut HttpRequest {
-    let current = bctx.http_current;
-    return &mut bctx.http_requests[current];
+    let current = bctx.main_state.http_current;
+    return &mut bctx.main_state.http_requests[current];
 }
 
 pub fn _bolt_log(log: &str) {
@@ -171,7 +171,7 @@ fn set_save_state(state: String) {
     let mut global_state = GLOBAL_STATE.lock().unwrap();
 
     global_state.bctx.main_state = new_state;
- 
+
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
 }

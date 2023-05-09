@@ -11,12 +11,12 @@ use bolt_common::prelude::*;
 pub fn http_request(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
-    let can_display = !bctx.http_requests.is_empty();
+    let can_display = !bctx.main_state.http_requests.is_empty();
 
     let mut request = HttpRequest::new();
 
     if can_display {
-        request = bctx.http_requests[bctx.http_current].clone()
+        request = bctx.main_state.http_requests[bctx.main_state.http_current].clone()
     }
 
     let selected_method = request.method.to_string();
@@ -86,7 +86,6 @@ fn is_selected(method: &str, option_value: &str) -> bool {
     method.to_lowercase() == option_value.to_lowercase()
 }
 
-
 fn is_ws_tab_selected(request_tab: &u8, tab: WsOutTabs) -> bool {
     *request_tab == u8::from(tab)
 }
@@ -98,12 +97,12 @@ fn is_tab_selected(request_tab: &u8, tab: HttpReqTabs) -> bool {
 pub fn ws_connection(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
-    let can_display = !bctx.ws_connections.is_empty();
+    let can_display = !bctx.main_state.ws_connections.is_empty();
 
     let mut connection = WsConnection::new();
 
     if can_display {
-        connection = bctx.ws_connections[bctx.ws_current].clone();
+        connection = bctx.main_state.ws_connections[bctx.main_state.ws_current].clone();
     }
 
     html! {
@@ -124,7 +123,7 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
 
                 <button class="ws-sendbtn pointer" type="button" onclick={link.callback(|_| Msg::SendWsPressed)}>{"Send"}</button>
             </div>
-            
+
              <div class="tabcontent">
                 if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {
                     <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_message.clone()} placeholder="Compose Message" onchange={link.callback(|_| Msg::WsOutMessageChanged)}>
@@ -160,15 +159,15 @@ pub fn ws_connection(bctx: &mut BoltContext) -> Html {
 }
 
 // pub fn collection_request(bctx: &mut BoltContext) -> Html {
-//     let link = bctx.link.as_ref().unwrap();
+//     let link = bctx.main_state.link.as_ref().unwrap();
 
 //     let can_display =
-//         !bctx.collections.is_empty() && !bctx.collections[bctx.col_current[0]].requests.is_empty();
+//         !bctx.main_state.collections.is_empty() && !bctx.main_state.collections[bctx.main_state.col_current[0]].requests.is_empty();
 
 //     let mut request = HttpRequest::new();
 
 //     if can_display {
-//         request = bctx.collections[bctx.col_current[0]].requests[bctx.col_current[1]].clone()
+//         request = bctx.main_state.collections[bctx.main_state.col_current[0]].requests[bctx.main_state.col_current[1]].clone()
 //     }
 
 //     let selected_method = request.method.to_string();

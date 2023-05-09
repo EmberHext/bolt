@@ -9,7 +9,7 @@ pub fn websockets_view(bctx: &mut BoltContext) -> Html {
 
             <div class="main">
                 <div class="sidebars">
-                    {view::sidebar1::sidebar(bctx, bctx.page)}
+                    {view::sidebar1::sidebar(bctx, bctx.main_state.page)}
                     {view::sidebar2::sidebar_websockets(bctx)}
                 </div>
 

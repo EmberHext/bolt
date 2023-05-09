@@ -12,14 +12,14 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::Nothing => false,
 
         Msg::HttpReqSelectedMethod(meth) => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
             current.method = meth;
 
             true
         }
 
         Msg::SendHttpPressed => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             send_http_request(current);
 
@@ -27,7 +27,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::ConnectWsPressed => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             connect_ws(current);
 
@@ -35,7 +35,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::SendWsPressed => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             send_ws(current);
 
@@ -56,56 +56,56 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::HttpReqBodyPressed => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
             current.req_tab = 1;
 
             true
         }
 
         Msg::HttpReqHeadersPressed => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
             current.req_tab = 3;
 
             true
         }
 
         Msg::HttpReqParamsPressed => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
             current.req_tab = 2;
 
             true
         }
 
         Msg::WsOutMessagePressed => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
             current.out_tab = 1;
 
             true
         }
 
         Msg::WsOutHeadersPressed => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
             current.out_tab = 3;
 
             true
         }
 
         Msg::WsOutParamsPressed => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
             current.out_tab = 2;
 
             true
         }
 
         Msg::HttpRespBodyPressed => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
             current.resp_tab = 1;
 
             true
         }
 
         Msg::HttpRespHeadersPressed => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
             current.resp_tab = 2;
 
             true
@@ -114,7 +114,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::HttpReceivedResponse => true,
 
         Msg::HttpReqAddHeader => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             current.headers.push(vec!["".to_string(), "".to_string()]);
 
@@ -122,7 +122,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::HttpReqRemoveHeader(index) => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             current.headers.remove(index);
 
@@ -130,7 +130,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::WsOutAddHeader => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             current.out_headers.push(vec!["".to_string(), "".to_string()]);
 
@@ -138,7 +138,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::WsOutRemoveHeader(index) => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             current.out_headers.remove(index);
 
@@ -146,7 +146,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::HttpReqAddParam => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             current.params.push(vec!["".to_string(), "".to_string()]);
             true
@@ -154,7 +154,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
 
         Msg::HttpReqRemoveParam(index) => {
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             current.params.remove(index);
             true
@@ -162,7 +162,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
 
         Msg::WsOutAddParam => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             current.out_params.push(vec!["".to_string(), "".to_string()]);
             true
@@ -170,7 +170,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
 
         Msg::WsOutRemoveParam(index) => {
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             current.out_params.remove(index);
             true
@@ -179,16 +179,16 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::AddCollection => {
             let mut new_collection = Collection::new();
 
-            new_collection.name = new_collection.name + &(bctx.collections.len() + 1).to_string();
-            bctx.collections.push(new_collection);
+            new_collection.name = new_collection.name + &(bctx.main_state.collections.len() + 1).to_string();
+            bctx.main_state.collections.push(new_collection);
 
             true
         }
 
         Msg::RemoveCollection(index) => {
-            bctx.collections.remove(index);
+            bctx.main_state.collections.remove(index);
 
-            bctx.col_current = vec![0, 0];
+            bctx.main_state.col_current = vec![0, 0];
 
             true
         }
@@ -196,7 +196,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::HttpReqMethodChanged => {
             let method = get_method();
 
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             current.method = method;
             true
@@ -205,13 +205,13 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::UrlChanged => {
             let url = get_url();
 
-            if bctx.page == Page::HttpPage {
-                let current = &mut bctx.http_requests[bctx.http_current];
+            if bctx.main_state.page == Page::HttpPage {
+                let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
                 current.url = url.clone();
                 current.name = url;
-            } else if bctx.page == Page::Websockets {
-                let current = &mut bctx.ws_connections[bctx.ws_current];
+            } else if bctx.main_state.page == Page::Websockets {
+                let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
                 current.url = url.clone();
                 current.name = url;
@@ -222,7 +222,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
         Msg::HttpReqBodyChanged => {
             let body = get_body();
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
             current.body = body;
 
             true
@@ -230,7 +230,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
         Msg::WsOutMessageChanged => {
             let message = get_body();
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
             current.out_message = message;
 
             true
@@ -239,7 +239,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::HttpReqHeaderChanged(index) => {
             let header = get_header(index);
 
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             current.headers[index] = header;
 
@@ -249,7 +249,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::WsOutHeaderChanged(index) => {
             let header = get_header(index);
 
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             current.out_headers[index] = header;
 
@@ -259,7 +259,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::HttpReqParamChanged(index) => {
             let param = get_param(index);
 
-            let current = &mut bctx.http_requests[bctx.http_current];
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
 
             current.params[index] = param;
 
@@ -269,7 +269,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::WsOutParamChanged(index) => {
             let param = get_param(index);
 
-            let current = &mut bctx.ws_connections[bctx.ws_current];
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             current.out_params[index] = param;
 
@@ -278,24 +278,24 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
         Msg::AddHttpRequest => {
             let mut new_request = HttpRequest::new();
-            new_request.name = new_request.name + &(bctx.http_requests.len() + 1).to_string();
+            new_request.name = new_request.name + &(bctx.main_state.http_requests.len() + 1).to_string();
 
-            bctx.http_requests.push(new_request);
+            bctx.main_state.http_requests.push(new_request);
 
             true
         }
 
         Msg::AddWsRequest => {
             let mut new_request = WsConnection::new();
-            new_request.name = new_request.name + &(bctx.ws_connections.len() + 1).to_string();
+            new_request.name = new_request.name + &(bctx.main_state.ws_connections.len() + 1).to_string();
 
-            bctx.ws_connections.push(new_request);
+            bctx.main_state.ws_connections.push(new_request);
 
             true
         }
 
         Msg::AddToCollection(index) => {
-            let collection = &mut bctx.collections[index];
+            let collection = &mut bctx.main_state.collections[index];
 
             let mut new_request = HttpRequest::new();
             new_request.name = new_request.name + &(collection.requests.len() + 1).to_string();
@@ -306,7 +306,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::ToggleCollapsed(index) => {
-            let collection = &mut bctx.collections[index];
+            let collection = &mut bctx.main_state.collections[index];
 
             collection.collapsed = !collection.collapsed;
 
@@ -314,26 +314,26 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::RemoveHttpRequest(index) => {
-            bctx.http_requests.remove(index);
-            if !bctx.http_requests.is_empty() && bctx.http_current > bctx.http_requests.len() - 1 {
-                bctx.http_current = bctx.http_requests.len() - 1;
+            bctx.main_state.http_requests.remove(index);
+            if !bctx.main_state.http_requests.is_empty() && bctx.main_state.http_current > bctx.main_state.http_requests.len() - 1 {
+                bctx.main_state.http_current = bctx.main_state.http_requests.len() - 1;
             }
 
             true
         }
 
         Msg::RemoveWsRequest(index) => {
-            bctx.ws_connections.remove(index);
-            if !bctx.ws_connections.is_empty() && bctx.ws_current > bctx.ws_connections.len() - 1 {
-                bctx.ws_current = bctx.ws_connections.len() - 1;
+            bctx.main_state.ws_connections.remove(index);
+            if !bctx.main_state.ws_connections.is_empty() && bctx.main_state.ws_current > bctx.main_state.ws_connections.len() - 1 {
+                bctx.main_state.ws_current = bctx.main_state.ws_connections.len() - 1;
             }
 
             true
         }
 
         Msg::RemoveFromCollection(col_index, req_index) => {
-            bctx.collections[col_index].requests.remove(req_index);
-            bctx.col_current = vec![0, 0];
+            bctx.main_state.collections[col_index].requests.remove(req_index);
+            bctx.main_state.col_current = vec![0, 0];
 
             true
         }
@@ -341,20 +341,20 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::SelectHttpRequest(index) => {
             let mut new_index = index;
 
-            if bctx.http_requests.len() == 0 {
-                bctx.http_current = new_index;
+            if bctx.main_state.http_requests.len() == 0 {
+                bctx.main_state.http_current = new_index;
 
-                // bctx.main_col.requests[new_index].response.request_index = new_index;
+                // bctx.main_state.main_col.requests[new_index].response.request_index = new_index;
             } else {
-                if index >= bctx.http_requests.len() {
-                    new_index = bctx.http_requests.len() - 1;
-                    bctx.http_current = new_index;
+                if index >= bctx.main_state.http_requests.len() {
+                    new_index = bctx.main_state.http_requests.len() - 1;
+                    bctx.main_state.http_current = new_index;
 
-                    bctx.http_requests[new_index].response.request_index = new_index;
+                    bctx.main_state.http_requests[new_index].response.request_index = new_index;
                 } else {
-                    bctx.http_current = new_index;
+                    bctx.main_state.http_current = new_index;
 
-                    bctx.http_requests[new_index].response.request_index = new_index;
+                    bctx.main_state.http_requests[new_index].response.request_index = new_index;
                 }
             }
 
@@ -364,16 +364,16 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::SelectWsRequest(index) => {
             let mut new_index = index;
 
-            if bctx.ws_connections.len() == 0 {
-                bctx.ws_current = new_index;
+            if bctx.main_state.ws_connections.len() == 0 {
+                bctx.main_state.ws_current = new_index;
 
-                // bctx.main_col.requests[new_index].response.request_index = new_index;
+                // bctx.main_state.main_col.requests[new_index].response.request_index = new_index;
             } else {
-                if index >= bctx.ws_connections.len() {
-                    new_index = bctx.ws_connections.len() - 1;
-                    bctx.ws_current = new_index;
+                if index >= bctx.main_state.ws_connections.len() {
+                    new_index = bctx.main_state.ws_connections.len() - 1;
+                    bctx.main_state.ws_current = new_index;
                 } else {
-                    bctx.ws_current = new_index;
+                    bctx.main_state.ws_current = new_index;
                 }
             }
 
@@ -381,9 +381,9 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         }
 
         Msg::SelectFromCollection(col_index, req_index) => {
-            bctx.col_current = vec![col_index, req_index];
+            bctx.main_state.col_current = vec![col_index, req_index];
 
-            bctx.collections[col_index].requests[req_index]
+            bctx.main_state.collections[col_index].requests[req_index]
                 .response
                 .request_index = req_index;
 
@@ -393,7 +393,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::Update => true,
 
         Msg::SwitchPage(page) => {
-            bctx.page = page;
+            bctx.main_state.page = page;
 
             true
         }
