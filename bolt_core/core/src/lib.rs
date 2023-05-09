@@ -34,14 +34,14 @@ struct WsService {
 
 pub struct CoreState {
     main_state: MainState,
-    active_connections: Vec<WsService>,
+    ws_services: Vec<WsService>,
 }
 
 impl CoreState {
     pub fn new() -> Self {
         Self {
             main_state: MainState::new(),
-            active_connections: vec![],
+            ws_services: vec![],
         }
     }
 }
@@ -124,7 +124,7 @@ pub fn start(args: Vec<String>, port: u16) {
 }
 
 fn start_services() {
-    println!("Starting services");
+    println!("Starting core services");
 
     std::thread::spawn(move || {
         start_ws_service();
@@ -139,37 +139,38 @@ fn start_ws_service() {
             let mut core_state = CORE_STATE.lock().unwrap();
 
             let connections = core_state.main_state.ws_connections.clone();
-            let active_connections = core_state.active_connections.clone();
+            let ws_services = core_state.ws_services.clone();
 
             // println!("connections: {:?}", connections.len());
             // println!("active: {:?}", active_connections.len());
 
-            for con in connections.clone() {
-                let exists = active_connections
+            for ws_con in connections.clone() {
+                let exists = ws_services
                     .iter()
-                    .any(|x| x.connection_id == con.connection_id);
+                    .any(|x| x.connection_id == ws_con.connection_id);
 
                 if !exists {
-                    spawn_ws_service(con.clone());
-                    core_state.active_connections.push(WsService {
-                        connection_id: con.connection_id,
+                    spawn_ws_service(ws_con.connection_id.clone());
+
+                    core_state.ws_services.push(WsService {
+                        connection_id: ws_con.connection_id,
                         kill: false,
                     });
                 }
             }
 
-            for active_con in active_connections {
+            for service in ws_services {
                 let exists = connections
                     .iter()
-                    .any(|x| x.connection_id == active_con.connection_id);
+                    .any(|x| x.connection_id == service.connection_id);
 
                 if !exists {
-                    for conn in core_state
-                        .active_connections
+                    for sv in core_state
+                        .ws_services
                         .iter_mut()
-                        .filter(|conn| conn.connection_id == active_con.connection_id)
+                        .filter(|sv_mut| sv_mut.connection_id == service.connection_id)
                     {
-                        conn.kill = true;
+                        sv.kill = true;
                     }
                 }
             }
@@ -180,37 +181,46 @@ fn start_ws_service() {
     });
 }
 
-fn spawn_ws_service(con: WsConnection) {
+fn spawn_ws_service(connection_id: String) {
     // println!("started service for {}", con.connection_id);
 
     let _handle = std::thread::Builder::new()
-        .name(con.connection_id.clone())
+        .name(connection_id.clone())
         .spawn(move || loop {
             let mut core_state = CORE_STATE.lock().unwrap();
 
-            let mut kill = false;
-            let mut kill_index = 0;
+            let mut kill_service = false;
+            let mut service_index = 0;
+            let mut con_index = 0;
 
-            for (index, conn) in core_state
-                .active_connections
+            for (index, ws_service) in core_state
+                .ws_services
                 .iter()
                 .enumerate()
-                .filter(|(_index, conn)| conn.connection_id == con.connection_id)
+                .filter(|(_, sv)| sv.connection_id == connection_id)
             {
-                if conn.kill {
+                if ws_service.kill {
                     // println!("KILLED {}", conn.connection_id);
 
-                    kill_index = index;
-                    kill = true;
+                    service_index = index;
+                    kill_service = true;
                 }
             }
 
-            if kill {
-                core_state.active_connections.remove(kill_index);
+            if kill_service {
+                core_state.ws_services.remove(service_index);
                 break;
             }
 
-            println!("POLL CON {}", con.connection_id);
+            for (index, con) in core_state.main_state.ws_connections.iter().enumerate() {
+                if con.connection_id == connection_id {
+                    con_index = index;
+                }
+            }
+
+            let ws_con = &mut core_state.main_state.ws_connections[con_index];
+
+            println!("POLL CON {}", ws_con.connection_id);
 
             drop(core_state);
             std::thread::sleep(std::time::Duration::from_millis(1000));
