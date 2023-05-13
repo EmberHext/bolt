@@ -1,4 +1,5 @@
 use crate::connect_ws;
+use crate::disconnect_ws;
 use crate::send_http_request;
 use crate::send_ws;
 use crate::utils::*;
@@ -30,6 +31,14 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             connect_ws(current);
+
+            true
+        }
+
+        Msg::DisconnectWsPressed => {
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
+
+            disconnect_ws(current);
 
             true
         }

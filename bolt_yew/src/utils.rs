@@ -110,6 +110,10 @@ pub fn handle_ws_message(txt: String) {
             MsgType::WS_CONNECTED => {
                 handle_ws_connected_msg(txt);
             }
+             
+            MsgType::WS_DISCONNECTED => {
+                handle_ws_disconnected_msg(txt);
+            }
         },
 
         Err(_err) => {
@@ -129,6 +133,25 @@ fn handle_ws_connected_msg(txt: String) {
         if msg.connection_id == con.connection_id {
             con.connecting = false;
             con.connected = true;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+
+fn handle_ws_disconnected_msg(txt: String) {
+    _bolt_log("DISCONNECTED FROM THE WS SERVER!!");
+
+    let msg: WsDisconnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if msg.connection_id == con.connection_id {
+            con.disconnecting = false;
+            con.connected = false;
         }
     }
 

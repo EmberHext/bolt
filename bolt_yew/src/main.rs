@@ -27,6 +27,8 @@ pub enum Msg {
     ConnectWsPressed,
     SendWsPressed,
 
+    DisconnectWsPressed,
+
     HttpReqBodyPressed,
     HttpReqHeadersPressed,
     HttpReqParamsPressed,
@@ -224,6 +226,12 @@ fn connect_ws(connection: &mut WsConnection) {
     connection.connecting = true;
 
     // _bolt_log("connect ws was pressed");
+}
+
+fn disconnect_ws(connection: &mut WsConnection) {
+    connection.disconnecting = true;
+
+    _bolt_log("disconnect ws was pressed");
 }
 
 fn send_ws(_connection: &mut WsConnection) {

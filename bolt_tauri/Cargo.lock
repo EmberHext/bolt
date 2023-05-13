@@ -354,6 +354,7 @@ name = "bolt_common"
 version = "0.11.11"
 dependencies = [
  "serde",
+ "uuid 1.3.2",
 ]
 
 [[package]]
@@ -373,6 +374,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tungstenite",
+ "url",
  "uuid 1.3.2",
  "webbrowser",
 ]
@@ -388,6 +390,9 @@ dependencies = [
 [[package]]
 name = "bolt_ws"
 version = "0.11.11"
+dependencies = [
+ "bolt_common",
+]
 
 [[package]]
 name = "brotli"
@@ -3569,6 +3574,7 @@ dependencies = [
  "getrandom 0.2.9",
  "rand 0.8.5",
  "uuid-macro-internal",
+ "wasm-bindgen",
 ]
 
 [[package]]

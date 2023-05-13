@@ -112,9 +112,9 @@ pub fn ws_out(bctx: &mut BoltContext) -> Html {
                 <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.url.clone()} placeholder="ws://" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectWsPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
 
                 if connection.connecting {
-                    <button class="ws-connecting-btn disabled-cursor" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Connecting"}</button>
+                    <button class="ws-connecting-btn disabled-cursor" type="button">{"Connecting"}</button>
                 } else if connection.connected {
-                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Disconnect"}</button>
+                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectWsPressed)}>{"Disconnect"}</button>
                 } else {
                     <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectWsPressed)}>{"Connect"}</button>
                 }

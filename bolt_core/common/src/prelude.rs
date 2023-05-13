@@ -58,6 +58,7 @@ pub struct WsConnection {
     pub in_tab: u8,
 
     pub connecting: bool,
+    pub disconnecting: bool,
     pub failed: bool,
     pub connected: bool,
 
@@ -82,6 +83,7 @@ impl WsConnection {
             url: String::new(),
             name: "Ws connection ".to_string(),
             connecting: false,
+            disconnecting: false,
             failed: false,
             connected: false,
 
@@ -126,7 +128,6 @@ impl HttpRequest {
 
             response: HttpResponse::new(),
 
-            // META
             name: "New Request ".to_string(),
 
             req_tab: 1,
@@ -210,7 +211,8 @@ pub enum MsgType {
     HTTP_RESPONSE,
     RESTORE_STATE,
     ADD_WS_CONNECTION,
-    WS_CONNECTED
+    WS_CONNECTED,
+    WS_DISCONNECTED
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -392,6 +394,12 @@ pub struct AddWsConnectionMsg {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct WsConnectedMsg {
+    pub msg_type: MsgType,
+    pub connection_id: String
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WsDisconnectedMsg {
     pub msg_type: MsgType,
     pub connection_id: String
 }

@@ -51,6 +51,9 @@ impl CoreState {
     }
 }
 
+const SERVICE_SYNC_REFRESH_RATE : u64 = 1000;
+const WS_SERVICE_REFRESH_RATE : u64 = 100;
+
 pub fn start(args: Vec<String>, port: u16) {
     let mut args = args;
 
@@ -179,7 +182,7 @@ fn start_ws_service(_session_id: String) {
             }
 
             drop(core_state);
-            std::thread::sleep(std::time::Duration::from_millis(200));
+            std::thread::sleep(std::time::Duration::from_millis(SERVICE_SYNC_REFRESH_RATE));
         }
     });
 }
@@ -230,10 +233,32 @@ fn spawn_ws_service(connection_id: String) {
 
                 println!("POLL CON {}", ws_con.connection_id);
 
-                if ws_con.connecting {
-                    println!("WS {} CONNECTING", ws_con.connection_id);
+                let connecting = ws_con.connecting;
+                let disconnecting = ws_con.disconnecting;
 
-                    let (w_socket, _response) = open_ws_connection(ws_con);
+                if disconnecting {
+                    println!("WS {} DISCONNECTING", connection_id);
+
+                    socket.as_mut().unwrap().close(None).unwrap();
+
+                    let disconnected_msg = WsDisconnectedMsg {
+                        msg_type: MsgType::WS_DISCONNECTED,
+                        connection_id: ws_con.connection_id.clone(),
+                    };
+
+                    let txt = serde_json::to_string(&disconnected_msg).unwrap();
+                    let msg = tungstenite::Message::Text(txt);
+
+                    core_state
+                        .session_websocket
+                        .as_mut()
+                        .unwrap()
+                        .write_message(msg)
+                        .unwrap();
+                } else if connecting {
+                    println!("WS {} CONNECTING", connection_id);
+
+                    let (w_socket, _response) = open_ws_connection(&ws_con.url);
 
                     // TODO: Notify client of successful connection
 
@@ -245,7 +270,12 @@ fn spawn_ws_service(connection_id: String) {
                     let txt = serde_json::to_string(&connected_msg).unwrap();
                     let msg = tungstenite::Message::Text(txt);
 
-                    core_state.session_websocket.as_mut().unwrap().write_message(msg).unwrap();
+                    core_state
+                        .session_websocket
+                        .as_mut()
+                        .unwrap()
+                        .write_message(msg)
+                        .unwrap();
 
                     // crate::session::server::ws_write(core_state.session_websocket.as_mut().unwrap(), msg);
 
@@ -266,7 +296,7 @@ fn spawn_ws_service(connection_id: String) {
                 // println!("Received: {}", msg);
 
                 drop(core_state);
-                std::thread::sleep(std::time::Duration::from_millis(1000));
+                std::thread::sleep(std::time::Duration::from_millis(WS_SERVICE_REFRESH_RATE));
             }
 
             // cleanup
@@ -276,12 +306,12 @@ fn spawn_ws_service(connection_id: String) {
 }
 
 fn open_ws_connection(
-    con: &WsConnection,
+    url: &String,
 ) -> (
     WebSocket<MaybeTlsStream<std::net::TcpStream>>,
     tungstenite::http::Response<Option<Vec<u8>>>,
 ) {
-    let (socket, response) = connect(Url::parse(&con.url).unwrap()).expect("Can't connect");
+    let (socket, response) = connect(Url::parse(url).unwrap()).expect("Can't connect");
 
     println!("Connected to the server");
 
