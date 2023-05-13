@@ -266,7 +266,7 @@ fn spawn_ws_service(connection_id: String) {
             }
 
             // cleanup
-            close_ws_connection(socket.as_mut().unwrap());
+            // close_ws_connection(socket.as_mut().unwrap());
         })
         .unwrap();
 }
