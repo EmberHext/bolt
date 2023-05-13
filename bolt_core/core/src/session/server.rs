@@ -200,7 +200,7 @@ pub fn launch_core_server(port: u16, address: String) {
 
     let server = TcpListener::bind(address + ":" + &port.to_string()).unwrap();
 
-    for stream in server.incoming() {
+    for mut stream in server.incoming() {
         spawn(move || {
             let session_id = uuid::Uuid::new_v4()
                 .to_string()
@@ -215,12 +215,16 @@ pub fn launch_core_server(port: u16, address: String) {
                 Ok(response)
             };
 
+            let new_ws = WebSocket::from_raw_socket(stream.as_mut().unwrap().try_clone().unwrap(), tungstenite::protocol::Role::Server, None);
+            
+
             let mut session_websocket = accept_hdr(stream.unwrap(), callback).unwrap();
+            // let session_stream ) 
 
-            // let mut core_state = CORE_STATE.lock().unwrap();
-            // core_state.session_websocket = Some(session_websocket);
+            let mut core_state = CORE_STATE.lock().unwrap();
+            core_state.session_websocket = Some(new_ws);
 
-            // drop(core_state);
+            drop(core_state);
 
             crate::start_services(session_id.clone());
 

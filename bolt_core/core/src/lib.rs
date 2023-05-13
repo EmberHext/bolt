@@ -37,7 +37,7 @@ struct WsService {
 
 pub struct CoreState {
     main_state: MainState,
-    // session_websocket: Option<WebSocket<std::net::TcpStream>>,
+    session_websocket: Option<WebSocket<std::net::TcpStream>>,
     ws_services: Vec<WsService>,
 }
 
@@ -45,7 +45,7 @@ impl CoreState {
     pub fn new() -> Self {
         Self {
             main_state: MainState::new(),
-            // session_websocket: None,
+            session_websocket: None,
             ws_services: vec![],
         }
     }
@@ -192,7 +192,7 @@ fn spawn_ws_service(connection_id: String) {
         .spawn(move || {
             // comment
 
-           let mut socket: Option<WebSocket<MaybeTlsStream<std::net::TcpStream>>> = None;
+            let mut socket: Option<WebSocket<MaybeTlsStream<std::net::TcpStream>>> = None;
 
             loop {
                 let mut core_state = CORE_STATE.lock().unwrap();
@@ -236,13 +236,17 @@ fn spawn_ws_service(connection_id: String) {
                     let (w_socket, _response) = open_ws_connection(ws_con);
 
                     // TODO: Notify client of successful connection
-                    
-                    // let connected_msg = WsConnectedMsg{
-                        // msg_type: MsgType::WS_CONNECTED,
-                        // connection_id: ws_con.connection_id.clone()
-                    // };
 
-                    // let msg = serde_json::to_string(&connected_msg).unwrap();
+                    let connected_msg = WsConnectedMsg {
+                        msg_type: MsgType::WS_CONNECTED,
+                        connection_id: ws_con.connection_id.clone(),
+                    };
+
+                    let txt = serde_json::to_string(&connected_msg).unwrap();
+                    let msg = tungstenite::Message::Text(txt);
+
+                    core_state.session_websocket.as_mut().unwrap().write_message(msg).unwrap();
+
                     // crate::session::server::ws_write(core_state.session_websocket.as_mut().unwrap(), msg);
 
                     socket = Some(w_socket);

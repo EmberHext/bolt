@@ -94,7 +94,8 @@ pub fn handle_ws_message(txt: String) {
             | MsgType::SAVE_STATE
             | MsgType::LOG
             | MsgType::PANIC
-            | MsgType::OPEN_LINK | MsgType::ADD_WS_CONNECTION => {
+            | MsgType::OPEN_LINK
+            | MsgType::ADD_WS_CONNECTION => {
                 return;
             }
 
@@ -109,7 +110,6 @@ pub fn handle_ws_message(txt: String) {
             MsgType::WS_CONNECTED => {
                 handle_ws_connected_msg(txt);
             }
-            
         },
 
         Err(_err) => {
@@ -118,8 +118,9 @@ pub fn handle_ws_message(txt: String) {
     }
 }
 
-
 fn handle_ws_connected_msg(txt: String) {
+    _bolt_log("CONNECTED TO THE WS SERVER!!");
+
     let msg: WsConnectedMsg = serde_json::from_str(&txt).unwrap();
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
@@ -130,6 +131,9 @@ fn handle_ws_connected_msg(txt: String) {
             con.connected = true;
         }
     }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
 }
 
 fn handle_http_response_msg(txt: String) {
