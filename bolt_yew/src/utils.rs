@@ -17,6 +17,8 @@ use syntect::parsing::SyntaxSet;
 
 use bolt_common::prelude::*;
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
 pub fn _get_current_request(bctx: &mut BoltContext) -> &mut HttpRequest {
     let current = bctx.main_state.http_current;
     return &mut bctx.main_state.http_requests[current];
@@ -110,7 +112,7 @@ pub fn handle_ws_message(txt: String) {
             MsgType::WS_CONNECTED => {
                 handle_ws_connected_msg(txt);
             }
-             
+
             MsgType::WS_DISCONNECTED => {
                 handle_ws_disconnected_msg(txt);
             }
@@ -139,7 +141,6 @@ fn handle_ws_connected_msg(txt: String) {
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
 }
-
 
 fn handle_ws_disconnected_msg(txt: String) {
     _bolt_log("DISCONNECTED FROM THE WS SERVER!!");
@@ -400,4 +401,11 @@ pub fn parse_url(url: String, params: Vec<Vec<String>>) -> String {
 
     // bolt_log(&format!("url is: {new_url}"));
     new_url
+}
+
+pub fn get_timestamp() -> u64 {
+    let now = SystemTime::now();
+    let since_epoch = now.duration_since(UNIX_EPOCH).expect("Time went backwards");
+
+    since_epoch.as_millis() as u64
 }

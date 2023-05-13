@@ -48,6 +48,16 @@ pub struct WsMessage {
     pub msg_type: WsMsgType,
 }
 
+impl WsMessage {
+    pub fn new() -> Self {
+        Self {
+            txt: String::new(),
+            timestamp: 0,
+            msg_type: WsMsgType::OUT,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WsConnection {
     pub connection_id: String,
@@ -62,11 +72,12 @@ pub struct WsConnection {
     pub failed: bool,
     pub connected: bool,
 
-    pub out_message: String,
+    pub out_buffer: String,
+    pub out_queue: Vec<WsMessage>,
     pub out_headers: Vec<Vec<String>>,
     pub out_params: Vec<Vec<String>>,
 
-    pub messages: Vec<WsMessage>,
+    pub in_queue: Vec<WsMessage>,
 }
 
 impl WsConnection {
@@ -89,11 +100,13 @@ impl WsConnection {
 
             out_tab: 1,
             in_tab: 1,
-            out_message: String::new(),
+
+            out_buffer: String::new(),
+            out_queue: vec![],
             out_headers: vec![vec![String::new(), String::new()]],
             out_params: vec![vec![String::new(), String::new()]],
 
-            messages: vec![],
+            in_queue: vec![],
         }
     }
 }
@@ -212,7 +225,7 @@ pub enum MsgType {
     RESTORE_STATE,
     ADD_WS_CONNECTION,
     WS_CONNECTED,
-    WS_DISCONNECTED
+    WS_DISCONNECTED,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -395,11 +408,11 @@ pub struct AddWsConnectionMsg {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct WsConnectedMsg {
     pub msg_type: MsgType,
-    pub connection_id: String
+    pub connection_id: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct WsDisconnectedMsg {
     pub msg_type: MsgType,
-    pub connection_id: String
+    pub connection_id: String,
 }

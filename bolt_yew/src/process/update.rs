@@ -241,7 +241,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
         Msg::WsOutMessageChanged => {
             let message = get_body();
             let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
-            current.out_message = message;
+            current.out_buffer = message;
 
             true
         }

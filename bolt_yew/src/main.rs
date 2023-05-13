@@ -234,8 +234,15 @@ fn disconnect_ws(connection: &mut WsConnection) {
     _bolt_log("disconnect ws was pressed");
 }
 
-fn send_ws(_connection: &mut WsConnection) {
+fn send_ws(connection: &mut WsConnection) {
     _bolt_log("send ws was pressed");
+
+    let mut msg = WsMessage::new();
+    msg.txt = get_body();
+    msg.msg_type = WsMsgType::OUT;
+    msg.timestamp = utils::get_timestamp();
+
+    connection.out_queue.push(msg);
 }
 
 pub fn receive_response(data: String) {

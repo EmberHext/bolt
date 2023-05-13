@@ -169,7 +169,7 @@ pub fn ws_in(bctx: &mut BoltContext) -> Html {
                                 <th>{"Direction"}</th>
                                 <th>{"TXT"}</th>
                             </tr>
-                            { for connection.messages.iter().map(|msg| view::msg::render_ws_msg(&msg)) }
+                            { for connection.in_queue.iter().map(|msg| view::msg::render_ws_msg(&msg)) }
                         </table>
                     </div>
                </div>

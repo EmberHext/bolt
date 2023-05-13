@@ -52,7 +52,7 @@ impl CoreState {
 }
 
 const SERVICE_SYNC_REFRESH_RATE : u64 = 1000;
-const WS_SERVICE_REFRESH_RATE : u64 = 100;
+const WS_SERVICE_REFRESH_RATE : u64 = 1000;
 
 pub fn start(args: Vec<String>, port: u16) {
     let mut args = args;
@@ -231,7 +231,7 @@ fn spawn_ws_service(connection_id: String) {
 
                 let ws_con = &core_state.main_state.ws_connections[con_index];
 
-                println!("POLL CON {}", ws_con.connection_id);
+                println!("POLL CON {} -- OUT: {}", ws_con.connection_id, ws_con.out_queue.len());
 
                 let connecting = ws_con.connecting;
                 let disconnecting = ws_con.disconnecting;
