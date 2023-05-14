@@ -212,6 +212,72 @@ body {
 	height: 100%;
 	overflow-y: scroll;
 	overflow-x: hidden;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.ws-msg {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+
+	
+	background: rgb(3, 7, 13);
+	border-bottom: 0.5px solid gray;
+
+	height: 30px;
+}
+
+.ws-msg:hover {
+	background: rgb(23, 59, 97);
+}
+
+.ws-msg-txt {
+	overflow: hidden;
+}
+
+.ws-msg-left {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+	
+
+.ws-out-arrow {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	
+	width: 20px;
+	height: 20px;
+
+	background: orange;
+	color: white;
+	font-size: 15px;
+	font-weight: bold;
+
+	margin-right: 5px;
+}
+
+.ws-in-arrow {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	width: 20px;
+	height: 20px;
+
+	background: blue;
+	color: white;
+	font-size: 15px;
+	font-weight: bold;
+
+	margin-right: 5px;
 }
 
 .reqheaders {
@@ -219,7 +285,8 @@ body {
 	height: 100%;
 	
 	overflow-y: scroll;
-	overflow-x: hidden;}
+	overflow-x: hidden;
+}
 
 .respbody {
 	width: 100%;
