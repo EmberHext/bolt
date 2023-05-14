@@ -1,3 +1,6 @@
+VERSION = 0.12.3
+
+
 .PHONY: build run setup all api watch build-yew build-tauri watch-yew watch-tauri web clean-yew clean-tauri clean cli build-cli
 
 all: build
@@ -44,8 +47,18 @@ watch-tauri:
 	cargo tauri dev
 
 bump-version:
-	ls
+	cd bolt_core/common && cargo bump $(VERSION)
+	cd bolt_core/core && cargo bump $(VERSION)
+	cd bolt_core/http && cargo bump $(VERSION)
+	cd bolt_core/servers && cargo bump $(VERSION)
+	cd bolt_core/tcp && cargo bump $(VERSION)
+	cd bolt_core/udp && cargo bump $(VERSION)
+	cd bolt_core/ws && cargo bump $(VERSION)
 
+	cd bolt_yew && cargo bump $(VERSION)
+	cd bolt_cli && cargo bump $(VERSION)
+	cd bolt_tauri && cargo bump $(VERSION)
+	
 publish-libs:
 	cd bolt_core/common && cargo publish
 	cd bolt_core/http && cargo publish

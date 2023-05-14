@@ -8,6 +8,7 @@ alias r := run
 alias c := clean
 
 
+
 # Install required build tools and dependencies
 setup:
 	cargo install tauri-cli
@@ -50,7 +51,17 @@ watch-tauri:
 	cargo tauri dev
 
 bump-version:
-	ls
+	cd bolt_yew && cargo bump $(VERSION)
+	cd bolt_cli && cargo bump $(VERSION)
+	cd bolt_tauri && cargo bump $(VERSION)
+	
+	cd bolt_core/common && cargo bump $(VERSION)
+	cd bolt_core/core && cargo bump $(VERSION)
+	cd bolt_core/http && cargo bump $(VERSION)
+	cd bolt_core/servers && cargo bump $(VERSION)
+	cd bolt_core/tcp && cargo bump $(VERSION)
+	cd bolt_core/udp && cargo bump $(VERSION)
+	cd bolt_core/ws && cargo bump $(VERSION)
 
 publish-libs:
 	cd bolt_core/common && cargo publish

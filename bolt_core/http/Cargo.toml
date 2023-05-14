@@ -1,6 +1,6 @@
 [package]
 name = "bolt_http"
-version = "0.11.11"
+version = "0.12.3"
 edition = "2021"
 authors = ["Hiro <yirohido@gmail.com>"]
 license = "MIT"
@@ -12,6 +12,6 @@ categories = ["command-line-utilities"]
 
 
 [dependencies]
-bolt_common = { path = "../common", version= "0.11.11" }
+bolt_common = { path = "../common"}
 
 reqwest = { version = "0.11.14", features = ["json"] }

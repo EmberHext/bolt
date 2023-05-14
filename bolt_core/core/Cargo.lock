@@ -312,7 +312,7 @@ dependencies = [
 
 [[package]]
 name = "bolt_common"
-version = "0.11.11"
+version = "0.12.3"
 dependencies = [
  "serde",
  "uuid",
@@ -320,7 +320,7 @@ dependencies = [
 
 [[package]]
 name = "bolt_core"
-version = "0.11.11"
+version = "0.12.2"
 dependencies = [
  "actix-files",
  "actix-web",
@@ -343,7 +343,7 @@ dependencies = [
 
 [[package]]
 name = "bolt_http"
-version = "0.11.11"
+version = "0.12.2"
 dependencies = [
  "bolt_common",
  "reqwest",
@@ -351,7 +351,7 @@ dependencies = [
 
 [[package]]
 name = "bolt_ws"
-version = "0.11.11"
+version = "0.12.2"
 dependencies = [
  "bolt_common",
 ]

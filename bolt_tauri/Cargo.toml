@@ -1,6 +1,6 @@
 [package]
 name = "bolt-tauri"
-version = "0.11.11"
+version = "0.12.3"
 default-run = "bolt-tauri"
 edition = "2021"
 
@@ -8,7 +8,8 @@ edition = "2021"
 tauri-build = { version = "1.2.1", features = [] }
 
 [dependencies]
-bolt_core = { path = "../bolt_core/core" }
+bolt_core = { path = "../bolt_core/core"}
+
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.2.4", features = [] }

@@ -20,7 +20,7 @@ pub fn build_dist() {
 
 fn _fetch_dist_release() {
     let download_link = "https://github.com/hiro-codes/bolt/releases/download/v".to_string()
-        + crate::VERSION
+        + VERSION
         + "/dist.zip";
 
     _download_url(download_link, get_home() + "dist.zip");

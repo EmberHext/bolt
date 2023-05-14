@@ -1,14 +1,39 @@
 ## Contributing to Bolt
 
 ### Version bump checklist
-* Yew cargo.tomli
+* install cargo-bump
 
-* tauri.conf.json
-* tauri cargo.toml
-* tauri carrgo.toml -> bolt-server
+* sync makefile and justfile
 
-* CLI cargo.toml
-* CLI cargo.toml -> bolt-server
+* Makefile VERSION
 
-* bolt-server lib.rs
-* bolt-server cargo.toml
+* run `make bump-version`
+
+* Yew dependencies
+
+* tauri.conf.json (package->version)
+* tauri dependencies
+
+* CLI README
+* CLI dependencies
+
+* bolt_core/common dependencies
+* bolt_core/common VERSION (prelude->VERSION)
+
+* bolt_core/core dependencies
+
+* bolt_core/http dependencies
+
+* bolt_core/servers dependencies
+
+* bolt_core/tcp dependencies
+
+* bolt_core/udp dependencies
+
+* bolt_core/ws dependencies
+
+* Run `make run` and `make run-cli` to ensure they compile and run
+
+* run `make publish-libs`
+
+* run `make publish-cli`

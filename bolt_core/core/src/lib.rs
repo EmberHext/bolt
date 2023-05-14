@@ -8,7 +8,6 @@ use tungstenite::stream::MaybeTlsStream;
 use tungstenite::{connect, WebSocket};
 use url::Url;
 
-static VERSION: &str = "0.11.11";
 static HELP: &str = r#"
 Bolt CLI (Build and test APIs)
 
