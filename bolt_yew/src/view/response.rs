@@ -163,16 +163,10 @@ pub fn ws_history(bctx: &mut BoltContext) -> Html {
                  </div>
 
                 <div class="tabcontent">
-                   <div class="respheaders">
-                        <table>
-                            <tr>
-                                <th>{"Direction"}</th>
-                                <th>{"TXT"}</th>
-                            </tr>
-                            { for connection.msg_history.iter().map(|msg| view::msg::render_ws_msg(&msg)) }
-                        </table>
+                    <div class="atabs"> 
+                        { for connection.msg_history.iter().rev().map(|msg| view::msg::render_ws_msg(&msg)) }
                     </div>
-               </div>
+                </div>
             } else if can_display && connection.connecting {
                 <div class="resploading"><img src="/icon/icon.png" /></div>
             } else if connection.failed {

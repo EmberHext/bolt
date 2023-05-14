@@ -9,7 +9,6 @@ use gloo_net::websocket::{futures::WebSocket, Message as WSMessage};
 
 mod helpers;
 mod process;
-mod style;
 mod utils;
 mod view;
 
@@ -147,8 +146,6 @@ impl Component for BoltApp {
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        disable_text_selection();
-
         let mut state = GLOBAL_STATE.lock().unwrap();
         state.bctx.link = Some(ctx.link().clone());
 
@@ -193,6 +190,8 @@ impl Component for BoltApp {
 }
 
 fn init(bctx: &mut BoltContext) {
+    disable_text_selection();
+
     bctx.main_state.http_requests.push(HttpRequest::new());
 
     let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
@@ -240,7 +239,7 @@ fn send_ws(connection: &mut WsConnection) {
     let mut msg = WsMessage::new();
     msg.txt = get_body();
     msg.msg_type = WsMsgType::OUT;
-    
+
     connection.out_queue.push(msg);
 }
 

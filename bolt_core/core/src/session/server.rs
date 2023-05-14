@@ -155,8 +155,8 @@ fn handle_panic(_websocket: &mut WebSocket<TcpStream>, _session_id: &String, txt
     println!("PANIC: {}", msg.log);
 }
 
-fn handle_ping(websocket: &mut WebSocket<TcpStream>, session_id: &String, _txt: String) {
-    println!("{}: received ping", session_id);
+fn handle_ping(websocket: &mut WebSocket<TcpStream>, _session_id: &String, _txt: String) {
+    // println!("{}: received ping", session_id);
 
     let msg = PingMsg {
         msg_type: MsgType::PING,

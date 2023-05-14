@@ -169,15 +169,15 @@ fn handle_ws_disconnected_msg(txt: String) {
 fn handle_ws_sent_msg(txt: String) {
     // _bolt_log("SENT!!!");
 
-    let msg: WsSentMsg = serde_json::from_str(&txt).unwrap();
+    let sent_msg: WsSentMsg = serde_json::from_str(&txt).unwrap();
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
 
     for con in &mut global_state.bctx.main_state.ws_connections {
-        if msg.connection_id == con.connection_id {
+        if sent_msg.connection_id == con.connection_id {
             for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
-                if out_msg.msg_id == msg.msg_id {
-                    con.msg_history.push(out_msg.clone());
+                if out_msg.msg_id == sent_msg.msg.msg_id {
+                    con.msg_history.push(sent_msg.msg.clone());
                     con.out_queue.remove(index);
                 }
             }
@@ -212,7 +212,7 @@ fn handle_http_response_msg(txt: String) {
 }
 
 fn handle_ping_msg(_txt: String) {
-    _bolt_log(&format!("received pong"));
+    // _bolt_log(&format!("received pong"));
 }
 
 fn handle_invalid_msg(txt: String) {

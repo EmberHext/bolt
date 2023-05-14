@@ -296,10 +296,16 @@ fn spawn_ws_service(connection_id: String) {
 
                         socket.as_mut().unwrap().write_message(msg).unwrap();
 
+                        let mut new_msg = WsMessage::new();
+                        new_msg.timestamp = utils::get_timestamp();
+                        new_msg.msg_type = WsMsgType::OUT;
+                        new_msg.txt = out_msg.txt;
+                        new_msg.msg_id = out_msg.msg_id;
+
                         let msg_sent = WsSentMsg {
                             msg_type: MsgType::WS_MSG_SENT,
                             connection_id: connection_id.clone(),
-                            msg_id: out_msg.msg_id.clone(),
+                            msg: new_msg,
                         };
 
                         let sent_txt = serde_json::to_string(&msg_sent).unwrap();
@@ -350,6 +356,7 @@ fn spawn_read_service(
             let mut new_msg = WsMessage::new();
             new_msg.msg_type = WsMsgType::IN;
             new_msg.txt = txt.into_text().unwrap();
+            new_msg.timestamp = utils::get_timestamp();
 
             let out = WsReceivedMsg {
                 msg_type: MsgType::WS_RECEIVED_MSG,
@@ -382,6 +389,6 @@ fn open_ws_connection(
     (socket, response)
 }
 
-fn close_ws_connection(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>) {
+fn _close_ws_connection(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>) {
     socket.close(None).unwrap();
 }

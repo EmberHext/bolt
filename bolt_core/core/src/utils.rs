@@ -1,25 +1,72 @@
-use std::time::UNIX_EPOCH;
-use std::time::SystemTime;
 use std::path::Path;
 use std::process::Command;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
 use bolt_common::prelude::*;
 
 // downloads the dist from github
 pub fn build_dist() {
-    // println!("Downloading static files");
+    println!("Downloading static files");
 
     #[cfg(debug_assertions)]
-    _clone_repo_dev();
+    _fetch_dist_dev();
 
     #[cfg(not(debug_assertions))]
-    _clone_repo_release();
+    _fetch_dist_release();
 
-    let src = get_home() + "bolt/bolt_tauri/" + "./dist/";
-    let dst = get_home() + "bolt/bolt_tauri/" + "../../dist";
-    copy_dir(&src, &dst).unwrap();
+    println!("Download complete");
+}
 
-    // println!("Download complete");
+fn _fetch_dist_release() {
+    let download_link = "https://github.com/hiro-codes/bolt/releases/download/v".to_string()
+        + crate::VERSION
+        + "/dist.zip";
+
+    _download_url(download_link, get_home() + "dist.zip");
+
+    let file_path = get_home() + "dist.zip";
+    let extract_path = get_home();
+
+    _unzip(&file_path, &extract_path);
+}
+
+fn _fetch_dist_dev() {
+    _copy_dir("../bolt_tauri/dist/", &(get_home() + "dist"));
+}
+
+fn _download_url(url: String, file_name: String) {
+    let response = reqwest::blocking::get(url).unwrap();
+
+    let mut file = std::fs::File::create(file_name).unwrap();
+
+    let mut content = std::io::Cursor::new(response.bytes().unwrap());
+
+    std::io::copy(&mut content, &mut file).unwrap();
+}
+
+fn _unzip(file_path: &String, extract_path: &String) {
+    let file = std::fs::File::open(file_path).unwrap();
+    let reader = std::io::BufReader::new(file);
+    let mut archive = zip::ZipArchive::new(reader).unwrap();
+
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i).unwrap();
+        let outpath = Path::new(extract_path).join(file.name());
+
+        if (&*file.name()).ends_with('/') {
+            std::fs::create_dir_all(&outpath).unwrap();
+        } else {
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    std::fs::create_dir_all(&p).unwrap();
+                }
+            }
+
+            let mut outfile = std::fs::File::create(&outpath).unwrap();
+            std::io::copy(&mut file, &mut outfile).unwrap();
+        }
+    }
 }
 
 pub fn _clone_repo_dev() {
@@ -28,7 +75,7 @@ pub fn _clone_repo_dev() {
         get_home() + "bolt/"
     );
 
-    run_command(shell_command, "../".to_string());
+    _run_command(shell_command, "../".to_string());
 }
 
 pub fn _clone_repo_release() {
@@ -36,35 +83,37 @@ pub fn _clone_repo_release() {
 
     let shell_command = format!("git clone {url} --depth 1");
 
-    run_command(shell_command, get_home());
+    _run_command(shell_command, get_home());
+
+    let shell_command = format!("git checkout release");
+
+    _run_command(shell_command, get_home() + "bolt");
 }
 
-fn copy_dir(src: &str, dst: &str) -> std::io::Result<()> {
+fn _copy_dir(src: &str, dst: &str) {
     let src = Path::new(&src);
     let dst = Path::new(&dst);
 
     if src.is_dir() {
-        std::fs::create_dir_all(dst)?;
+        std::fs::create_dir_all(dst).unwrap();
 
-        for entry in std::fs::read_dir(src)? {
-            let entry = entry?;
+        for entry in std::fs::read_dir(src).unwrap() {
+            let entry = entry.unwrap();
             let path = entry.path();
             let new_path = dst.join(path.file_name().unwrap());
 
-            if entry.file_type()?.is_dir() {
-                copy_dir(path.to_str().unwrap(), new_path.to_str().unwrap())?;
+            if entry.file_type().unwrap().is_dir() {
+                _copy_dir(path.to_str().unwrap(), new_path.to_str().unwrap());
             } else {
-                std::fs::copy(&path, &new_path)?;
+                std::fs::copy(&path, &new_path).unwrap();
             }
         }
     } else {
-        std::fs::copy(src, dst)?;
+        std::fs::copy(src, dst).unwrap();
     }
-
-    Ok(())
 }
 
-pub fn run_command(shell_command: String, dir: String) {
+pub fn _run_command(shell_command: String, dir: String) {
     let _output = if cfg!(target_os = "windows") {
         Command::new("cmd")
             .args(["/C", &shell_command])

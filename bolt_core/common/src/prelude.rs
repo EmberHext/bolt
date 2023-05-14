@@ -435,7 +435,7 @@ pub struct WsDisconnectedMsg {
 pub struct WsSentMsg {
     pub msg_type: MsgType,
     pub connection_id: String,
-    pub msg_id: String,
+    pub msg: WsMessage,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
