@@ -33,13 +33,6 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
                   {msg.txt.clone()}
                 </div>
               </div>
-                // <div class="ws-msg pointer">
-                //     <div class="ws-msg-left">
-                //         <div class="ws-in-arrow">{"↓"}</div>
-                //         <div class="ws-msg-txt">{txt}</div>
-                //     </div>
-                //     <div>{time}</div>
-                // </div>
             }
         }
 
@@ -63,15 +56,6 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
                   {msg.txt.clone()}
                 </div>
               </div>
-
-                // <div class="ws-msg pointer">
-                //     <div class="ws-msg-left">
-                //         <div class="ws-out-arrow">{"↑"}</div>
-                //         <div class="ws-msg-txt">{txt}</div>
-                //     </div>
-                //     <div>{time}</div>
-                // </div>
-
             }
         }
     }

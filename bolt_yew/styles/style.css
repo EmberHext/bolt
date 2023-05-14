@@ -590,13 +590,8 @@ td {
 
 
 
-.atab input {
-  position: absolute;
-  opacity: 0;
-  z-index: -1;
-}
-
 .atabs {
+	height: 100%;
   overflow: scroll;
 }
 
@@ -604,6 +599,12 @@ td {
   width: 100%;
   color: white;
   overflow: hidden;
+}
+
+.atab input {
+  position: absolute;
+  opacity: 0;
+  z-index: -1;
 }
 
 .atab-label {
@@ -633,15 +634,6 @@ td {
   transition: all 0.35s;
 
 	overflow-y: scroll;
-}
-
-.atab-close {
-  display: flex;
-  justify-content: flex-end;
-  padding: 1em;
-  font-size: 0.75em;
-  background: #2c3e50;
-  cursor: pointer;
 }
 
 .atab input:checked ~ .atab-content {
