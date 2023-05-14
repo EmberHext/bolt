@@ -207,79 +207,6 @@ body {
 	overflow-x: hidden;
 }
 
-.ws-messages {
-	background-color: rgb(3, 7, 13);
-	height: 100%;
-	overflow-y: scroll;
-	overflow-x: hidden;
-
-	display: flex;
-	flex-direction: column;
-}
-
-.ws-msg {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-
-	
-	background: rgb(3, 7, 13);
-	border-bottom: 0.5px solid gray;
-
-	height: 30px;
-}
-
-.ws-msg:hover {
-	background: rgb(23, 59, 97);
-}
-
-.ws-msg-txt {
-	overflow-x: hidden;
-}
-
-.ws-msg-left {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: center;
-}
-	
-
-.ws-out-arrow {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	
-	width: 20px;
-	height: 20px;
-
-	background: orange;
-	color: white;
-	font-size: 15px;
-	font-weight: bold;
-
-	margin-right: 5px;
-}
-
-.ws-in-arrow {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-
-	width: 20px;
-	height: 20px;
-
-	background: blue;
-	color: white;
-	font-size: 15px;
-	font-weight: bold;
-
-	margin-right: 5px;
-}
-
 .reqheaders {
 	background-color: rgb(3, 7, 13);
 	height: 100%;
@@ -560,3 +487,168 @@ td {
   background: #555; 
 }
 */
+
+
+
+
+
+
+
+
+
+.ws-messages {
+	background-color: rgb(3, 7, 13);
+	height: 100%;
+	overflow-y: scroll;
+	overflow-x: hidden;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.ws-msg {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+
+	
+	background: rgb(3, 7, 13);
+	border-bottom: 0.5px solid gray;
+
+	height: 30px;
+}
+
+.ws-msg:hover {
+	background: rgb(23, 59, 97);
+}
+
+.ws-msg-txt {
+	overflow-x: hidden;
+}
+
+.ws-msg-left {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+	
+
+.ws-msg-right {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+
+.ws-out-arrow {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	
+	width: 20px;
+	height: 20px;
+
+	background: orange;
+	color: white;
+	font-size: 15px;
+	font-weight: bold;
+
+	margin-right: 5px;
+}
+
+.ws-in-arrow {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	width: 20px;
+	height: 20px;
+
+	background: blue;
+	color: white;
+	font-size: 15px;
+	font-weight: bold;
+
+	margin-right: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.atab input {
+  position: absolute;
+  opacity: 0;
+  z-index: -1;
+}
+
+.atabs {
+  overflow: scroll;
+}
+
+.atab {
+  width: 100%;
+  color: white;
+  overflow: hidden;
+}
+
+.atab-label {
+  display: flex;
+  justify-content: space-between;
+  padding: 1em;
+  background: #2c3e50;
+  cursor: pointer;
+
+	border-bottom: 0.5px solid gray; 
+}
+
+.ws-open-arrow {
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  transition: all 0.35s;
+
+	margin-left: 5px;
+}
+
+.atab-content {
+  max-height: 0;
+  padding: 0 1em;
+  color: #2c3e50;
+  background: white;
+  transition: all 0.35s;
+
+	overflow-y: scroll;
+}
+
+.atab-close {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1em;
+  font-size: 0.75em;
+  background: #2c3e50;
+  cursor: pointer;
+}
+
+.atab input:checked ~ .atab-content {
+  max-height: 100px;
+  padding: 1em;
+}
+
+.atab input:checked ~ .ws-open-arrow {
+  transform: rotate(90deg);
+}

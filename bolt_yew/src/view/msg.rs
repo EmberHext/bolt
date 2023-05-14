@@ -1,6 +1,5 @@
 use bolt_common::prelude::*;
 use yew::{html, Html};
-use std::time::Duration;
 
 pub fn render_ws_msg(msg: &WsMessage) -> Html {
     let txt = msg.txt.clone();
@@ -16,25 +15,63 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
     match msg.msg_type {
         WsMsgType::IN => {
             html! {
-                <div class="ws-msg pointer">
-                    <div class="ws-msg-left">
+              <div class="atab">
+                <input type="checkbox" id={msg.msg_id.clone()} />
+                <label class="atab-label" for={msg.msg_id.clone()}>
+                     <div class="ws-msg-left">
                         <div class="ws-in-arrow">{"↓"}</div>
                         <div class="ws-msg-txt">{txt}</div>
+                     </div>
+
+                    <div class="ws-msg-right">
+                        {time}
+                        <div class="ws-open-arrow">{"❯"}</div>
                     </div>
-                    <div>{time}</div>
+                </label>
+
+                <div class="atab-content">
+                  {msg.txt.clone()}
                 </div>
+              </div>
+                // <div class="ws-msg pointer">
+                //     <div class="ws-msg-left">
+                //         <div class="ws-in-arrow">{"↓"}</div>
+                //         <div class="ws-msg-txt">{txt}</div>
+                //     </div>
+                //     <div>{time}</div>
+                // </div>
             }
         }
 
         WsMsgType::OUT => {
             html! {
-                <div class="ws-msg pointer">
-                    <div class="ws-msg-left">
+              <div class="atab">
+                <input type="checkbox" id={msg.msg_id.clone()} />
+                <label class="atab-label" for={msg.msg_id.clone()}>
+                     <div class="ws-msg-left">
                         <div class="ws-out-arrow">{"↑"}</div>
                         <div class="ws-msg-txt">{txt}</div>
+                     </div>
+
+                    <div class="ws-msg-right">
+                        {time}
+                        <div class="ws-open-arrow">{"❯"}</div>
                     </div>
-                    <div>{time}</div>
+                </label>
+
+                <div class="atab-content">
+                  {msg.txt.clone()}
                 </div>
+              </div>
+
+                // <div class="ws-msg pointer">
+                //     <div class="ws-msg-left">
+                //         <div class="ws-out-arrow">{"↑"}</div>
+                //         <div class="ws-msg-txt">{txt}</div>
+                //     </div>
+                //     <div>{time}</div>
+                // </div>
+
             }
         }
     }
