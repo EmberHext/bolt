@@ -118,6 +118,10 @@ pub fn handle_ws_message(txt: String) {
             MsgType::WS_MSG_SENT => {
                 handle_ws_sent_msg(txt);
             }
+
+            MsgType::WS_RECEIVED_MSG => {
+                handle_ws_received_msg(txt);
+            }
         },
 
         Err(_err) => {
@@ -127,7 +131,7 @@ pub fn handle_ws_message(txt: String) {
 }
 
 fn handle_ws_connected_msg(txt: String) {
-    _bolt_log("CONNECTED TO THE WS SERVER!!");
+    // _bolt_log("CONNECTED TO THE WS SERVER!!");
 
     let msg: WsConnectedMsg = serde_json::from_str(&txt).unwrap();
 
@@ -145,7 +149,7 @@ fn handle_ws_connected_msg(txt: String) {
 }
 
 fn handle_ws_disconnected_msg(txt: String) {
-    _bolt_log("DISCONNECTED FROM THE WS SERVER!!");
+    // _bolt_log("DISCONNECTED FROM THE WS SERVER!!");
 
     let msg: WsDisconnectedMsg = serde_json::from_str(&txt).unwrap();
 
@@ -177,6 +181,23 @@ fn handle_ws_sent_msg(txt: String) {
                     con.out_queue.remove(index);
                 }
             }
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_ws_received_msg(txt: String) {
+    // _bolt_log("SENT!!!");
+
+    let received_msg: WsReceivedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if con.connection_id == received_msg.connection_id {
+            con.msg_history.push(received_msg.msg.clone());
         }
     }
 

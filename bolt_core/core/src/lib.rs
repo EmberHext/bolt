@@ -242,7 +242,7 @@ fn spawn_ws_service(connection_id: String) {
                 let connected = ws_con.connected;
 
                 if disconnecting {
-                    println!("WS {} DISCONNECTING", connection_id);
+                    // println!("WS {} DISCONNECTING", connection_id);
 
                     socket.as_mut().unwrap().close(None).unwrap();
 
@@ -261,11 +261,11 @@ fn spawn_ws_service(connection_id: String) {
                         .write_message(msg)
                         .unwrap();
                 } else if connecting {
-                    println!("WS {} CONNECTING", connection_id);
+                    // println!("WS {} CONNECTING", connection_id);
 
                     let (w_socket, _response) = open_ws_connection(&ws_con.url);
 
-                    // TODO: Notify client of successful connection
+                    // TODO: Notify client of failed connection
 
                     let connected_msg = WsConnectedMsg {
                         msg_type: MsgType::WS_CONNECTED,
@@ -285,12 +285,6 @@ fn spawn_ws_service(connection_id: String) {
                     // crate::session::server::ws_write(core_state.session_websocket.as_mut().unwrap(), msg);
 
                     socket = Some(w_socket);
-
-                    socket
-                        .as_mut()
-                        .unwrap()
-                        .write_message(tungstenite::Message::Text("Hello WebSocket".into()))
-                        .unwrap();
 
                     spawn_read_service(socket.as_mut().unwrap(), connection_id.clone());
                 } else if connected {
@@ -330,17 +324,49 @@ fn spawn_ws_service(connection_id: String) {
         .unwrap();
 }
 
-fn spawn_read_service(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>, connection_id: String) {
-    // TODO: dispatch in_queue
- 
-        // let _handle = std::thread::Builder::new()
-        // .name(connection_id)
-        // .spawn(move || {
-        //     // comment
+fn spawn_read_service(
+    current_ws: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>,
+    connection_id: String,
+) {
+    let stream = match current_ws.get_mut() {
+        MaybeTlsStream::Plain(s) => s,
+        _ => panic!("The stream is not plain"),
+    };
 
-        //     let msg = socket.read_message().expect("Error reading message");
-        //     println!("RECEIVED: {}", msg);
-        // });
+    let mut new_ws = WebSocket::from_raw_socket(
+        stream.try_clone().unwrap(),
+        tungstenite::protocol::Role::Client,
+        None,
+    );
+
+    let _handle = std::thread::Builder::new()
+        .name(connection_id.clone())
+        .spawn(move || loop {
+            let txt = new_ws.read_message().expect("Error reading message");
+            // println!("RECEIVED: {}", txt);
+
+            let mut core_state = CORE_STATE.lock().unwrap();
+
+            let mut new_msg = WsMessage::new();
+            new_msg.msg_type = WsMsgType::IN;
+            new_msg.txt = txt.into_text().unwrap();
+
+            let out = WsReceivedMsg {
+                msg_type: MsgType::WS_RECEIVED_MSG,
+                connection_id: connection_id.clone(),
+                msg: new_msg,
+            };
+
+            let out_txt = serde_json::to_string(&out).unwrap();
+            let out_msg = tungstenite::Message::Text(out_txt);
+
+            core_state
+                .session_websocket
+                .as_mut()
+                .unwrap()
+                .write_message(out_msg)
+                .unwrap();
+        });
 }
 
 fn open_ws_connection(
@@ -351,7 +377,7 @@ fn open_ws_connection(
 ) {
     let (socket, response) = connect(Url::parse(url).unwrap()).expect("Can't connect");
 
-    println!("Connected to the server");
+    // println!("Connected to the server");
 
     (socket, response)
 }

@@ -87,7 +87,7 @@ pub struct WsConnection {
 
     pub in_queue: Vec<WsMessage>,
 
-    pub msg_history: Vec<WsMessage>
+    pub msg_history: Vec<WsMessage>,
 }
 
 impl WsConnection {
@@ -118,7 +118,7 @@ impl WsConnection {
 
             in_queue: vec![],
 
-            msg_history: vec![]
+            msg_history: vec![],
         }
     }
 }
@@ -238,7 +238,8 @@ pub enum MsgType {
     ADD_WS_CONNECTION,
     WS_CONNECTED,
     WS_DISCONNECTED,
-    WS_MSG_SENT
+    WS_MSG_SENT,
+    WS_RECEIVED_MSG,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -435,4 +436,11 @@ pub struct WsSentMsg {
     pub msg_type: MsgType,
     pub connection_id: String,
     pub msg_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WsReceivedMsg {
+    pub msg_type: MsgType,
+    pub connection_id: String,
+    pub msg: WsMessage,
 }
