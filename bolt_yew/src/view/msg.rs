@@ -40,13 +40,11 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
     }
 }
 
-fn format_time(timestamp: u64) -> String {
-    let duration = Duration::from_millis(timestamp);
-    let sec = duration.as_secs();
-    
-    let hours = sec / 3600 / 3600 / 30;
-    let minutes = (sec % 3600) / 60;
-    let seconds = sec % 60;
+pub fn format_time(timestamp_ms: u64) -> String {
+    let js = js_sys::Date::new(&wasm_bindgen::JsValue::from_f64(timestamp_ms as f64));
+    let hour = js.get_hours() as u8;
+    let minute = js.get_minutes() as u8;
+    let second = js.get_seconds() as u8;
 
-    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+    format!("{:02}:{:02}:{:02}", hour, minute, second)
 }
