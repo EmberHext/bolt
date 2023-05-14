@@ -115,8 +115,6 @@ fn render_collection(
     current: Vec<usize>,
     col: &Collection,
 ) -> Html {
-    // let link = bctx.main_state.link.as_ref().unwrap();
-
     html! {
         <>
         <div id={"request".to_string() + &index.to_string()} class="sidebar2item">
@@ -153,7 +151,6 @@ fn render_http_request(
     index: usize,
     req: &HttpRequest,
 ) -> Html {
-    // let link = bctx.main_state.link.as_ref().unwrap();
     let request_name = req.name.clone();
 
     let request_name = if request_name.len() > 20 {
@@ -178,9 +175,8 @@ fn render_ws_request(
     index: usize,
     req: &WsConnection,
 ) -> Html {
-    // let link = bctx.main_state.link.as_ref().unwrap();
-    // let request_name = req.name.clone();
-    let request_name = req.connection_id.clone();
+    let request_name = req.name.clone();
+    // let request_name = req.connection_id.clone();
 
     let request_name = if request_name.len() > 20 {
         format!("{}...", &request_name[0..20])
@@ -205,8 +201,6 @@ fn render_col_request(
     current: Vec<usize>,
     req: &HttpRequest,
 ) -> Html {
-    // let link = bctx.main_state.link.as_ref().unwrap();
-
     html! {
         <div id={"request".to_string() + &req_index.to_string()} class={if col_index == current[0] && req_index == current[1] { "sidebar2item-child sidebar2item-selected" } else { "sidebar2item-child" }} >
             <div class="pointer" onclick={link.callback(move |_| Msg::SelectFromCollection(col_index, req_index))}>{req.name.clone()}</div>

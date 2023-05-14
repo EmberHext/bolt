@@ -219,7 +219,7 @@ pub fn create_home(path: &String) {
     std::fs::create_dir(path).unwrap();
 }
 
-pub fn _get_timestamp() -> u64 {
+pub fn get_timestamp() -> u64 {
     let now = SystemTime::now();
     let since_epoch = now.duration_since(UNIX_EPOCH).expect("Time went backwards");
 
