@@ -52,20 +52,13 @@ just build # or make build
 
 ## Bolt CLI Installation
 
+### Install with Cargo
+
 ```bash
 cargo install boltcli
 ```
 
-
-### Usage
-
-```bash
-bolt
-```
-
-run `bolt -h` for command line options
-
-### Build from source
+### Install from source
 
 > ⚠️ Prerequisites
 > 
@@ -87,6 +80,14 @@ git checkout release
 ```bash
 just install-cli # or make install-cli
 ```
+
+### Bolt CLI Usage
+
+```bash
+bolt
+```
+
+run `bolt -h` for command line options
 
 
 ## Features 🚧

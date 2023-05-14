@@ -1,8 +1,6 @@
 use crate::BoltContext;
 use crate::Msg;
-use crate::Request;
-use crate::SaveState;
-// use crate::BACKEND;
+// use crate::SaveState;
 use crate::GLOBAL_STATE;
 
 use crate::receive_response;
@@ -18,6 +16,11 @@ use syntect::html::highlighted_html_for_string;
 use syntect::parsing::SyntaxSet;
 
 use bolt_common::prelude::*;
+
+pub fn _get_current_request(bctx: &mut BoltContext) -> &mut HttpRequest {
+    let current = bctx.main_state.http_current;
+    return &mut bctx.main_state.http_requests[current];
+}
 
 pub fn _bolt_log(log: &str) {
     let log = log.to_string();
@@ -91,7 +94,8 @@ pub fn handle_ws_message(txt: String) {
             | MsgType::SAVE_STATE
             | MsgType::LOG
             | MsgType::PANIC
-            | MsgType::OPEN_LINK => {
+            | MsgType::OPEN_LINK
+            | MsgType::ADD_WS_CONNECTION => {
                 return;
             }
 
@@ -102,12 +106,103 @@ pub fn handle_ws_message(txt: String) {
             MsgType::RESTORE_STATE => {
                 handle_restore_response_msg(txt);
             }
+
+            MsgType::WS_CONNECTED => {
+                handle_ws_connected_msg(txt);
+            }
+
+            MsgType::WS_DISCONNECTED => {
+                handle_ws_disconnected_msg(txt);
+            }
+
+            MsgType::WS_MSG_SENT => {
+                handle_ws_sent_msg(txt);
+            }
+
+            MsgType::WS_RECEIVED_MSG => {
+                handle_ws_received_msg(txt);
+            }
         },
 
         Err(_err) => {
             handle_invalid_msg(txt);
         }
     }
+}
+
+fn handle_ws_connected_msg(txt: String) {
+    // _bolt_log("CONNECTED TO THE WS SERVER!!");
+
+    let msg: WsConnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if msg.connection_id == con.connection_id {
+            con.connecting = false;
+            con.connected = true;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_ws_disconnected_msg(txt: String) {
+    // _bolt_log("DISCONNECTED FROM THE WS SERVER!!");
+
+    let msg: WsDisconnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if msg.connection_id == con.connection_id {
+            con.disconnecting = false;
+            con.connected = false;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_ws_sent_msg(txt: String) {
+    // _bolt_log("SENT!!!");
+
+    let msg: WsSentMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if msg.connection_id == con.connection_id {
+            for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
+                if out_msg.msg_id == msg.msg_id {
+                    con.msg_history.push(out_msg.clone());
+                    con.out_queue.remove(index);
+                }
+            }
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_ws_received_msg(txt: String) {
+    // _bolt_log("SENT!!!");
+
+    let received_msg: WsReceivedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if con.connection_id == received_msg.connection_id {
+            con.msg_history.push(received_msg.msg.clone());
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
 }
 
 fn handle_http_response_msg(txt: String) {
@@ -125,14 +220,14 @@ fn handle_invalid_msg(txt: String) {
 }
 
 fn handle_restore_response_msg(txt: String) {
-    _bolt_log(&format!("received restore resp"));
+    // _bolt_log(&format!("received restore resp"));
 
-   let msg: RestoreStateMsg = serde_json::from_str(&txt).unwrap();
+    let msg: RestoreStateMsg = serde_json::from_str(&txt).unwrap();
 
     set_save_state(msg.save);
 }
 
-pub fn invoke_send(request: &mut Request) {
+pub fn invoke_send(request: &mut HttpRequest) {
     let msg = SendHttpMsg {
         msg_type: MsgType::SEND_HTTP,
         url: parse_url(request.url.clone(), request.params.clone()),
@@ -150,16 +245,7 @@ pub fn invoke_send(request: &mut Request) {
 }
 
 pub fn save_state(bctx: &mut BoltContext) {
-    let save_state = SaveState {
-        page: bctx.page.clone(),
-        main_current: bctx.main_current.clone(),
-        col_current: bctx.col_current.clone(),
-
-        main_col: bctx.main_col.clone(),
-        collections: bctx.collections.clone(),
-    };
-
-    let save = serde_json::to_string(&save_state).unwrap();
+    let save = serde_json::to_string(&bctx.main_state).unwrap();
 
     let msg = SaveStateMsg {
         msg_type: MsgType::SAVE_STATE,
@@ -172,17 +258,11 @@ pub fn save_state(bctx: &mut BoltContext) {
 }
 
 fn set_save_state(state: String) {
-    let new_state: SaveState = serde_json::from_str(&state).unwrap();
+    let new_state: MainState = serde_json::from_str(&state).unwrap();
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
 
-    global_state.bctx.main_col = new_state.main_col;
-    global_state.bctx.collections = new_state.collections;
-
-    global_state.bctx.col_current = new_state.col_current;
-    global_state.bctx.main_current = new_state.main_current;
-
-    global_state.bctx.page = new_state.page;
+    global_state.bctx.main_state = new_state;
 
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
@@ -191,7 +271,7 @@ fn set_save_state(state: String) {
 pub fn restore_state() {
     let msg = RestoreStateMsg {
         msg_type: MsgType::RESTORE_STATE,
-        save: "".to_string()
+        save: "".to_string(),
     };
 
     let msg = serde_json::to_string(&msg).unwrap();

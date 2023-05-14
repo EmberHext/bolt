@@ -53,6 +53,10 @@ body {
 	cursor: pointer;
 }
 
+.disabled-cursor {
+	cursor: not-allowed;
+}
+
 
 .methodselect {
 	width: 120px;
@@ -116,6 +120,74 @@ body {
 }
 
 .sendbtn:hover {
+	 background: rgb(186, 123, 6);
+}
+
+.ws-connect-btn {
+	height: 40px;
+	width: 90px;
+	background: rgb(171, 113, 7);
+	border: 0px;
+	color: white;
+	margin-left: 5px;
+	margin-right: 15px;
+	font-size: 15px;
+
+	border-radius: 8px;
+}
+
+.ws-connect-btn:hover {
+	 background: rgb(186, 123, 6);
+}
+
+.ws-disconnect-btn {
+	height: 40px;
+	width: 90px;
+	background: rgb(236, 71, 71);
+	border: 0px;
+	color: white;
+	margin-left: 5px;
+	margin-right: 15px;
+	font-size: 15px;
+
+	border-radius: 8px;
+}
+
+.ws-disconnect-btn:hover {
+	 background: rgb(236, 71, 71);
+}
+
+.ws-connecting-btn {
+	height: 40px;
+	width: 90px;
+	background: rgb(134, 134, 134);
+	border: 0px;
+	color: white;
+	margin-left: 5px;
+	margin-right: 15px;
+	font-size: 15px;
+
+	border-radius: 8px;
+}
+
+.ws-connecting-btn:hover {
+	 background: rgb(134, 134, 134);
+}
+
+.ws-send-btn {
+	height: 30px;
+	width: 80px;
+	background: rgb(171, 113, 7);
+	border: 0px;
+	color: white;
+	margin-left: 5px;
+	margin-right: 15px;
+	font-size: 15px;
+
+	border-radius: 8px;
+}
+
+.ws-send-btn:hover {
 	 background: rgb(186, 123, 6);
 }
 
@@ -272,6 +344,14 @@ body {
   background-color: rgb(3, 7, 13);
 }
 
+.reqline {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+  background-color: rgb(3, 7, 13);
+}
+
 .respstats {
 	display: flex;
 	flex-direction: row;
@@ -354,7 +434,7 @@ td {
 .resizer2 {
   height: 5px;
   z-index: 2;
-  cursor: col-resize;
+  cursor: ns-resize;
   background: rgb(27, 28, 28);
 }
 

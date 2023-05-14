@@ -1,6 +1,6 @@
 use crate::utils::*;
 use futures::stream::SplitSink;
-use serde::{Deserialize, Serialize};
+// use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use yew::{html::Scope, Component, Context, Html};
 
@@ -13,7 +13,7 @@ mod style;
 mod utils;
 mod view;
 
-use bolt_common::prelude::HttpMethod;
+use bolt_common::prelude::*;
 
 // TODO: Copy response body button
 // FIXME: request headers and params do not scroll
@@ -21,32 +21,59 @@ use bolt_common::prelude::HttpMethod;
 // Define the possible messages which can be sent to the component
 #[derive(Clone)]
 pub enum Msg {
-    SelectedMethod(HttpMethod),
-    SendPressed,
-    ReqBodyPressed,
-    ReqHeadersPressed,
-    ReqParamsPressed,
+    HttpReqSelectedMethod(HttpMethod),
 
-    RespBodyPressed,
-    RespHeadersPressed,
+    SendHttpPressed,
+    ConnectWsPressed,
+    SendWsPressed,
 
-    AddHeader,
-    RemoveHeader(usize),
+    DisconnectWsPressed,
 
-    AddParam,
-    RemoveParam(usize),
+    HttpReqBodyPressed,
+    HttpReqHeadersPressed,
+    HttpReqParamsPressed,
 
-    ReceivedResponse,
+    WsOutMessagePressed,
+    WsOutHeadersPressed,
+    WsOutParamsPressed,
 
-    MethodChanged,
+    HttpRespBodyPressed,
+    HttpRespHeadersPressed,
+
+    HttpReqAddHeader,
+    HttpReqRemoveHeader(usize),
+
+    HttpReqAddParam,
+    HttpReqRemoveParam(usize),
+
+    WsOutAddHeader,
+    WsOutRemoveHeader(usize),
+
+    WsOutAddParam,
+    WsOutRemoveParam(usize),
+
+    HttpReceivedResponse,
+
+    HttpReqMethodChanged,
     UrlChanged,
-    BodyChanged,
-    HeaderChanged(usize),
-    ParamChanged(usize),
 
-    AddRequest,
-    RemoveRequest(usize),
-    SelectRequest(usize),
+    HttpReqBodyChanged,
+    WsOutMessageChanged,
+
+    HttpReqHeaderChanged(usize),
+    WsOutHeaderChanged(usize),
+
+    HttpReqParamChanged(usize),
+    WsOutParamChanged(usize),
+
+    AddHttpRequest,
+    AddWsConnection,
+
+    RemoveHttpRequest(usize),
+    SelectHttpRequest(usize),
+
+    RemoveWsRequest(usize),
+    SelectWsRequest(usize),
 
     AddCollection,
     RemoveCollection(usize),
@@ -59,110 +86,14 @@ pub enum Msg {
 
     Update,
     HelpPressed,
+    GithubPressed,
     SwitchPage(Page),
 
     Nothing,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
-pub enum Page {
-    Home,
-    Collections,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
-pub enum ResponseType {
-    TEXT,
-    JSON,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct BoltApp {}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Response {
-    status: u16,
-    body: String,
-    headers: Vec<Vec<String>>,
-    time: u32,
-    size: u64,
-    response_type: ResponseType,
-    request_index: usize,
-    failed: bool,
-}
-
-impl Response {
-    fn new() -> Self {
-        Response {
-            status: 0,
-            body: String::new(),
-            headers: Vec::new(),
-            time: 0,
-            size: 0,
-            response_type: ResponseType::TEXT,
-            request_index: 0,
-            failed: false,
-        }
-    }
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct Request {
-    url: String,
-    body: String,
-    headers: Vec<Vec<String>>,
-    params: Vec<Vec<String>>,
-    method: HttpMethod,
-
-    response: Response,
-
-    // META
-    name: String,
-
-    req_tab: u8,
-    resp_tab: u8,
-
-    loading: bool,
-}
-
-impl Request {
-    fn new() -> Request {
-        Request {
-            url: String::new(),
-            body: String::new(),
-            headers: vec![vec![String::new(), String::new()]],
-            params: vec![vec![String::new(), String::new()]],
-            method: HttpMethod::GET,
-
-            response: Response::new(),
-
-            // META
-            name: "New Request ".to_string(),
-
-            req_tab: 1,
-            resp_tab: 1,
-
-            loading: false,
-        }
-    }
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-struct Collection {
-    name: String,
-    requests: Vec<Request>,
-    collapsed: bool,
-}
-
-impl Collection {
-    fn new() -> Collection {
-        Collection {
-            name: "New Collection ".to_string(),
-            requests: vec![],
-            collapsed: false,
-        }
-    }
-}
 
 pub struct BoltState {
     bctx: BoltContext,
@@ -170,39 +101,20 @@ pub struct BoltState {
 
 // #[derive(Clone)]
 pub struct BoltContext {
+    main_state: MainState,
+
     link: Option<Scope<BoltApp>>,
 
-    page: Page,
-    main_current: usize,
-    col_current: Vec<usize>,
-
-    main_col: Collection,
-    collections: Vec<Collection>,
     ws_tx: Option<SplitSink<gloo_net::websocket::futures::WebSocket, WSMessage>>,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct SaveState {
-    page: Page,
-
-    main_current: usize,
-    col_current: Vec<usize>,
-
-    main_col: Collection,
-    collections: Vec<Collection>,
 }
 
 impl BoltContext {
     fn new() -> Self {
         BoltContext {
+            main_state: MainState::new(),
+
             link: None,
 
-            main_col: Collection::new(),
-            collections: vec![],
-            page: Page::Home,
-
-            main_current: 0,
-            col_current: vec![0, 0],
             ws_tx: None,
         }
     }
@@ -227,7 +139,8 @@ lazy_static::lazy_static! {
 }
 
 // static BACKEND: &str = "http://127.0.0.1:3344/";
-static BACKEND_WS: &str = "ws://127.0.0.1:5555/";
+static BACKEND_WS: &str = "ws://127.0.0.1";
+static WS_PORT: u16 = 3344;
 
 impl Component for BoltApp {
     type Message = Msg;
@@ -239,28 +152,7 @@ impl Component for BoltApp {
         let mut state = GLOBAL_STATE.lock().unwrap();
         state.bctx.link = Some(ctx.link().clone());
 
-        state.bctx.main_col.requests.push(Request::new());
-
-        let ws = WebSocket::open(BACKEND_WS).unwrap();
-        let (write, mut read) = ws.split();
-
-        state.bctx.ws_tx = Some(write);
-
-        wasm_bindgen_futures::spawn_local(async move {
-            while let Some(msg) = read.next().await {
-                let txt = msg.unwrap();
-
-                let txt = match txt {
-                    WSMessage::Text(txt) => txt,
-                    WSMessage::Bytes(_) => panic!("got bytes in txt"),
-                };
-
-                handle_ws_message(txt);
-            }
-            _bolt_log("WS: WebSocket Closed");
-        });
-
-        restore_state();
+        init(&mut state.bctx);
 
         Self {}
     }
@@ -280,21 +172,76 @@ impl Component for BoltApp {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         let mut state = GLOBAL_STATE.lock().unwrap();
 
-        let page = state.bctx.page;
+        let page = state.bctx.main_state.page;
 
-        if page == Page::Home {
-            view::home::home_view(&mut state.bctx)
+        if page == Page::HttpPage {
+            view::http::http_view(&mut state.bctx)
         } else if page == Page::Collections {
             view::collections::collections_view(&mut state.bctx)
+        } else if page == Page::Tcp {
+            view::tcp::tcp_view(&mut state.bctx)
+        } else if page == Page::Udp {
+            view::udp::udp_view(&mut state.bctx)
+        } else if page == Page::Websockets {
+            view::websockets::websockets_view(&mut state.bctx)
+        } else if page == Page::Servers {
+            view::servers::servers_view(&mut state.bctx)
         } else {
-            view::home::home_view(&mut state.bctx)
+            view::http::http_view(&mut state.bctx)
         }
     }
 }
 
-fn send_request(request: &mut Request) {
+fn init(bctx: &mut BoltContext) {
+    bctx.main_state.http_requests.push(HttpRequest::new());
+
+    let ws = WebSocket::open(&(BACKEND_WS.to_string() + ":" + &WS_PORT.to_string())).unwrap();
+    let (write, mut read) = ws.split();
+
+    bctx.ws_tx = Some(write);
+
+    wasm_bindgen_futures::spawn_local(async move {
+        while let Some(msg) = read.next().await {
+            let txt = msg.unwrap();
+
+            let txt = match txt {
+                WSMessage::Text(txt) => txt,
+                WSMessage::Bytes(_) => panic!("got bytes in txt"),
+            };
+
+            handle_ws_message(txt);
+        }
+        _bolt_log("WS: WebSocket Closed");
+    });
+
+    restore_state();
+}
+
+fn send_http_request(request: &mut HttpRequest) {
     request.loading = true;
     invoke_send(request);
+}
+
+fn connect_ws(connection: &mut WsConnection) {
+    connection.connecting = true;
+
+    // _bolt_log("connect ws was pressed");
+}
+
+fn disconnect_ws(connection: &mut WsConnection) {
+    connection.disconnecting = true;
+
+    // _bolt_log("disconnect ws was pressed");
+}
+
+fn send_ws(connection: &mut WsConnection) {
+    // _bolt_log("send ws was pressed");
+
+    let mut msg = WsMessage::new();
+    msg.txt = get_body();
+    msg.msg_type = WsMsgType::OUT;
+    
+    connection.out_queue.push(msg);
 }
 
 pub fn receive_response(data: String) {
@@ -303,24 +250,18 @@ pub fn receive_response(data: String) {
 
     // bolt_log("received a response");
 
-    let mut response: Response = serde_json::from_str(&data).unwrap();
+    let mut response: HttpResponse = serde_json::from_str(&data).unwrap();
 
     // _bolt_log(&format!("{:?}", response));
 
-    if response.response_type == ResponseType::JSON {
+    if response.response_type == HttpResponseType::JSON {
         response.body = format_json(&response.body);
         response.body = highlight_body(&response.body);
     }
 
-    if bctx.page == Page::Home {
-        let current = response.request_index;
-        state.bctx.main_col.requests[current].response = response;
-        state.bctx.main_col.requests[current].loading = false;
-    } else {
-        let current = &bctx.col_current;
-        bctx.collections[current[0]].requests[current[1]].response = response;
-        bctx.collections[current[0]].requests[current[1]].loading = false;
-    }
+    let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
+    current.response = response;
+    current.loading = false;
 
     let link = state.bctx.link.as_ref().unwrap();
 

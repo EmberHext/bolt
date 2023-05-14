@@ -7,6 +7,7 @@ alias b := build
 alias r := run
 alias c := clean
 
+
 # Install required build tools and dependencies
 setup:
 	cargo install tauri-cli
@@ -33,7 +34,7 @@ run-cli: build-yew
 	cd bolt_cli && BOLT_DEV=1 cargo run
 
 # Run Bolt Core in headless mode
-run-headless:
+run-headless: build-yew
 	cd bolt_cli && BOLT_DEV=1 cargo run -- --headless
 
 build-yew:
@@ -48,8 +49,19 @@ build-tauri:
 watch-tauri:
 	cargo tauri dev
 
-publish:
-	cd bolt_server && cargo publish
+bump-version:
+	ls
+
+publish-libs:
+	cd bolt_core/common && cargo publish
+	cd bolt_core/http && cargo publish
+	cd bolt_core/ws && cargo publish
+	cd bolt_core/servers && cargo publish
+	cd bolt_core/tcp && cargo publish
+	cd bolt_core/udp && cargo publish
+	cd bolt_core/core && cargo publish
+
+publish-cli: publish-libs
 	cd bolt_cli && cargo publish
 
 # Clean temporary build files

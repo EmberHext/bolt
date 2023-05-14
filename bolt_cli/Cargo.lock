@@ -297,6 +297,7 @@ name = "bolt_common"
 version = "0.11.11"
 dependencies = [
  "serde",
+ "uuid",
 ]
 
 [[package]]
@@ -306,15 +307,34 @@ dependencies = [
  "actix-files",
  "actix-web",
  "bolt_common",
+ "bolt_http",
+ "bolt_ws",
  "dirs 5.0.1",
  "getrandom",
+ "lazy_static",
  "reqwest",
  "serde",
  "serde_json",
  "tokio",
  "tungstenite",
+ "url",
  "uuid",
  "webbrowser",
+]
+
+[[package]]
+name = "bolt_http"
+version = "0.11.11"
+dependencies = [
+ "bolt_common",
+ "reqwest",
+]
+
+[[package]]
+name = "bolt_ws"
+version = "0.11.11"
+dependencies = [
+ "bolt_common",
 ]
 
 [[package]]
@@ -1743,6 +1763,7 @@ dependencies = [
  "getrandom",
  "rand",
  "uuid-macro-internal",
+ "wasm-bindgen",
 ]
 
 [[package]]

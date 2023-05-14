@@ -4,7 +4,7 @@ window.onload = function() {
   setTimeout(function() {
     const resizer = document.querySelector(".resizer");
     const sidebar = document.querySelector(".sidebars");
-    
+
 
     resizer.addEventListener("mousedown", (event) => {
       document.body.style.cursor = "col-resize";
@@ -26,9 +26,9 @@ window.onload = function() {
 
   setTimeout(function() {
     const resizer2 = document.querySelector(".resizer2");
-    
+
     resizer2.addEventListener("mousedown", (event) => {
-      document.body.style.cursor = "row-resize";
+      document.body.style.cursor = "ns-resize";
       document.addEventListener("mousemove", resize, false);
 
       document.addEventListener("mouseup", () => {
@@ -38,32 +38,32 @@ window.onload = function() {
     });
 
     function resize(e) {
-    const req = document.querySelector(".req");
-    const resp = document.querySelector(".resp");
-    const reqbody = document.querySelector(".reqbody");
-    const respbody = document.querySelector(".respbody");
-    const reqheaders = document.querySelector(".reqheaders");      
-      
+      const req = document.querySelector(".req");
+      const resp = document.querySelector(".resp");
+      const reqbody = document.querySelector(".reqbody");
+      const respbody = document.querySelector(".respbody");
+      const reqheaders = document.querySelector(".reqheaders");
+
       const req_size = e.y;
       req.style.height = `${req_size}px`;
 
       try {
         let req_body_size = req.clientHeight - 140;
         reqbody.style.height = `${req_body_size}px`;
-      } catch(err) {
+      } catch (err) {
         let reqheaders_size = req.clientHeight - 115;
         reqheaders.style.height = `${reqheaders_size}px`;
       }
 
       let whole = document.documentElement.scrollHeight;
-     
+
       let resp_size = whole - req_size - 90;
 
       resp.style.height = `${resp_size}px`;
-      
+
     }
 
-    
+
     const textarea = document.getElementById("reqbody");
 
     textarea.addEventListener("keydown", function(event) {
@@ -81,8 +81,8 @@ window.onload = function() {
         this.selectionStart = this.selectionEnd = start + 4;
       }
     });
-  
-    init_resize();    
+
+    init_resize();
   }, 1000);
 };
 
@@ -99,18 +99,18 @@ function init_resize() {
   const req = document.querySelector(".req");
   const reqheaders = document.querySelector(".reqheaders");
   const reqbody = document.querySelector(".reqbody");
-  
+
   url_input.focus();
-  
+
   sidebar.style.width = '250px';
-  
+
   req.style.height = '325px';
 
 
   try {
-      let req_body_size = req.clientHeight - 140;
-      reqbody.style.height = `${req_body_size}px`;
-  } catch(err) {
+    let req_body_size = req.clientHeight - 140;
+    reqbody.style.height = `${req_body_size}px`;
+  } catch (err) {
     let reqheaders_size = req.clientHeight - 115;
     reqheaders.style.height = `${reqheaders_size}px`;
   }
