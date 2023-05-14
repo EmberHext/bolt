@@ -231,6 +231,7 @@ fn spawn_ws_service(connection_id: String) {
 
                 let ws_con = &core_state.main_state.ws_connections[con_index];
 
+                // TODO: dispatch out_queue
                 println!("POLL CON {} -- OUT: {}", ws_con.connection_id, ws_con.out_queue.len());
 
                 let connecting = ws_con.connecting;
@@ -288,6 +289,8 @@ fn spawn_ws_service(connection_id: String) {
                         .unwrap();
                 }
 
+                // TODO: dispatch in_queue
+                // BUG: causes malfunction and thread panics
                 // let msg = socket
                 // .as_mut()
                 // .unwrap()
