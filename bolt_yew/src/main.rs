@@ -231,11 +231,11 @@ fn connect_ws(connection: &mut WsConnection) {
 fn disconnect_ws(connection: &mut WsConnection) {
     connection.disconnecting = true;
 
-    _bolt_log("disconnect ws was pressed");
+    // _bolt_log("disconnect ws was pressed");
 }
 
 fn send_ws(connection: &mut WsConnection) {
-    _bolt_log("send ws was pressed");
+    // _bolt_log("send ws was pressed");
 
     let mut msg = WsMessage::new();
     msg.txt = get_body();

@@ -54,7 +54,7 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
                     handle_restore_state(websocket, session_id, txt);
                 }
 
-                MsgType::HTTP_RESPONSE | MsgType::WS_CONNECTED | MsgType::WS_DISCONNECTED => {
+                MsgType::HTTP_RESPONSE | MsgType::WS_CONNECTED | MsgType::WS_DISCONNECTED | MsgType::WS_MSG_SENT => {
                     return;
                 }
 

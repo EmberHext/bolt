@@ -51,8 +51,8 @@ impl CoreState {
     }
 }
 
-const SERVICE_SYNC_REFRESH_RATE : u64 = 1000;
-const WS_SERVICE_REFRESH_RATE : u64 = 1000;
+const SERVICE_SYNC_REFRESH_RATE: u64 = 1000;
+const WS_SERVICE_REFRESH_RATE: u64 = 1000;
 
 pub fn start(args: Vec<String>, port: u16) {
     let mut args = args;
@@ -231,11 +231,15 @@ fn spawn_ws_service(connection_id: String) {
 
                 let ws_con = &core_state.main_state.ws_connections[con_index];
 
-                // TODO: dispatch out_queue
-                println!("POLL CON {} -- OUT: {}", ws_con.connection_id, ws_con.out_queue.len());
+                // println!(
+                //     "POLL CON {} -- OUT: {}",
+                //     ws_con.connection_id,
+                //     ws_con.out_queue.len()
+                // );
 
                 let connecting = ws_con.connecting;
                 let disconnecting = ws_con.disconnecting;
+                let connected = ws_con.connected;
 
                 if disconnecting {
                     println!("WS {} DISCONNECTING", connection_id);
@@ -287,6 +291,31 @@ fn spawn_ws_service(connection_id: String) {
                         .unwrap()
                         .write_message(tungstenite::Message::Text("Hello WebSocket".into()))
                         .unwrap();
+                } else if connected {
+                    for out_msg in ws_con.out_queue.clone() {
+                        // println!("OUT MSG: {}", out_msg.txt);
+
+                        let txt = serde_json::to_string(&out_msg.txt).unwrap();
+                        let msg = tungstenite::Message::Text(txt);
+
+                        socket.as_mut().unwrap().write_message(msg).unwrap();
+
+                        let msg_sent = WsSentMsg {
+                            msg_type: MsgType::WS_MSG_SENT,
+                            connection_id: connection_id.clone(),
+                            msg_id: out_msg.msg_id.clone(),
+                        };
+
+                        let sent_txt = serde_json::to_string(&msg_sent).unwrap();
+                        let sent_msg = tungstenite::Message::Text(sent_txt);
+
+                        core_state
+                            .session_websocket
+                            .as_mut()
+                            .unwrap()
+                            .write_message(sent_msg)
+                            .unwrap();
+                    }
                 }
 
                 // TODO: dispatch in_queue

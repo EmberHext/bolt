@@ -114,6 +114,10 @@ pub fn handle_ws_message(txt: String) {
             MsgType::WS_DISCONNECTED => {
                 handle_ws_disconnected_msg(txt);
             }
+
+            MsgType::WS_MSG_SENT => {
+                handle_ws_sent_msg(txt);
+            }
         },
 
         Err(_err) => {
@@ -151,6 +155,28 @@ fn handle_ws_disconnected_msg(txt: String) {
         if msg.connection_id == con.connection_id {
             con.disconnecting = false;
             con.connected = false;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_ws_sent_msg(txt: String) {
+    // _bolt_log("SENT!!!");
+
+    let msg: WsSentMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if msg.connection_id == con.connection_id {
+            for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
+                if out_msg.msg_id == msg.msg_id {
+                    con.msg_history.push(out_msg.clone());
+                    con.out_queue.remove(index);
+                }
+            }
         }
     }
 
