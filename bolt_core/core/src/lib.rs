@@ -382,6 +382,6 @@ fn open_ws_connection(
     (socket, response)
 }
 
-fn close_ws_connection(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>) {
+fn _close_ws_connection(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>) {
     socket.close(None).unwrap();
 }

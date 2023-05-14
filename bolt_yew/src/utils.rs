@@ -212,7 +212,7 @@ fn handle_http_response_msg(txt: String) {
 }
 
 fn handle_ping_msg(_txt: String) {
-    _bolt_log(&format!("received pong"));
+    // _bolt_log(&format!("received pong"));
 }
 
 fn handle_invalid_msg(txt: String) {

@@ -9,7 +9,6 @@ use gloo_net::websocket::{futures::WebSocket, Message as WSMessage};
 
 mod helpers;
 mod process;
-mod style;
 mod utils;
 mod view;
 
