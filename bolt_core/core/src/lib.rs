@@ -52,7 +52,7 @@ impl CoreState {
 }
 
 const SERVICE_SYNC_REFRESH_RATE: u64 = 1000;
-const WS_SERVICE_REFRESH_RATE: u64 = 1000;
+const WS_SERVICE_REFRESH_RATE: u64 = 100;
 
 pub fn start(args: Vec<String>, port: u16) {
     let mut args = args;
@@ -291,6 +291,8 @@ fn spawn_ws_service(connection_id: String) {
                         .unwrap()
                         .write_message(tungstenite::Message::Text("Hello WebSocket".into()))
                         .unwrap();
+
+                    spawn_read_service(socket.as_mut().unwrap(), connection_id.clone());
                 } else if connected {
                     for out_msg in ws_con.out_queue.clone() {
                         // println!("OUT MSG: {}", out_msg.txt);
@@ -318,15 +320,6 @@ fn spawn_ws_service(connection_id: String) {
                     }
                 }
 
-                // TODO: dispatch in_queue
-                // BUG: causes malfunction and thread panics
-                // let msg = socket
-                // .as_mut()
-                // .unwrap()
-                // .read_message()
-                // .expect("Error reading message");
-                // println!("Received: {}", msg);
-
                 drop(core_state);
                 std::thread::sleep(std::time::Duration::from_millis(WS_SERVICE_REFRESH_RATE));
             }
@@ -335,6 +328,19 @@ fn spawn_ws_service(connection_id: String) {
             // close_ws_connection(socket.as_mut().unwrap());
         })
         .unwrap();
+}
+
+fn spawn_read_service(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>, connection_id: String) {
+    // TODO: dispatch in_queue
+ 
+        // let _handle = std::thread::Builder::new()
+        // .name(connection_id)
+        // .spawn(move || {
+        //     // comment
+
+        //     let msg = socket.read_message().expect("Error reading message");
+        //     println!("RECEIVED: {}", msg);
+        // });
 }
 
 fn open_ws_connection(

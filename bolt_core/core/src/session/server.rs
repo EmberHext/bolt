@@ -54,7 +54,10 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
                     handle_restore_state(websocket, session_id, txt);
                 }
 
-                MsgType::HTTP_RESPONSE | MsgType::WS_CONNECTED | MsgType::WS_DISCONNECTED | MsgType::WS_MSG_SENT => {
+                MsgType::HTTP_RESPONSE
+                | MsgType::WS_CONNECTED
+                | MsgType::WS_DISCONNECTED
+                | MsgType::WS_MSG_SENT => {
                     return;
                 }
 
@@ -215,11 +218,14 @@ pub fn launch_core_server(port: u16, address: String) {
                 Ok(response)
             };
 
-            let new_ws = WebSocket::from_raw_socket(stream.as_mut().unwrap().try_clone().unwrap(), tungstenite::protocol::Role::Server, None);
-            
+            let new_ws = WebSocket::from_raw_socket(
+                stream.as_mut().unwrap().try_clone().unwrap(),
+                tungstenite::protocol::Role::Server,
+                None,
+            );
 
             let mut session_websocket = accept_hdr(stream.unwrap(), callback).unwrap();
-            // let session_stream ) 
+            // let session_stream )
 
             let mut core_state = CORE_STATE.lock().unwrap();
             core_state.session_websocket = Some(new_ws);

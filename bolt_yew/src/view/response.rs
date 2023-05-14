@@ -132,7 +132,7 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
 //     }
 // }
 
-pub fn ws_in(bctx: &mut BoltContext) -> Html {
+pub fn ws_history(bctx: &mut BoltContext) -> Html {
     // let link = bctx.main_state.link.as_ref().unwrap();
 
     let can_display = !bctx.main_state.ws_connections.is_empty();
@@ -169,7 +169,7 @@ pub fn ws_in(bctx: &mut BoltContext) -> Html {
                                 <th>{"Direction"}</th>
                                 <th>{"TXT"}</th>
                             </tr>
-                            { for connection.in_queue.iter().map(|msg| view::msg::render_ws_msg(&msg)) }
+                            { for connection.msg_history.iter().map(|msg| view::msg::render_ws_msg(&msg)) }
                         </table>
                     </div>
                </div>

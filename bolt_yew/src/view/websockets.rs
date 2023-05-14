@@ -20,7 +20,7 @@ pub fn websockets_view(bctx: &mut BoltContext) -> Html {
                                 
                     <div class="resizer2"></div>     
         
-                    {view::response::ws_in(bctx)}
+                    {view::response::ws_history(bctx)}
                 </div>
             </div>
 
