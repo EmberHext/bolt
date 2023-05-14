@@ -17,8 +17,6 @@ use syntect::parsing::SyntaxSet;
 
 use bolt_common::prelude::*;
 
-use std::time::{SystemTime, UNIX_EPOCH};
-
 pub fn _get_current_request(bctx: &mut BoltContext) -> &mut HttpRequest {
     let current = bctx.main_state.http_current;
     return &mut bctx.main_state.http_requests[current];
@@ -401,11 +399,4 @@ pub fn parse_url(url: String, params: Vec<Vec<String>>) -> String {
 
     // bolt_log(&format!("url is: {new_url}"));
     new_url
-}
-
-pub fn get_timestamp() -> u64 {
-    let now = SystemTime::now();
-    let since_epoch = now.duration_since(UNIX_EPOCH).expect("Time went backwards");
-
-    since_epoch.as_millis() as u64
 }

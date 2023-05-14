@@ -240,8 +240,7 @@ fn send_ws(connection: &mut WsConnection) {
     let mut msg = WsMessage::new();
     msg.txt = get_body();
     msg.msg_type = WsMsgType::OUT;
-    msg.timestamp = utils::get_timestamp();
-
+    
     connection.out_queue.push(msg);
 }
 

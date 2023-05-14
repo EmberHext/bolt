@@ -44,15 +44,23 @@ pub enum WsMsgType {
 pub struct WsMessage {
     pub txt: String,
     pub timestamp: u64,
-
+    pub msg_id: String,
     pub msg_type: WsMsgType,
 }
 
 impl WsMessage {
     pub fn new() -> Self {
+        let msg_id = uuid::Uuid::new_v4()
+            .to_string()
+            .splitn(2, '-')
+            .next()
+            .unwrap()
+            .to_string();
+
         Self {
             txt: String::new(),
             timestamp: 0,
+            msg_id,
             msg_type: WsMsgType::OUT,
         }
     }
