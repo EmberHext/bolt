@@ -1,10 +1,10 @@
 [package]
 name = "bolt-yew"
-version = "0.11.11"
+version = "0.12.4"
 edition = "2021"
 
 [dependencies]
-bolt_common = { path="../bolt_core/common" }
+bolt_common = { version = "0.12.4", path = "../bolt_core/common" }
 
 wasm-bindgen = "0.2"
 yew = {version = "0.20.0", features = ["csr"] }

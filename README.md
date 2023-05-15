@@ -95,7 +95,7 @@ run `bolt -h` for command line options
  * [x] Collections
  * [x] CLI
  * [ ] Testing and benchmarking
- * [ ] Websockets
+ * [x] Websockets
  * [ ] Logging
  * [ ] TCP/UDP
 

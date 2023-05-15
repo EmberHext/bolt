@@ -28,35 +28,35 @@ pub fn websocket_icon(height: u32, width: u32) -> Html {
     }
 }
 
-pub fn tcp_icon(height: u32, width: u32) -> Html {
-    html! {
-        <svg viewBox="0 0 24 24" fill="currentColor" height={height.to_string() + "px"} width={width.to_string() + "px"} >
-          <path d="M12 9c-1.3 0-2.4.8-2.8 2H6.8C6.4 9.8 5.3 9 4 9c-1.7 0-3 1.3-3 3s1.3 3 3 3c1.3 0 2.4-.8 2.8-2h2.4c.4 1.2 1.5 2 2.8 2s2.4-.8 2.8-2h2.4c.4 1.2 1.5 2 2.8 2 1.7 0 3-1.3 3-3s-1.3-3-3-3c-1.3 0-2.4.8-2.8 2h-2.4c-.4-1.2-1.5-2-2.8-2m-9 3c0-.6.4-1 1-1s1 .4 1 1-.4 1-1 1-1-.4-1-1m18 0c0 .6-.4 1-1 1s-1-.4-1-1 .4-1 1-1 1 .4 1 1z" />
-        </svg>
-    }
-}
+// pub fn tcp_icon(height: u32, width: u32) -> Html {
+//     html! {
+//         <svg viewBox="0 0 24 24" fill="currentColor" height={height.to_string() + "px"} width={width.to_string() + "px"} >
+//           <path d="M12 9c-1.3 0-2.4.8-2.8 2H6.8C6.4 9.8 5.3 9 4 9c-1.7 0-3 1.3-3 3s1.3 3 3 3c1.3 0 2.4-.8 2.8-2h2.4c.4 1.2 1.5 2 2.8 2s2.4-.8 2.8-2h2.4c.4 1.2 1.5 2 2.8 2 1.7 0 3-1.3 3-3s-1.3-3-3-3c-1.3 0-2.4.8-2.8 2h-2.4c-.4-1.2-1.5-2-2.8-2m-9 3c0-.6.4-1 1-1s1 .4 1 1-.4 1-1 1-1-.4-1-1m18 0c0 .6-.4 1-1 1s-1-.4-1-1 .4-1 1-1 1 .4 1 1z" />
+//         </svg>
+//     }
+// }
 
-pub fn _udp_icon(height: u32, width: u32) -> Html {
-    html! {
-        <svg viewBox="0 0 24 24" fill="currentColor" height={height.to_string() + "px"} width={width.to_string() + "px"}>
-            <path d="M15 12c0-1.3-.84-2.4-2-2.82V6.82C14.16 6.4 15 5.3 15 4a3 3 0 00-3-3 3 3 0 00-3 3c0 1.3.84 2.4 2 2.82v2.37C9.84 9.6 9 10.7 9 12s.84 2.4 2 2.82v2.36C9.84 17.6 9 18.7 9 20a3 3 0 003 3 3 3 0 003-3c0-1.3-.84-2.4-2-2.82v-2.36c1.16-.42 2-1.52 2-2.82m-3-9a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 011-1m0 18a1 1 0 01-1-1 1 1 0 011-1 1 1 0 011 1 1 1 0 01-1 1z" />
-        </svg>
-    }
-}
+// pub fn _udp_icon(height: u32, width: u32) -> Html {
+//     html! {
+//         <svg viewBox="0 0 24 24" fill="currentColor" height={height.to_string() + "px"} width={width.to_string() + "px"}>
+//             <path d="M15 12c0-1.3-.84-2.4-2-2.82V6.82C14.16 6.4 15 5.3 15 4a3 3 0 00-3-3 3 3 0 00-3 3c0 1.3.84 2.4 2 2.82v2.37C9.84 9.6 9 10.7 9 12s.84 2.4 2 2.82v2.36C9.84 17.6 9 18.7 9 20a3 3 0 003 3 3 3 0 003-3c0-1.3-.84-2.4-2-2.82v-2.36c1.16-.42 2-1.52 2-2.82m-3-9a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 011-1m0 18a1 1 0 01-1-1 1 1 0 011-1 1 1 0 011 1 1 1 0 01-1 1z" />
+//         </svg>
+//     }
+// }
 
-pub fn servers_icon(height: u32, width: u32) -> Html {
-    html! {
-        <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" height={height.to_string() + "px"} width={width.to_string() + "px"}>
-          <path stroke="none" d="M0 0h24v24H0z" />
-          <path d="M6 4 H18 A3 3 0 0 1 21 7 V9 A3 3 0 0 1 18 12 H6 A3 3 0 0 1 3 9 V7 A3 3 0 0 1 6 4 z" />
-          <path d="M6 12 H18 A3 3 0 0 1 21 15 V17 A3 3 0 0 1 18 20 H6 A3 3 0 0 1 3 17 V15 A3 3 0 0 1 6 12 z" />
-          <path d="M7 8v.01M7 16v.01" />
-        </svg>
-    }
-}
+// pub fn servers_icon(height: u32, width: u32) -> Html {
+//     html! {
+//         <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" height={height.to_string() + "px"} width={width.to_string() + "px"}>
+//           <path stroke="none" d="M0 0h24v24H0z" />
+//           <path d="M6 4 H18 A3 3 0 0 1 21 7 V9 A3 3 0 0 1 18 12 H6 A3 3 0 0 1 3 9 V7 A3 3 0 0 1 6 4 z" />
+//           <path d="M6 12 H18 A3 3 0 0 1 21 15 V17 A3 3 0 0 1 18 20 H6 A3 3 0 0 1 3 17 V15 A3 3 0 0 1 6 12 z" />
+//           <path d="M7 8v.01M7 16v.01" />
+//         </svg>
+//     }
+// }
 
-pub fn collections_icon(height: u32, width: u32) -> Html {
-    html! {
-        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height={height.to_string() + "px"} width={width.to_string() + "px"} xmlns="http://www.w3.org/2000/svg"><path d="M0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6v7zM2 3a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11A.5.5 0 0 0 2 3zm2-2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7A.5.5 0 0 0 4 1z"></path></svg>  
-    }
-}
+// pub fn collections_icon(height: u32, width: u32) -> Html {
+//     html! {
+//         <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height={height.to_string() + "px"} width={width.to_string() + "px"} xmlns="http://www.w3.org/2000/svg"><path d="M0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6v7zM2 3a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11A.5.5 0 0 0 2 3zm2-2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7A.5.5 0 0 0 4 1z"></path></svg>  
+//     }
+// }
