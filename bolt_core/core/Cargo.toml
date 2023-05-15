@@ -1,6 +1,6 @@
 [package]
 name = "bolt_core"
-version = "0.12.3"
+version = "0.12.4"
 edition = "2021"
 authors = ["Hiro <yirohido@gmail.com>"]
 license = "MIT"
@@ -12,9 +12,12 @@ categories = ["command-line-utilities"]
 
 
 [dependencies]
-bolt_common = { path = "../common"}
-bolt_http = { path = "../http"}
-bolt_ws = { path = "../ws"}
+bolt_common = { version = "0.12.4", path = "../common" }
+bolt_http = { version = "0.12.4", path = "../http" }
+bolt_ws = { version = "0.12.4", path = "../ws" }
+bolt_tcp = { version = "0.12.4", path = "../tcp" }
+bolt_udp = { version = "0.12.4", path = "../udp" }
+bolt_servers = { version = "0.12.4", path = "../servers" }
 
 getrandom = { version = "0.2.9", features = ["js"] } # included because of build error
 serde = { version = "1.0", features = ["derive"] }

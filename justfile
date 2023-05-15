@@ -50,30 +50,6 @@ build-tauri:
 watch-tauri:
 	cargo tauri dev
 
-bump-version:
-	cd bolt_yew && cargo bump $(VERSION)
-	cd bolt_cli && cargo bump $(VERSION)
-	cd bolt_tauri && cargo bump $(VERSION)
-	
-	cd bolt_core/common && cargo bump $(VERSION)
-	cd bolt_core/core && cargo bump $(VERSION)
-	cd bolt_core/http && cargo bump $(VERSION)
-	cd bolt_core/servers && cargo bump $(VERSION)
-	cd bolt_core/tcp && cargo bump $(VERSION)
-	cd bolt_core/udp && cargo bump $(VERSION)
-	cd bolt_core/ws && cargo bump $(VERSION)
-
-publish-libs:
-	cd bolt_core/common && cargo publish
-	cd bolt_core/http && cargo publish
-	cd bolt_core/ws && cargo publish
-	cd bolt_core/servers && cargo publish
-	cd bolt_core/tcp && cargo publish
-	cd bolt_core/udp && cargo publish
-	cd bolt_core/core && cargo publish
-
-publish-cli: publish-libs
-	cd bolt_cli && cargo publish
 
 # Clean temporary build files
 clean: clean-yew clean-tauri clean-cli
@@ -86,3 +62,42 @@ clean-tauri:
 
 clean-cli:
 	cd bolt_cli && cargo clean
+
+
+
+
+
+
+bump-version:
+	cd bolt_core/common && cargo bump $(VERSION)
+	
+	cd bolt_core/http && cargo add --path ../common && cargo bump $(VERSION)
+	
+	cd bolt_core/servers && cargo add --path ../common && cargo bump $(VERSION)
+	
+	cd bolt_core/tcp && cargo add --path ../common && cargo bump $(VERSION)
+	
+	cd bolt_core/udp && cargo add --path ../common && cargo bump $(VERSION)
+	
+	cd bolt_core/ws && cargo add --path ../common && cargo bump $(VERSION)
+	
+	
+	cd bolt_core/core && cargo add --path ../common && cargo add --path ../http && cargo add --path ../ws && cargo add --path ../tcp && cargo add --path ../udp && cargo add --path ../servers && cargo bump $(VERSION)
+
+	cd bolt_yew && cargo add --path ../bolt_core/common && cargo bump $(VERSION)
+	
+	cd bolt_cli && cargo add --path ../bolt_core/core && cargo bump $(VERSION)
+	
+	cd bolt_tauri && cargo add --path ../bolt_core/core && cargo bump $(VERSION)
+	
+publish-libs:
+	cd bolt_core/common && cargo publish
+	cd bolt_core/http && cargo publish
+	cd bolt_core/ws && cargo publish
+	cd bolt_core/servers && cargo publish
+	cd bolt_core/tcp && cargo publish
+	cd bolt_core/udp && cargo publish
+	cd bolt_core/core && cargo publish
+
+publish-cli: publish-libs
+	cd bolt_cli && cargo publish
