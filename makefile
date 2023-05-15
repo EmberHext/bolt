@@ -17,6 +17,7 @@ install-cli:
 
 # Build Bolt Desktop App in release mode
 build: build-yew build-tauri
+	rm -r ./target
 	cp -r ./bolt_tauri/target/release/bundle ./target
 
 # Build Bolt CLI in release mode
