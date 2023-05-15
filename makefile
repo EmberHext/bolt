@@ -43,6 +43,9 @@ build-yew:
 build-tauri:
 	cd bolt_tauri && cargo tauri build
 
+build-tauri-windows:
+	cd bolt_tauri && cargo tauri build --target x86_64-pc-windows-msvc
+
 watch-tauri:
 	cargo tauri dev
 
