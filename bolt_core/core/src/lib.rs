@@ -197,14 +197,17 @@ fn spawn_ws_service(connection_id: String) {
             let mut socket: Option<WebSocket<MaybeTlsStream<std::net::TcpStream>>> = None;
 
             loop {
-                let mut core_state = CORE_STATE.lock().unwrap();
+                let core_state = CORE_STATE.lock().unwrap();
+                let ws_services = core_state.ws_services.clone();
+                let ws_connections = core_state.main_state.ws_connections.clone();
+
+                drop(core_state);
 
                 let mut kill_service = false;
                 let mut service_index = 0;
                 let mut con_index = 0;
 
-                for (index, ws_service) in core_state
-                    .ws_services
+                for (index, ws_service) in ws_services
                     .iter()
                     .enumerate()
                     .filter(|(_, sv)| sv.connection_id == connection_id)
@@ -218,17 +221,18 @@ fn spawn_ws_service(connection_id: String) {
                 }
 
                 if kill_service {
+                    let mut core_state = CORE_STATE.lock().unwrap();
                     core_state.ws_services.remove(service_index);
                     break;
                 }
 
-                for (index, con) in core_state.main_state.ws_connections.iter().enumerate() {
+                for (index, con) in ws_connections.iter().enumerate() {
                     if con.connection_id == connection_id {
                         con_index = index;
                     }
                 }
 
-                let ws_con = &core_state.main_state.ws_connections[con_index];
+                let ws_con = &ws_connections[con_index];
 
                 // println!(
                 //     "POLL CON {} -- OUT: {}",
@@ -253,18 +257,39 @@ fn spawn_ws_service(connection_id: String) {
                     let txt = serde_json::to_string(&disconnected_msg).unwrap();
                     let msg = tungstenite::Message::Text(txt);
 
+                    let mut core_state = CORE_STATE.lock().unwrap();
                     core_state
                         .session_websocket
                         .as_mut()
                         .unwrap()
                         .write_message(msg)
                         .unwrap();
-                } else if connecting {
+                } else if connecting && !connected {
+                    // connecting = false;
+
                     // println!("WS {} CONNECTING", connection_id);
 
-                    let (w_socket, _response) = open_ws_connection(&ws_con.url);
+                    let (connected_succeded, w_socket, _response) =
+                        open_ws_connection(&ws_con.url, ws_con.connection_id.clone());
 
-                    // TODO: Notify client of failed connection
+                    if !connected_succeded {
+                        let mut core_state = CORE_STATE.lock().unwrap();
+
+                        for (_index, ws_con) in core_state
+                            .main_state
+                            .ws_connections
+                            .iter_mut()
+                            .enumerate()
+                            .filter(|(_, sv)| sv.connection_id == connection_id)
+                        {
+                            ws_con.connecting = false;
+                        }
+
+                        continue;
+                    }
+
+                    let w_socket = w_socket.unwrap();
+                    let _response = _response.unwrap();
 
                     let connected_msg = WsConnectedMsg {
                         msg_type: MsgType::WS_CONNECTED,
@@ -274,6 +299,7 @@ fn spawn_ws_service(connection_id: String) {
                     let txt = serde_json::to_string(&connected_msg).unwrap();
                     let msg = tungstenite::Message::Text(txt);
 
+                    let mut core_state = CORE_STATE.lock().unwrap();
                     core_state
                         .session_websocket
                         .as_mut()
@@ -286,6 +312,16 @@ fn spawn_ws_service(connection_id: String) {
                     socket = Some(w_socket);
 
                     spawn_read_service(socket.as_mut().unwrap(), connection_id.clone());
+
+                    for (_index, ws_con) in core_state
+                        .main_state
+                        .ws_connections
+                        .iter_mut()
+                        .enumerate()
+                        .filter(|(_, sv)| sv.connection_id == connection_id)
+                    {
+                        ws_con.connecting = false;
+                    }
                 } else if connected {
                     for out_msg in ws_con.out_queue.clone() {
                         // println!("OUT MSG: {}", out_msg.txt);
@@ -310,6 +346,7 @@ fn spawn_ws_service(connection_id: String) {
                         let sent_txt = serde_json::to_string(&msg_sent).unwrap();
                         let sent_msg = tungstenite::Message::Text(sent_txt);
 
+                        let mut core_state = CORE_STATE.lock().unwrap();
                         core_state
                             .session_websocket
                             .as_mut()
@@ -319,7 +356,7 @@ fn spawn_ws_service(connection_id: String) {
                     }
                 }
 
-                drop(core_state);
+                // drop(core_state);
                 std::thread::sleep(std::time::Duration::from_millis(WS_SERVICE_REFRESH_RATE));
             }
 
@@ -333,59 +370,129 @@ fn spawn_read_service(
     current_ws: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>,
     connection_id: String,
 ) {
-    let stream = match current_ws.get_mut() {
-        MaybeTlsStream::Plain(s) => s,
-        _ => panic!("The stream is not plain"),
+    let mut new_ws = match current_ws.get_mut() {
+        MaybeTlsStream::Plain(stream) => WebSocket::from_raw_socket(
+            stream.try_clone().unwrap(),
+            tungstenite::protocol::Role::Client,
+            None,
+        ),
+
+        MaybeTlsStream::NativeTls(stream) => WebSocket::from_raw_socket(
+            stream.get_mut().try_clone().unwrap(),
+            tungstenite::protocol::Role::Client,
+            None,
+        ),
+
+        _ => panic!("The stream is not plain, nativetls"),
     };
 
-    let mut new_ws = WebSocket::from_raw_socket(
-        stream.try_clone().unwrap(),
-        tungstenite::protocol::Role::Client,
-        None,
-    );
+    let con_id = connection_id.clone();
 
     let _handle = std::thread::Builder::new()
-        .name(connection_id.clone())
+        .name(con_id.clone())
         .spawn(move || loop {
-            let txt = new_ws.read_message().expect("Error reading message");
-            // println!("RECEIVED: {}", txt);
+            match new_ws.read_message() {
+                Ok(txt) => {
+                    // println!("RECEIVED: {}", txt);
 
+                    let mut core_state = CORE_STATE.lock().unwrap();
+
+                    let mut new_msg = WsMessage::new();
+                    new_msg.msg_type = WsMsgType::IN;
+                    new_msg.txt = txt.into_text().unwrap();
+                    new_msg.timestamp = utils::get_timestamp();
+
+                    let out = WsReceivedMsg {
+                        msg_type: MsgType::WS_RECEIVED_MSG,
+                        connection_id: con_id.clone(),
+                        msg: new_msg,
+                    };
+
+                    let out_txt = serde_json::to_string(&out).unwrap();
+                    let out_msg = tungstenite::Message::Text(out_txt);
+
+                    core_state
+                        .session_websocket
+                        .as_mut()
+                        .unwrap()
+                        .write_message(out_msg)
+                        .unwrap();
+                }
+
+                Err(err) => {
+                    println!("WS ERRO -> {err}");
+
+                    let mut core_state = CORE_STATE.lock().unwrap();
+
+                    let disconnected_msg = WsDisconnectedMsg {
+                        msg_type: MsgType::WS_DISCONNECTED,
+                        connection_id: connection_id.clone(),
+                    };
+
+                    let txt = serde_json::to_string(&disconnected_msg).unwrap();
+                    let msg = tungstenite::Message::Text(txt);
+
+                    core_state
+                        .session_websocket
+                        .as_mut()
+                        .unwrap()
+                        .write_message(msg)
+                        .unwrap();
+
+                    break;
+                }
+            }
+        });
+}
+
+// fn open_ws_connection(
+//     url: &String,
+// ) -> (
+//     WebSocket<MaybeTlsStream<std::net::TcpStream>>,
+//     tungstenite::http::Response<Option<Vec<u8>>>,
+// ) {
+//     let (socket, response) = connect(Url::parse(url).unwrap()).expect("Can't connect");
+
+//     // println!("Connected to the server");
+
+//     (socket, response)
+// }
+
+fn open_ws_connection(
+    url: &String,
+    connection_id: String,
+) -> (
+    bool,
+    Option<WebSocket<MaybeTlsStream<std::net::TcpStream>>>,
+    Option<tungstenite::http::Response<Option<Vec<u8>>>>,
+) {
+    match connect(Url::parse(url).unwrap()) {
+        Ok((socket, response)) => return (true, Some(socket), Some(response)),
+
+        Err(err) => {
             let mut core_state = CORE_STATE.lock().unwrap();
 
-            let mut new_msg = WsMessage::new();
-            new_msg.msg_type = WsMsgType::IN;
-            new_msg.txt = txt.into_text().unwrap();
-            new_msg.timestamp = utils::get_timestamp();
-
-            let out = WsReceivedMsg {
-                msg_type: MsgType::WS_RECEIVED_MSG,
+            let disconnected_msg = WsConnectionFailedMsg {
+                msg_type: MsgType::WS_CONNECTION_FAILED,
                 connection_id: connection_id.clone(),
-                msg: new_msg,
+                reason: err.to_string(),
             };
 
-            let out_txt = serde_json::to_string(&out).unwrap();
-            let out_msg = tungstenite::Message::Text(out_txt);
+            let txt = serde_json::to_string(&disconnected_msg).unwrap();
+            let msg = tungstenite::Message::Text(txt);
 
             core_state
                 .session_websocket
                 .as_mut()
                 .unwrap()
-                .write_message(out_msg)
+                .write_message(msg)
                 .unwrap();
-        });
-}
 
-fn open_ws_connection(
-    url: &String,
-) -> (
-    WebSocket<MaybeTlsStream<std::net::TcpStream>>,
-    tungstenite::http::Response<Option<Vec<u8>>>,
-) {
-    let (socket, response) = connect(Url::parse(url).unwrap()).expect("Can't connect");
+            return (false, None, None);
+        }
+    };
 
     // println!("Connected to the server");
-
-    (socket, response)
 }
 
 fn _close_ws_connection(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>) {

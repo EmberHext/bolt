@@ -115,6 +115,10 @@ pub fn handle_ws_message(txt: String) {
                 handle_ws_disconnected_msg(txt);
             }
 
+            MsgType::WS_CONNECTION_FAILED => {
+                handle_ws_connection_failed_msg(txt);
+            }
+
             MsgType::WS_MSG_SENT => {
                 handle_ws_sent_msg(txt);
             }
@@ -139,6 +143,7 @@ fn handle_ws_connected_msg(txt: String) {
 
     for con in &mut global_state.bctx.main_state.ws_connections {
         if msg.connection_id == con.connection_id {
+            con.failed = false;
             con.connecting = false;
             con.connected = true;
         }
@@ -158,10 +163,34 @@ fn handle_ws_disconnected_msg(txt: String) {
     for con in &mut global_state.bctx.main_state.ws_connections {
         if msg.connection_id == con.connection_id {
             con.disconnecting = false;
+            con.connecting = false;
             con.connected = false;
         }
     }
 
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+
+fn handle_ws_connection_failed_msg(txt: String) {
+ 
+    let msg: WsConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.ws_connections {
+        if msg.connection_id == con.connection_id {
+            con.failed = true;
+            con.failed_reason = msg.reason.clone();
+            con.disconnecting = false;
+            con.connecting = false;
+            con.connected = false;
+        }
+    }
+
+   // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
+    
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
 }
