@@ -80,6 +80,7 @@ pub struct WsConnection {
     pub connecting: bool,
     pub disconnecting: bool,
     pub failed: bool,
+    pub failed_reason: String,
     pub connected: bool,
 
     pub out_buffer: String,
@@ -108,6 +109,7 @@ impl WsConnection {
             connecting: false,
             disconnecting: false,
             failed: false,
+            failed_reason: String::new(),
             connected: false,
 
             out_tab: 1,
@@ -242,6 +244,7 @@ pub enum MsgType {
     WS_DISCONNECTED,
     WS_MSG_SENT,
     WS_RECEIVED_MSG,
+    WS_CONNECTION_FAILED
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -446,3 +449,11 @@ pub struct WsReceivedMsg {
     pub connection_id: String,
     pub msg: WsMessage,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WsConnectionFailedMsg {
+    pub msg_type: MsgType,
+    pub connection_id: String,
+    pub reason: String
+}
+

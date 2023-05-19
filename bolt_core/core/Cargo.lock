@@ -320,7 +320,7 @@ dependencies = [
 
 [[package]]
 name = "bolt_core"
-version = "0.12.3"
+version = "0.12.4"
 dependencies = [
  "actix-files",
  "actix-web",
@@ -1824,6 +1824,7 @@ dependencies = [
  "http",
  "httparse",
  "log",
+ "native-tls",
  "rand",
  "sha1",
  "thiserror",

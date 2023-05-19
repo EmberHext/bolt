@@ -170,7 +170,7 @@ pub fn ws_history(bctx: &mut BoltContext) -> Html {
             } else if can_display && connection.connecting {
                 <div class="resploading"><img src="/icon/icon.png" /></div>
             } else if connection.failed {
-                <div class="resperror">{"failed"}</div>
+                <div class="resperror">{connection.failed_reason.clone()}</div>
             }
 
         </div>
