@@ -94,6 +94,79 @@ fn is_tab_selected(request_tab: &u8, tab: HttpReqTabs) -> bool {
     *request_tab == u8::from(tab)
 }
 
+pub fn udp_out(bctx: &mut BoltContext) -> Html {
+    let link = bctx.link.as_ref().unwrap();
+
+    let can_display = !bctx.main_state.udp_connections.is_empty();
+
+    let mut connection = UdpConnection::new();
+
+    if can_display {
+        connection = bctx.main_state.udp_connections[bctx.main_state.udp_current].clone();
+    }
+
+    html! {
+        <div class="req">
+        if can_display {
+            <div class="requestbar">
+                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.url.clone()} placeholder="0.0.0.0:1234" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectUdpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
+
+                if connection.connecting {
+                    <button class="ws-connecting-btn disabled-cursor" type="button">{"Connecting"}</button>
+                } else if connection.connected {
+                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectUdpPressed)}>{"Disconnect"}</button>
+                } else {
+                    <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectUdpPressed)}>{"Connect"}</button>
+                }
+            </div>
+
+            <div class="reqline">
+                <div class="reqtabs">
+                    <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::UdpOutMessagePressed)}>{"Message"}</div>
+                    // <div id="req_params_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutParamsPressed)}>{"Params"}</div>
+                    // <div id="req_headers_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutHeadersPressed)}>{"Headers"}</div>
+                </div>
+                if connection.connected {
+                    <button class="ws-send-btn pointer" type="button" onclick={link.callback(|_| Msg::SendUdpPressed)}>{"Send"}</button>
+                } else {
+                    <button class="ws-send-btn disabled-cursor" type="button">{"Send"}</button>
+                }
+            </div>
+
+             <div class="tabcontent">
+                if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {
+                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_buffer.clone()} placeholder="Compose Message" onchange={link.callback(|_| Msg::UdpOutMessageChanged)}>
+
+                    </textarea>
+                } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {
+                    // <div class="reqheaders">
+                    //     <table>
+                    //         <tr>
+                    //             <th>{"Key"}</th>
+                    //             <th>{"Value"}</th>
+                    //         </tr>
+                    //         { for connection.out_params.iter().enumerate().map(|(index, header)| view::param::render_ws_out_params(bctx, index, connection.out_params.len(), &header[0], &header[1])) }
+                    //     </table>
+                    // </div>
+
+                } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {
+                    // <div class="reqheaders">
+                    //     <table>
+                    //         <tr>
+                    //             <th>{"Header"}</th>
+                    //             <th>{"Value"}</th>
+                    //         </tr>
+                    //         { for connection.out_headers.iter().enumerate().map(|(index, header)| view::header::render_ws_out_header(bctx, index, connection.out_headers.len(), &header[0], &header[1])) }
+                    //     </table>
+                    // </div>
+                }
+            </div>
+        }
+        </div>
+
+    }
+}
+
 pub fn ws_out(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
@@ -139,26 +212,26 @@ pub fn ws_out(bctx: &mut BoltContext) -> Html {
 
                     </textarea>
                 } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {
-                    <div class="reqheaders">
-                        <table>
-                            <tr>
-                                <th>{"Key"}</th>
-                                <th>{"Value"}</th>
-                            </tr>
-                            { for connection.out_params.iter().enumerate().map(|(index, header)| view::param::render_ws_out_params(bctx, index, connection.out_params.len(), &header[0], &header[1])) }
-                        </table>
-                    </div>
+                    // <div class="reqheaders">
+                    //     <table>
+                    //         <tr>
+                    //             <th>{"Key"}</th>
+                    //             <th>{"Value"}</th>
+                    //         </tr>
+                    //         { for connection.out_params.iter().enumerate().map(|(index, header)| view::param::render_ws_out_params(bctx, index, connection.out_params.len(), &header[0], &header[1])) }
+                    //     </table>
+                    // </div>
 
                 } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {
-                    <div class="reqheaders">
-                        <table>
-                            <tr>
-                                <th>{"Header"}</th>
-                                <th>{"Value"}</th>
-                            </tr>
-                            { for connection.out_headers.iter().enumerate().map(|(index, header)| view::header::render_ws_out_header(bctx, index, connection.out_headers.len(), &header[0], &header[1])) }
-                        </table>
-                    </div>
+                    // <div class="reqheaders">
+                    //     <table>
+                    //         <tr>
+                    //             <th>{"Header"}</th>
+                    //             <th>{"Value"}</th>
+                    //         </tr>
+                    //         { for connection.out_headers.iter().enumerate().map(|(index, header)| view::header::render_ws_out_header(bctx, index, connection.out_headers.len(), &header[0], &header[1])) }
+                    //     </table>
+                    // </div>
                 }
             </div>
         }

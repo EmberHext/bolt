@@ -95,7 +95,7 @@ pub fn handle_ws_message(txt: String) {
             | MsgType::LOG
             | MsgType::PANIC
             | MsgType::OPEN_LINK
-            | MsgType::ADD_WS_CONNECTION => {
+            | MsgType::ADD_UDP_CONNECTION | MsgType::ADD_WS_CONNECTION => {
                 return;
             }
 
@@ -110,28 +110,142 @@ pub fn handle_ws_message(txt: String) {
             MsgType::WS_CONNECTED => {
                 handle_ws_connected_msg(txt);
             }
-
             MsgType::WS_DISCONNECTED => {
                 handle_ws_disconnected_msg(txt);
             }
-
             MsgType::WS_CONNECTION_FAILED => {
                 handle_ws_connection_failed_msg(txt);
             }
-
             MsgType::WS_MSG_SENT => {
                 handle_ws_sent_msg(txt);
             }
-
             MsgType::WS_RECEIVED_MSG => {
                 handle_ws_received_msg(txt);
             }
-        },
+
+            
+            MsgType::UDP_CONNECTED => {
+                handle_udp_connected_msg(txt);
+            }
+            MsgType::UDP_DISCONNECTED => {
+                handle_udp_disconnected_msg(txt);
+            }
+            MsgType::UDP_CONNECTION_FAILED => {
+                handle_udp_connection_failed_msg(txt);
+            }
+            MsgType::UDP_MSG_SENT => {
+                handle_udp_sent_msg(txt);
+            }
+            MsgType::UDP_RECEIVED_MSG => {
+                handle_udp_received_msg(txt);
+            }
+         },
 
         Err(_err) => {
             handle_invalid_msg(txt);
         }
     }
+}
+
+
+fn handle_udp_connected_msg(txt: String) {
+    _bolt_log("CONNECTED TO THE UDP PEER!!");
+
+    let msg: UdpConnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.udp_connections {
+        if msg.connection_id == con.connection_id {
+            con.failed = false;
+            con.connecting = false;
+            con.connected = true;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_udp_disconnected_msg(txt: String) {
+    _bolt_log("DISCONNECTED FROM THE UDP PEER!!");
+
+    let msg: UdpDisconnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.udp_connections {
+        if msg.connection_id == con.connection_id {
+            con.disconnecting = false;
+            con.connecting = false;
+            con.connected = false;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+
+fn handle_udp_connection_failed_msg(txt: String) {
+ 
+    let msg: UdpConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.udp_connections {
+        if msg.connection_id == con.connection_id {
+            con.failed = true;
+            con.failed_reason = msg.reason.clone();
+            con.disconnecting = false;
+            con.connecting = false;
+            con.connected = false;
+        }
+    }
+
+   _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
+    
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_udp_sent_msg(txt: String) {
+    _bolt_log("SENT!!!");
+
+    let sent_msg: UdpSentMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.udp_connections {
+        if sent_msg.connection_id == con.connection_id {
+            for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
+                if out_msg.msg_id == sent_msg.msg.msg_id {
+                    con.msg_history.push(sent_msg.msg.clone());
+                    con.out_queue.remove(index);
+                }
+            }
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_udp_received_msg(txt: String) {
+    _bolt_log("RECEIVED!!!");
+
+    let received_msg: UdpReceivedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.udp_connections {
+        if con.connection_id == received_msg.connection_id {
+            con.msg_history.push(received_msg.msg.clone());
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
 }
 
 fn handle_ws_connected_msg(txt: String) {

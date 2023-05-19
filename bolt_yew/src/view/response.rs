@@ -132,6 +132,51 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
 //     }
 // }
 
+pub fn udp_history(bctx: &mut BoltContext) -> Html {
+    // let link = bctx.main_state.link.as_ref().unwrap();
+
+    let can_display = !bctx.main_state.udp_connections.is_empty();
+
+    let mut connection = UdpConnection::new();
+
+    if can_display {
+        connection = bctx.main_state.udp_connections[bctx.main_state.udp_current].clone();
+    }
+
+    html! {
+        <div class="resp">
+            if can_display && !connection.connecting && !connection.failed {
+                <div class="respline">
+                    <div class="resptabs">
+                        <div id="resp_body_tab" class={if connection.in_tab == 1  {"tab tabSelected"} else {"tab pointer"}}>{"Messages"}</div>
+                    </div>
+
+                    <div class="respstats">
+                        if connection.connected {
+                            <div id="status" class="respstat">{"Connected"}</div>
+                        } else if connection.connecting {
+                            <div id="status" class="respstat">{"Connecting"}</div>
+                        } else {
+                            <div id="status" class="respstat">{"Disconnected"}</div>
+                        }
+                    </div>
+                 </div>
+
+                <div class="tabcontent">
+                    <div class="atabs">
+                        { for connection.msg_history.iter().rev().map(|msg| view::msg::render_udp_msg(&msg)) }
+                    </div>
+                </div>
+            } else if can_display && connection.connecting {
+                <div class="resploading"><img src="/icon/icon.png" /></div>
+            } else if connection.failed {
+                <div class="resperror">{connection.failed_reason.clone()}</div>
+            }
+
+        </div>
+    }
+}
+
 pub fn ws_history(bctx: &mut BoltContext) -> Html {
     // let link = bctx.main_state.link.as_ref().unwrap();
 
@@ -163,7 +208,7 @@ pub fn ws_history(bctx: &mut BoltContext) -> Html {
                  </div>
 
                 <div class="tabcontent">
-                    <div class="atabs"> 
+                    <div class="atabs">
                         { for connection.msg_history.iter().rev().map(|msg| view::msg::render_ws_msg(&msg)) }
                     </div>
                 </div>
