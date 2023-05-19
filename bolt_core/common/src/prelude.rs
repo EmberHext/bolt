@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-pub static VERSION: &str = "0.12.4";
+pub static VERSION: &str = "0.12.5";
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum HttpResponseType {

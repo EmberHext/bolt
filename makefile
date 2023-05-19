@@ -1,4 +1,4 @@
-VERSION = 0.12.4
+VERSION = 0.12.5
 
 
 .PHONY: build run setup all api watch build-yew build-tauri watch-yew watch-tauri web clean-yew clean-tauri clean cli build-cli
