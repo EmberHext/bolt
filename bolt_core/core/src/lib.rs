@@ -265,8 +265,6 @@ fn spawn_ws_service(connection_id: String) {
                         .write_message(msg)
                         .unwrap();
                 } else if connecting && !connected {
-                    // connecting = false;
-
                     // println!("WS {} CONNECTING", connection_id);
 
                     let (connected_succeded, w_socket, _response) =
@@ -306,8 +304,6 @@ fn spawn_ws_service(connection_id: String) {
                         .unwrap()
                         .write_message(msg)
                         .unwrap();
-
-                    // crate::session::server::ws_write(core_state.session_websocket.as_mut().unwrap(), msg);
 
                     socket = Some(w_socket);
 
@@ -356,36 +352,18 @@ fn spawn_ws_service(connection_id: String) {
                     }
                 }
 
-                // drop(core_state);
                 std::thread::sleep(std::time::Duration::from_millis(WS_SERVICE_REFRESH_RATE));
             }
 
-            // cleanup
-            // close_ws_connection(socket.as_mut().unwrap());
         })
         .unwrap();
 }
 
 fn spawn_read_service(
-    current_ws: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>,
+    current_ws: *const WebSocket<MaybeTlsStream<std::net::TcpStream>>,
     connection_id: String,
 ) {
-    let mut new_ws = match current_ws.get_mut() {
-        MaybeTlsStream::Plain(stream) => WebSocket::from_raw_socket(
-            stream.try_clone().unwrap(),
-            tungstenite::protocol::Role::Client,
-            None,
-        ),
-
-        MaybeTlsStream::NativeTls(stream) => WebSocket::from_raw_socket(
-            stream.get_mut().try_clone().unwrap(),
-            tungstenite::protocol::Role::Client,
-            None,
-        ),
-
-        _ => panic!("The stream is not plain, nativetls"),
-    };
-
+    let new_ws = unsafe { &mut *current_ws.cast_mut() };
     let con_id = connection_id.clone();
 
     let _handle = std::thread::Builder::new()
@@ -444,19 +422,6 @@ fn spawn_read_service(
             }
         });
 }
-
-// fn open_ws_connection(
-//     url: &String,
-// ) -> (
-//     WebSocket<MaybeTlsStream<std::net::TcpStream>>,
-//     tungstenite::http::Response<Option<Vec<u8>>>,
-// ) {
-//     let (socket, response) = connect(Url::parse(url).unwrap()).expect("Can't connect");
-
-//     // println!("Connected to the server");
-
-//     (socket, response)
-// }
 
 fn open_ws_connection(
     url: &String,

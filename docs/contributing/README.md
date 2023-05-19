@@ -17,4 +17,6 @@
 
 * Run `make run` and `make run-cli` to ensure they compile and run
 
+* Push changes to remote repository
+
 * run `make publish-cli`
