@@ -1,7 +1,3 @@
-// pub mod prelude;
-// mod session;
-
-use crate::CORE_STATE;
 use std::{
     net::{TcpListener, TcpStream},
     thread::spawn,
@@ -59,12 +55,21 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
                 | MsgType::WS_DISCONNECTED
                 | MsgType::WS_MSG_SENT
                 | MsgType::WS_RECEIVED_MSG
-                | MsgType::WS_CONNECTION_FAILED => {
+                | MsgType::WS_CONNECTION_FAILED
+                | MsgType::UDP_CONNECTED
+                | MsgType::UDP_DISCONNECTED
+                | MsgType::UDP_MSG_SENT
+                | MsgType::UDP_RECEIVED_MSG
+                | MsgType::UDP_CONNECTION_FAILED => {
                     return;
                 }
 
                 MsgType::ADD_WS_CONNECTION => {
                     handle_add_ws_connection(websocket, session_id, txt);
+                }
+
+                MsgType::ADD_UDP_CONNECTION => {
+                    handle_add_udp_connection(websocket, session_id, txt);
                 }
             },
 
@@ -74,6 +79,16 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
         }
     } else {
     }
+}
+
+fn handle_add_udp_connection(
+    _websocket: &mut WebSocket<TcpStream>,
+    _session_id: &String,
+    txt: String,
+) {
+    let msg: AddWsConnectionMsg = serde_json::from_str(&txt).unwrap();
+
+    println!("adding ws connection with id: {}", &msg.connection_id);
 }
 
 fn handle_add_ws_connection(
@@ -119,8 +134,8 @@ fn handle_save_state(_websocket: &mut WebSocket<TcpStream>, _session_id: &String
     let save_state = serde_json::to_string(&client_state).unwrap();
     std::fs::write(get_home() + "state.json", save_state).unwrap();
 
-    let mut core_state = CORE_STATE.lock().unwrap();
-    core_state.main_state = client_state;
+    bolt_ws::set_main_state(client_state.clone());
+    bolt_udp::set_main_state(client_state.clone());
 }
 
 fn handle_restore_state(websocket: &mut WebSocket<TcpStream>, _session_id: &String, _txt: String) {
@@ -220,26 +235,26 @@ pub fn launch_core_server(port: u16, address: String) {
                 Ok(response)
             };
 
-            let new_ws = WebSocket::from_raw_socket(
+            let new_session_ws_for_ws = WebSocket::from_raw_socket(
+                stream.as_mut().unwrap().try_clone().unwrap(),
+                tungstenite::protocol::Role::Server,
+                None,
+            );
+
+            let new_session_ws_for_udp = WebSocket::from_raw_socket(
                 stream.as_mut().unwrap().try_clone().unwrap(),
                 tungstenite::protocol::Role::Server,
                 None,
             );
 
             let mut session_websocket = accept_hdr(stream.unwrap(), callback).unwrap();
-            // let session_stream )
 
-            let mut core_state = CORE_STATE.lock().unwrap();
-            core_state.session_websocket = Some(new_ws);
-
-            drop(core_state);
+            bolt_ws::set_session_websocket(new_session_ws_for_ws);
+            bolt_udp::set_session_websocket(new_session_ws_for_udp);
 
             crate::start_services(session_id.clone());
 
             loop {
-                // let mut core_state = CORE_STATE.lock().unwrap();
-
-                // let mut ws = core_state.session_websocket.as_mut().unwrap();
                 let msg = session_websocket.read_message();
 
                 match msg {

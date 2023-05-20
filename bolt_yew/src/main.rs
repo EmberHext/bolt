@@ -21,73 +21,72 @@ use bolt_common::prelude::*;
 #[derive(Clone)]
 pub enum Msg {
     HttpReqSelectedMethod(HttpMethod),
-
     SendHttpPressed,
-    ConnectWsPressed,
-    SendWsPressed,
-
-    DisconnectWsPressed,
-
+    RemoveHttpRequest(usize),
+    SelectHttpRequest(usize),
+    AddHttpRequest,
+    HttpReqParamChanged(usize),
+    HttpReqBodyChanged,
+    HttpReqHeaderChanged(usize),
+    HttpReceivedResponse,
+    HttpReqMethodChanged,
     HttpReqBodyPressed,
     HttpReqHeadersPressed,
     HttpReqParamsPressed,
-
-    WsOutMessagePressed,
-    WsOutHeadersPressed,
-    WsOutParamsPressed,
-
     HttpRespBodyPressed,
     HttpRespHeadersPressed,
-
     HttpReqAddHeader,
     HttpReqRemoveHeader(usize),
-
     HttpReqAddParam,
     HttpReqRemoveParam(usize),
 
-    WsOutAddHeader,
-    WsOutRemoveHeader(usize),
-
-    WsOutAddParam,
-    WsOutRemoveParam(usize),
-
-    HttpReceivedResponse,
-
-    HttpReqMethodChanged,
-    UrlChanged,
-
-    HttpReqBodyChanged,
+    SendWsPressed,
+    ConnectWsPressed,
     WsOutMessageChanged,
-
-    HttpReqHeaderChanged(usize),
-    WsOutHeaderChanged(usize),
-
-    HttpReqParamChanged(usize),
-    WsOutParamChanged(usize),
-
-    AddHttpRequest,
+    WsOutMessagePressed,
+    // WsOutHeadersPressed,
+    // WsOutParamsPressed,
+    DisconnectWsPressed,
+    // WsOutAddHeader,
+    // WsOutRemoveHeader(usize),
+    // WsOutAddParam,
+    // WsOutRemoveParam(usize),
+    // WsOutHeaderChanged(usize),
+    // WsOutParamChanged(usize),
     AddWsConnection,
+    RemoveWsConnection(usize),
+    SelectWsConnection(usize),
 
-    RemoveHttpRequest(usize),
-    SelectHttpRequest(usize),
-
-    RemoveWsRequest(usize),
-    SelectWsRequest(usize),
+    SendUdpPressed,
+    ConnectUdpPressed,
+    UdpOutMessageChanged,
+    UdpOutMessagePressed,
+    UdpPeerUrlChanged,
+    // UdpOutHeadersPressed,
+    // UdpOutParamsPressed,
+    DisconnectUdpPressed,
+    // UdpOutAddHeader,
+    // UdpOutRemoveHeader(usize),
+    // UdpOutAddParam,
+    // UdpOutRemoveParam(usize),
+    // UdpOutHeaderChanged(usize),
+    // UdpOutParamChanged(usize),
+    AddUdpConnection,
+    RemoveUdpConnection(usize),
+    SelectUdpConnection(usize),
 
     AddCollection,
     RemoveCollection(usize),
     AddToCollection(usize),
-
     SelectFromCollection(usize, usize),
     RemoveFromCollection(usize, usize),
 
+    UrlChanged,
     ToggleCollapsed(usize),
-
     Update,
     HelpPressed,
     GithubPressed,
     SwitchPage(Page),
-
     Nothing,
 }
 
@@ -239,6 +238,30 @@ fn send_ws(connection: &mut WsConnection) {
     let mut msg = WsMessage::new();
     msg.txt = get_body();
     msg.msg_type = WsMsgType::OUT;
+
+    connection.out_queue.push(msg);
+}
+
+
+fn connect_udp(connection: &mut UdpConnection) {
+    connection.connecting = true;
+
+    // _bolt_log("connect ws was pressed");
+}
+
+fn disconnect_udp(connection: &mut UdpConnection) {
+    connection.disconnecting = true;
+
+    // _bolt_log("disconnect ws was pressed");
+}
+
+fn send_udp(connection: &mut UdpConnection) {
+    // _bolt_log("send ws was pressed");
+
+    let mut msg = UdpMessage::new();
+    msg.data = get_udp_out_data();
+    msg.peer_address = get_udp_peer_url();
+    msg.msg_type = UdpMsgType::OUT;
 
     connection.out_queue.push(msg);
 }

@@ -11,7 +11,7 @@ pub fn sidebar(bctx: &mut BoltContext, page: Page) -> Html {
     let http_icon = icons::http_icon(25, 25);
     let ws_icon = icons::websocket_icon(30, 30);
     // let tcp_icon = icons::tcp_icon(25, 25);
-    // let udp_icon = icons::tcp_icon(25, 25);
+    let udp_icon = icons::tcp_icon(25, 25);
     // let servers_icon = icons::servers_icon(25, 25);
     // let collections_icon = icons::collections_icon(25, 25);
 
@@ -32,10 +32,10 @@ pub fn sidebar(bctx: &mut BoltContext, page: Page) -> Html {
            //      {"TCP"}
            //  </div>
 
-           // <div class={if page == Page::Udp {"sidebaritem sidebaritem-selected pointer"} else {"sidebaritem pointer"} } onclick={link.callback(|_| Msg::SwitchPage(Page::Udp))}>
-           //      {udp_icon}
-           //      {"UDP"}
-           // </div>
+           <div class={if page == Page::Udp {"sidebaritem sidebaritem-selected pointer"} else {"sidebaritem pointer"} } onclick={link.callback(|_| Msg::SwitchPage(Page::Udp))}>
+                {udp_icon}
+                {"UDP"}
+           </div>
 
            // <div class={if page == Page::Servers {"sidebaritem sidebaritem-selected pointer"} else {"sidebaritem pointer"} } onclick={link.callback(|_| Msg::SwitchPage(Page::Servers))}>
            //      {servers_icon}
