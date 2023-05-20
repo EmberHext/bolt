@@ -101,8 +101,22 @@ body {
 
 	margin-left: 5px;
 }
-
 .urlinput:focus {
+  outline: none;
+}
+
+.udp-peer-urlinput {
+	height: 40px;
+	width: 40%;
+	background: rgb(23, 59, 97);
+	color: white;
+	font-size: 15px;
+	border: 0.5px solid gray;
+	border-radius: 8px;
+
+	margin-left: 5px;
+}
+.udp-peer-urlinput:focus {
   outline: none;
 }
 
@@ -311,6 +325,12 @@ body {
   width: 100%;
 	margin-left: 10px;
 }
+.udp-reqtabs {
+  display: flex;
+	flex-direction: row;
+  width: 20%;
+	margin-left: 10px;
+}
 
 .resptabs {
   display: flex;
@@ -470,25 +490,6 @@ td {
 
 
 
-/*
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: orange; 
-}
- 
-::-webkit-scrollbar-thumb {
-  background: cyan; 
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555; 
-}
-*/
-
-
 
 
 
@@ -580,7 +581,9 @@ td {
 
 
 
-
+.udp-msg-peer-address {
+	margin-right: 10px;
+}
 
 
 

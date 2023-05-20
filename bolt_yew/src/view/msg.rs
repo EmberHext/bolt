@@ -62,12 +62,12 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
 }
 
 pub fn render_udp_msg(msg: &UdpMessage) -> Html {
-    let txt = msg.txt.clone();
+    let data = format!("{:?}", msg.data.clone());
 
-    let txt = if txt.len() > 60 {
-        format!("{}...", &txt[0..60])
+    let txt = if data.len() > 60 {
+        format!("{}...", &data[0..60])
     } else {
-        txt
+        data.clone()
     };
 
     let time = format_time(msg.timestamp);
@@ -80,6 +80,7 @@ pub fn render_udp_msg(msg: &UdpMessage) -> Html {
                 <label class="atab-label" for={msg.msg_id.clone()}>
                      <div class="ws-msg-left">
                         <div class="ws-in-arrow">{"↓"}</div>
+                        <div class="udp-msg-peer-address">{msg.peer_address.clone()}</div>
                         <div class="ws-msg-txt">{txt}</div>
                      </div>
 
@@ -90,7 +91,7 @@ pub fn render_udp_msg(msg: &UdpMessage) -> Html {
                 </label>
 
                 <div class="atab-content">
-                  {msg.txt.clone()}
+                  {data.clone()}
                 </div>
               </div>
             }
@@ -103,6 +104,7 @@ pub fn render_udp_msg(msg: &UdpMessage) -> Html {
                 <label class="atab-label" for={msg.msg_id.clone()}>
                      <div class="ws-msg-left">
                         <div class="ws-out-arrow">{"↑"}</div>
+                        <div class="udp-msg-peer-address">{msg.peer_address.clone()}</div>
                         <div class="ws-msg-txt">{txt}</div>
                      </div>
 
@@ -113,7 +115,7 @@ pub fn render_udp_msg(msg: &UdpMessage) -> Html {
                 </label>
 
                 <div class="atab-content">
-                  {msg.txt.clone()}
+                  {data.clone()}
                 </div>
               </div>
             }

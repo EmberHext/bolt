@@ -9,10 +9,11 @@ pub enum UdpMsgType {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UdpMessage {
-    pub txt: String,
+    pub data: Vec<u8>,
     pub timestamp: u64,
     pub msg_id: String,
     pub msg_type: UdpMsgType,
+    pub peer_address: String
 }
 
 impl UdpMessage {
@@ -25,10 +26,11 @@ impl UdpMessage {
             .to_string();
 
         Self {
-            txt: String::new(),
+            data: vec![],
             timestamp: 0,
             msg_id,
             msg_type: UdpMsgType::OUT,
+            peer_address: String::new()
         }
     }
 }
@@ -36,7 +38,8 @@ impl UdpMessage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UdpConnection {
     pub connection_id: String,
-    pub url: String,
+    pub host_address: String,
+    pub peer_address: String,
     pub name: String,
 
     pub out_tab: u8,
@@ -69,7 +72,8 @@ impl UdpConnection {
 
         Self {
             connection_id: con_id,
-            url: String::new(),
+            host_address: String::new(),
+            peer_address: String::new(),
             name: "UDP connection ".to_string(),
             connecting: false,
             disconnecting: false,

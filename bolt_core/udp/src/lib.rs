@@ -18,7 +18,6 @@ lazy_static::lazy_static! {
 #[derive(Clone)]
 struct UdpService {
     connection_id: String,
-    // kill: bool,
 }
 
 pub struct CoreState {
@@ -86,6 +85,7 @@ pub fn spawn_udp_service(connection_id: String) {
             // comment
 
             let mut udp_socket: Option<UdpSocket> = None;
+            let mut channel_sender: Option<std::sync::mpsc::Sender<String>> = None;
 
             loop {
                 let mut core_state = CORE_STATE.lock().unwrap();
@@ -123,11 +123,11 @@ pub fn spawn_udp_service(connection_id: String) {
 
                 let udp_con = &udp_connections[con_index];
 
-                println!(
-                    "UDP POLL CON {} -- OUT: {}",
-                    udp_con.connection_id,
-                    udp_con.out_queue.len()
-                );
+                // println!(
+                //     "UDP POLL CON {} -- OUT: {}",
+                //     udp_con.connection_id,
+                //     udp_con.out_queue.len()
+                // );
 
                 let connecting = udp_con.connecting;
                 let disconnecting = udp_con.disconnecting;
@@ -136,7 +136,11 @@ pub fn spawn_udp_service(connection_id: String) {
                 if disconnecting {
                     println!("UDP {} DISCONNECTING", connection_id);
 
-                    // udp_socket.as_mut().unwrap().close(None).unwrap();
+                    channel_sender
+                        .as_mut()
+                        .unwrap()
+                        .send("kill".to_string())
+                        .unwrap();
 
                     let disconnected_msg = UdpDisconnectedMsg {
                         msg_type: MsgType::UDP_DISCONNECTED,
@@ -153,11 +157,21 @@ pub fn spawn_udp_service(connection_id: String) {
                         .unwrap()
                         .write_message(msg)
                         .unwrap();
+
+                    drop(udp_socket.as_mut().unwrap());
                 } else if connecting && !connected {
                     println!("UDP {} CONNECTING", connection_id);
 
-                    let (connected_succeded, new_socket) =
-                        open_udp_connection(&udp_con.url, udp_con.connection_id.clone());
+                    let (connected_succeded, mut new_socket) =
+                        open_udp_connection(&udp_con.host_address, udp_con.connection_id.clone());
+
+                    if connected_succeded {
+                        new_socket
+                            .as_mut()
+                            .unwrap()
+                            .set_nonblocking(true)
+                            .expect("Failed to set non-blocking");
+                    }
 
                     if !connected_succeded {
                         let mut core_state = CORE_STATE.lock().unwrap();
@@ -174,9 +188,6 @@ pub fn spawn_udp_service(connection_id: String) {
 
                         continue;
                     }
-
-                    // let w_socket = w_socket.unwrap();
-                    // let _response = _response.unwrap();
 
                     let connected_msg = UdpConnectedMsg {
                         msg_type: MsgType::UDP_CONNECTED,
@@ -196,7 +207,15 @@ pub fn spawn_udp_service(connection_id: String) {
 
                     udp_socket = new_socket;
 
-                    // spawn_read_service(udp_socket.as_mut().unwrap(), connection_id.clone());
+                    let (sender, receiver) = std::sync::mpsc::channel();
+
+                    channel_sender = Some(sender);
+
+                    spawn_read_service(
+                        udp_socket.as_mut().unwrap().try_clone().unwrap(),
+                        receiver,
+                        connection_id.clone(),
+                    );
 
                     for (_index, udp_con) in core_state
                         .main_state
@@ -209,21 +228,21 @@ pub fn spawn_udp_service(connection_id: String) {
                     }
                 } else if connected {
                     for out_msg in udp_con.out_queue.clone() {
-                        println!("UDP OUT MSG: {}", out_msg.txt);
+                        println!("UDP OUT MSG: {:?}", out_msg.data);
 
-                        let txt = serde_json::to_string(&out_msg.txt).unwrap();
+                        // let txt = serde_json::to_string(&out_msg.txt).unwrap();
                         // let msg = tungstenite::Message::Text(txt);
 
                         udp_socket
                             .as_mut()
                             .unwrap()
-                            .send_to(txt.as_bytes(), udp_con.url.clone())
+                            .send_to(&out_msg.data, out_msg.peer_address.clone())
                             .unwrap();
 
                         let mut new_msg = UdpMessage::new();
                         new_msg.timestamp = utils::get_timestamp();
                         new_msg.msg_type = UdpMsgType::OUT;
-                        new_msg.txt = out_msg.txt;
+                        new_msg.data = out_msg.data;
                         new_msg.msg_id = out_msg.msg_id;
 
                         let msg_sent = UdpSentMsg {
@@ -251,25 +270,48 @@ pub fn spawn_udp_service(connection_id: String) {
         .unwrap();
 }
 
-pub fn spawn_read_service(current_udp: UdpSocket, connection_id: String) {
+pub fn spawn_read_service(
+    current_udp: UdpSocket,
+    channel_receiver: std::sync::mpsc::Receiver<String>,
+    connection_id: String,
+) {
     let con_id = connection_id.clone();
 
     let _handle = std::thread::Builder::new()
         .name(con_id.clone())
         .spawn(move || {
             // Buffer to store received data
-            let mut buf = [0; 1024];
+            let mut buf: [u8; 1024] = [0; 1024];
+
+            let mut kill_read_service = false;
 
             loop {
+                std::thread::sleep(std::time::Duration::from_millis(UDP_SERVICE_REFRESH_RATE));
+
+                let channel_message =
+                    match channel_receiver.recv_timeout(std::time::Duration::from_millis(400)) {
+                        Ok(message) => message,
+                        Err(_) => "timeout".to_string(),
+                    };
+
+                if channel_message == "kill" {
+                    kill_read_service = true;
+                }
+
+                if kill_read_service {
+                    break;
+                }
+
                 match current_udp.recv_from(&mut buf) {
-                    Ok((_received_bytes, _sender_addr)) => {
-                        println!("UDP RECEIVED");
+                    Ok((_received_bytes, peer_addr)) => {
+                        // println!("UDP RECEIVED");
 
                         let mut core_state = CORE_STATE.lock().unwrap();
 
                         let mut new_msg = UdpMessage::new();
                         new_msg.msg_type = UdpMsgType::IN;
-                        new_msg.txt = format!("{:?}", buf);
+                        new_msg.data = buf.to_vec();
+                        new_msg.peer_address = peer_addr.to_string();
                         new_msg.timestamp = utils::get_timestamp();
 
                         let out = UdpReceivedMsg {
@@ -290,34 +332,37 @@ pub fn spawn_read_service(current_udp: UdpSocket, connection_id: String) {
                     }
 
                     Err(err) => {
-                        println!("UDP FAILED TO READ -> {err}");
+                        // println!("UDP FAILED TO READ -> {err}");
 
-                        let mut core_state = CORE_STATE.lock().unwrap();
+                        // let mut core_state = CORE_STATE.lock().unwrap();
 
-                        let disconnected_msg = UdpDisconnectedMsg {
-                            msg_type: MsgType::UDP_DISCONNECTED,
-                            connection_id: connection_id.clone(),
-                        };
+                        // let disconnected_msg = UdpDisconnectedMsg {
+                        //     msg_type: MsgType::UDP_DISCONNECTED,
+                        //     connection_id: connection_id.clone(),
+                        // };
 
-                        let txt = serde_json::to_string(&disconnected_msg).unwrap();
-                        let msg = tungstenite::Message::Text(txt);
+                        // let txt = serde_json::to_string(&disconnected_msg).unwrap();
+                        // let msg = tungstenite::Message::Text(txt);
 
-                        core_state
-                            .session_websocket
-                            .as_mut()
-                            .unwrap()
-                            .write_message(msg)
-                            .unwrap();
+                        // core_state
+                        //     .session_websocket
+                        //     .as_mut()
+                        //     .unwrap()
+                        //     .write_message(msg)
+                        //     .unwrap();
 
-                        break;
+                        // break;
                     }
                 }
             }
         });
 }
 
-pub fn open_udp_connection(url: &String, connection_id: String) -> (bool, Option<UdpSocket>) {
-    match UdpSocket::bind(url) {
+pub fn open_udp_connection(
+    host_address: &String,
+    connection_id: String,
+) -> (bool, Option<UdpSocket>) {
+    match UdpSocket::bind(host_address) {
         Ok(socket) => return (true, Some(socket)),
 
         Err(err) => {

@@ -235,7 +235,13 @@ pub fn launch_core_server(port: u16, address: String) {
                 Ok(response)
             };
 
-            let new_ws = WebSocket::from_raw_socket(
+            let new_session_ws_for_ws = WebSocket::from_raw_socket(
+                stream.as_mut().unwrap().try_clone().unwrap(),
+                tungstenite::protocol::Role::Server,
+                None,
+            );
+
+            let new_session_ws_for_udp = WebSocket::from_raw_socket(
                 stream.as_mut().unwrap().try_clone().unwrap(),
                 tungstenite::protocol::Role::Server,
                 None,
@@ -243,7 +249,8 @@ pub fn launch_core_server(port: u16, address: String) {
 
             let mut session_websocket = accept_hdr(stream.unwrap(), callback).unwrap();
 
-            bolt_ws::set_session_websocket(new_ws);
+            bolt_ws::set_session_websocket(new_session_ws_for_ws);
+            bolt_udp::set_session_websocket(new_session_ws_for_udp);
 
             crate::start_services(session_id.clone());
 

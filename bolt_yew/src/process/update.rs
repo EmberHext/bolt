@@ -314,6 +314,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
             true
         }
+        Msg::UdpPeerUrlChanged => {
+            let url = get_udp_peer_url();
+
+            let current = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
+
+            current.peer_address = url.clone();
+
+            true
+        }
         Msg::UdpOutMessageChanged => {
             let message = get_body();
             let current = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
@@ -452,8 +461,7 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             } else if bctx.main_state.page == Page::Udp {
                 let current = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
 
-                current.url = url.clone();
-                current.name = url;
+                current.host_address = url.clone();
             }
 
             true

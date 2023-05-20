@@ -61,6 +61,7 @@ pub enum Msg {
     ConnectUdpPressed,
     UdpOutMessageChanged,
     UdpOutMessagePressed,
+    UdpPeerUrlChanged,
     // UdpOutHeadersPressed,
     // UdpOutParamsPressed,
     DisconnectUdpPressed,
@@ -258,7 +259,8 @@ fn send_udp(connection: &mut UdpConnection) {
     // _bolt_log("send ws was pressed");
 
     let mut msg = UdpMessage::new();
-    msg.txt = get_body();
+    msg.data = get_udp_out_data();
+    msg.peer_address = get_udp_peer_url();
     msg.msg_type = UdpMsgType::OUT;
 
     connection.out_queue.push(msg);

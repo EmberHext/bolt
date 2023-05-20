@@ -95,7 +95,8 @@ pub fn handle_ws_message(txt: String) {
             | MsgType::LOG
             | MsgType::PANIC
             | MsgType::OPEN_LINK
-            | MsgType::ADD_UDP_CONNECTION | MsgType::ADD_WS_CONNECTION => {
+            | MsgType::ADD_UDP_CONNECTION
+            | MsgType::ADD_WS_CONNECTION => {
                 return;
             }
 
@@ -123,7 +124,6 @@ pub fn handle_ws_message(txt: String) {
                 handle_ws_received_msg(txt);
             }
 
-            
             MsgType::UDP_CONNECTED => {
                 handle_udp_connected_msg(txt);
             }
@@ -139,7 +139,7 @@ pub fn handle_ws_message(txt: String) {
             MsgType::UDP_RECEIVED_MSG => {
                 handle_udp_received_msg(txt);
             }
-         },
+        },
 
         Err(_err) => {
             handle_invalid_msg(txt);
@@ -147,9 +147,8 @@ pub fn handle_ws_message(txt: String) {
     }
 }
 
-
 fn handle_udp_connected_msg(txt: String) {
-    _bolt_log("CONNECTED TO THE UDP PEER!!");
+    // _bolt_log("CONNECTED!!");
 
     let msg: UdpConnectedMsg = serde_json::from_str(&txt).unwrap();
 
@@ -168,7 +167,7 @@ fn handle_udp_connected_msg(txt: String) {
 }
 
 fn handle_udp_disconnected_msg(txt: String) {
-    _bolt_log("DISCONNECTED FROM THE UDP PEER!!");
+    // _bolt_log("DISCONNECTED!!");
 
     let msg: UdpDisconnectedMsg = serde_json::from_str(&txt).unwrap();
 
@@ -186,9 +185,7 @@ fn handle_udp_disconnected_msg(txt: String) {
     link.send_message(Msg::Update);
 }
 
-
 fn handle_udp_connection_failed_msg(txt: String) {
- 
     let msg: UdpConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
@@ -203,14 +200,14 @@ fn handle_udp_connection_failed_msg(txt: String) {
         }
     }
 
-   _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
-    
+    // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
+
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
 }
 
 fn handle_udp_sent_msg(txt: String) {
-    _bolt_log("SENT!!!");
+    // _bolt_log("SENT!!!");
 
     let sent_msg: UdpSentMsg = serde_json::from_str(&txt).unwrap();
 
@@ -232,7 +229,7 @@ fn handle_udp_sent_msg(txt: String) {
 }
 
 fn handle_udp_received_msg(txt: String) {
-    _bolt_log("RECEIVED!!!");
+    // _bolt_log("RECEIVED!!!");
 
     let received_msg: UdpReceivedMsg = serde_json::from_str(&txt).unwrap();
 
@@ -286,9 +283,7 @@ fn handle_ws_disconnected_msg(txt: String) {
     link.send_message(Msg::Update);
 }
 
-
 fn handle_ws_connection_failed_msg(txt: String) {
- 
     let msg: WsConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
@@ -303,8 +298,8 @@ fn handle_ws_connection_failed_msg(txt: String) {
         }
     }
 
-   // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
-    
+    // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
+
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
 }
@@ -475,6 +470,14 @@ pub fn get_url() -> String {
     div.dyn_into::<web_sys::HtmlInputElement>().unwrap().value()
 }
 
+pub fn get_udp_peer_url() -> String {
+    let window = web_sys::window().unwrap();
+    let doc = web_sys::Window::document(&window).unwrap();
+    let div = web_sys::Document::get_element_by_id(&doc, "udp-peer-urlinput").unwrap();
+
+    div.dyn_into::<web_sys::HtmlInputElement>().unwrap().value()
+}
+
 pub fn get_body() -> String {
     let window = web_sys::window().unwrap();
     let doc = web_sys::Window::document(&window).unwrap();
@@ -483,6 +486,22 @@ pub fn get_body() -> String {
     div.dyn_into::<web_sys::HtmlTextAreaElement>()
         .unwrap()
         .value()
+}
+
+pub fn get_udp_out_data() -> Vec<u8> {
+    let window = web_sys::window().unwrap();
+    let doc = web_sys::Window::document(&window).unwrap();
+    let div = web_sys::Document::get_element_by_id(&doc, "reqbody").unwrap();
+
+    let data_txt = div
+        .dyn_into::<web_sys::HtmlTextAreaElement>()
+        .unwrap()
+        .value();
+
+    let data: Vec<u8> =
+        serde_json::from_str(&data_txt).expect("could not parse udp data to vector");
+
+    data
 }
 
 pub fn get_header(index: usize) -> Vec<String> {

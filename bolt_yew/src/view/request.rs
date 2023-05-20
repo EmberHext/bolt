@@ -109,23 +109,25 @@ pub fn udp_out(bctx: &mut BoltContext) -> Html {
         <div class="req">
         if can_display {
             <div class="requestbar">
-                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.url.clone()} placeholder="0.0.0.0:1234" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectUdpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
+                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.host_address.clone()} placeholder="your address e.g 127.0.0.1:4444" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectUdpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
 
                 if connection.connecting {
-                    <button class="ws-connecting-btn disabled-cursor" type="button">{"Connecting"}</button>
+                    <button class="ws-connecting-btn disabled-cursor" type="button">{"..."}</button>
                 } else if connection.connected {
-                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectUdpPressed)}>{"Disconnect"}</button>
+                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectUdpPressed)}>{"Stop"}</button>
                 } else {
-                    <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectUdpPressed)}>{"Connect"}</button>
+                    <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectUdpPressed)}>{"Listen"}</button>
                 }
             </div>
 
             <div class="reqline">
-                <div class="reqtabs">
-                    <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::UdpOutMessagePressed)}>{"Message"}</div>
+                <div class="udp-reqtabs">
+                    <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::UdpOutMessagePressed)}>{"Data"}</div>
                     // <div id="req_params_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutParamsPressed)}>{"Params"}</div>
                     // <div id="req_headers_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutHeadersPressed)}>{"Headers"}</div>
                 </div>
+                <input id="udp-peer-urlinput" class="udp-peer-urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.peer_address.clone()} placeholder="peer address e.g 8.8.8.8:8080" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::SendUdpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UdpPeerUrlChanged })} />
+
                 if connection.connected {
                     <button class="ws-send-btn pointer" type="button" onclick={link.callback(|_| Msg::SendUdpPressed)}>{"Send"}</button>
                 } else {
@@ -135,7 +137,7 @@ pub fn udp_out(bctx: &mut BoltContext) -> Html {
 
              <div class="tabcontent">
                 if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {
-                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_buffer.clone()} placeholder="Compose Message" onchange={link.callback(|_| Msg::UdpOutMessageChanged)}>
+                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_buffer.clone()} placeholder="[12, 33, 53, 83, 77]" onchange={link.callback(|_| Msg::UdpOutMessageChanged)}>
 
                     </textarea>
                 } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {
