@@ -158,7 +158,7 @@ pub fn spawn_udp_service(connection_id: String) {
                         .write_message(msg)
                         .unwrap();
 
-                    drop(udp_socket.as_mut().unwrap());
+                    udp_socket = None;
                 } else if connecting && !connected {
                     println!("UDP {} CONNECTING", connection_id);
 
@@ -286,7 +286,7 @@ pub fn spawn_read_service(
             let mut kill_read_service = false;
 
             loop {
-                std::thread::sleep(std::time::Duration::from_millis(UDP_SERVICE_REFRESH_RATE));
+                // std::thread::sleep(std::time::Duration::from_millis(UDP_SERVICE_REFRESH_RATE));
 
                 let channel_message =
                     match channel_receiver.recv_timeout(std::time::Duration::from_millis(400)) {
