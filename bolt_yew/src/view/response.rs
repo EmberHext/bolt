@@ -132,6 +132,52 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
 //     }
 // }
 
+
+pub fn tcp_history(bctx: &mut BoltContext) -> Html {
+    // let link = bctx.main_state.link.as_ref().unwrap();
+
+    let can_display = !bctx.main_state.tcp_connections.is_empty();
+
+    let mut connection = TcpConnection::new();
+
+    if can_display {
+        connection = bctx.main_state.tcp_connections[bctx.main_state.tcp_current].clone();
+    }
+
+    html! {
+        <div class="resp">
+            if can_display && !connection.connecting && !connection.failed {
+                <div class="respline">
+                    <div class="resptabs">
+                        <div id="resp_body_tab" class={if connection.in_tab == 1  {"tab tabSelected"} else {"tab pointer"}}>{"Messages"}</div>
+                    </div>
+
+                    <div class="respstats">
+                        if connection.connected {
+                            <div id="status" class="respstat">{"Connected"}</div>
+                        } else if connection.connecting {
+                            <div id="status" class="respstat">{"Connecting"}</div>
+                        } else {
+                            <div id="status" class="respstat">{"Disconnected"}</div>
+                        }
+                    </div>
+                 </div>
+
+                <div class="tabcontent">
+                    <div class="atabs">
+                        { for connection.msg_history.iter().rev().map(|msg| view::msg::render_tcp_msg(&msg)) }
+                    </div>
+                </div>
+            } else if can_display && connection.connecting {
+                <div class="resploading"><img src="/icon/icon.png" /></div>
+            } else if connection.failed {
+                <div class="resperror">{connection.failed_reason.clone()}</div>
+            }
+
+        </div>
+    }
+}
+
 pub fn udp_history(bctx: &mut BoltContext) -> Html {
     // let link = bctx.main_state.link.as_ref().unwrap();
 

@@ -51,7 +51,7 @@ pub struct UdpConnection {
     pub failed_reason: String,
     pub connected: bool,
 
-    pub out_buffer: String,
+    pub out_data_buffer: String,
     pub out_queue: Vec<UdpMessage>,
     pub out_headers: Vec<Vec<String>>,
     pub out_params: Vec<Vec<String>>,
@@ -84,7 +84,7 @@ impl UdpConnection {
             out_tab: 1,
             in_tab: 1,
 
-            out_buffer: String::new(),
+            out_data_buffer: String::new(),
             out_queue: vec![],
             out_headers: vec![vec![String::new(), String::new()]],
             out_params: vec![vec![String::new(), String::new()]],

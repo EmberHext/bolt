@@ -50,7 +50,7 @@ pub fn http_request(bctx: &mut BoltContext) -> Html {
 
             <div class="tabcontent">
                 if is_tab_selected(&request.req_tab, HttpReqTabs::Body) {
-                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={request.body.clone()} placeholder="Request body" onchange={link.callback(|_| Msg::HttpReqBodyChanged)}>
+                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={request.body.clone()} placeholder="Request body" oninput={link.callback(|_| Msg::HttpReqBodyChanged)}>
 
                     </textarea>
                 } else if is_tab_selected(&request.req_tab, HttpReqTabs::Params) {
@@ -94,6 +94,58 @@ fn is_tab_selected(request_tab: &u8, tab: HttpReqTabs) -> bool {
     *request_tab == u8::from(tab)
 }
 
+pub fn tcp_out(bctx: &mut BoltContext) -> Html {
+    let link = bctx.link.as_ref().unwrap();
+
+    let can_display = !bctx.main_state.tcp_connections.is_empty();
+
+    let mut connection = TcpConnection::new();
+
+    if can_display {
+        connection = bctx.main_state.tcp_connections[bctx.main_state.tcp_current].clone();
+    }
+
+    html! {
+        <div class="req">
+        if can_display {
+            <div class="requestbar">
+                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.host_address.clone()} placeholder="your address e.g 127.0.0.1:4444" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectTcpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
+
+                if connection.connecting {
+                    <button class="ws-connecting-btn disabled-cursor" type="button">{"..."}</button>
+                } else if connection.connected {
+                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectTcpPressed)}>{"Stop"}</button>
+                } else {
+                    <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectTcpPressed)}>{"Listen"}</button>
+                }
+            </div>
+
+            <div class="reqline">
+                <div class="udp-reqtabs">
+                    <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::TcpOutMessagePressed)}>{"Data"}</div>
+                </div>
+                <input id="tcp-peer-urlinput" class="udp-peer-urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.peer_address.clone()} placeholder="peer address e.g 8.8.8.8:8080" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::SendTcpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::TcpPeerUrlChanged })} />
+
+                if connection.connected {
+                    <button class="ws-send-btn pointer" type="button" onclick={link.callback(|_| Msg::SendTcpPressed)}>{"Send"}</button>
+                } else {
+                    <button class="ws-send-btn disabled-cursor" type="button">{"Send"}</button>
+                }
+            </div>
+
+             <div class="tabcontent">
+                if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {
+                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_data_buffer.clone()} placeholder="[12, 33, 53, 83, 77]" oninput={link.callback(|_| Msg::TcpOutMessageChanged)}>
+
+                    </textarea>
+                }
+            </div>
+        }
+        </div>
+
+    }
+}
+
 pub fn udp_out(bctx: &mut BoltContext) -> Html {
     let link = bctx.link.as_ref().unwrap();
 
@@ -123,8 +175,6 @@ pub fn udp_out(bctx: &mut BoltContext) -> Html {
             <div class="reqline">
                 <div class="udp-reqtabs">
                     <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::UdpOutMessagePressed)}>{"Data"}</div>
-                    // <div id="req_params_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutParamsPressed)}>{"Params"}</div>
-                    // <div id="req_headers_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::WsOutHeadersPressed)}>{"Headers"}</div>
                 </div>
                 <input id="udp-peer-urlinput" class="udp-peer-urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.peer_address.clone()} placeholder="peer address e.g 8.8.8.8:8080" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::SendUdpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UdpPeerUrlChanged })} />
 
@@ -137,30 +187,9 @@ pub fn udp_out(bctx: &mut BoltContext) -> Html {
 
              <div class="tabcontent">
                 if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {
-                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_buffer.clone()} placeholder="[12, 33, 53, 83, 77]" onchange={link.callback(|_| Msg::UdpOutMessageChanged)}>
+                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_data_buffer.clone()} placeholder="[12, 33, 53, 83, 77]" oninput={link.callback(|_| Msg::UdpOutMessageChanged)}>
 
                     </textarea>
-                } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {
-                    // <div class="reqheaders">
-                    //     <table>
-                    //         <tr>
-                    //             <th>{"Key"}</th>
-                    //             <th>{"Value"}</th>
-                    //         </tr>
-                    //         { for connection.out_params.iter().enumerate().map(|(index, header)| view::param::render_ws_out_params(bctx, index, connection.out_params.len(), &header[0], &header[1])) }
-                    //     </table>
-                    // </div>
-
-                } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Headers) {
-                    // <div class="reqheaders">
-                    //     <table>
-                    //         <tr>
-                    //             <th>{"Header"}</th>
-                    //             <th>{"Value"}</th>
-                    //         </tr>
-                    //         { for connection.out_headers.iter().enumerate().map(|(index, header)| view::header::render_ws_out_header(bctx, index, connection.out_headers.len(), &header[0], &header[1])) }
-                    //     </table>
-                    // </div>
                 }
             </div>
         }
@@ -210,7 +239,7 @@ pub fn ws_out(bctx: &mut BoltContext) -> Html {
 
              <div class="tabcontent">
                 if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {
-                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_buffer.clone()} placeholder="Compose Message" onchange={link.callback(|_| Msg::WsOutMessageChanged)}>
+                    <textarea autocomplete="off" spellcheck="false" id="reqbody" class="reqbody" value={connection.out_buffer.clone()} placeholder="Compose Message" oninput={link.callback(|_| Msg::WsOutMessageChanged)}>
 
                     </textarea>
                 } else if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Params) {

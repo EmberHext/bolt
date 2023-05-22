@@ -2,8 +2,9 @@ mod session;
 mod utils;
 
 use bolt_common::prelude::*;
-use bolt_ws::start_core_ws_service;
+use bolt_tcp::start_core_tcp_service;
 use bolt_udp::start_core_udp_service;
+use bolt_ws::start_core_ws_service;
 
 static HELP: &str = r#"
 Bolt CLI (Build and test APIs)
@@ -103,6 +104,10 @@ fn start_services(session_id: String) {
 
     std::thread::spawn(move || {
         start_core_ws_service(ws_session_id);
+    });
+
+    std::thread::spawn(move || {
+        start_core_tcp_service(udp_session_id);
     });
 
     std::thread::spawn(move || {

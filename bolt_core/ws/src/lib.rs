@@ -283,8 +283,8 @@ pub fn spawn_read_service(
                         .unwrap();
                 }
 
-                Err(err) => {
-                    println!("WS ERRO -> {err}");
+                Err(_err) => {
+                    // println!("WS ERROR -> {err}");
 
                     let mut core_state = CORE_STATE.lock().unwrap();
 

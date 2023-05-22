@@ -16,11 +16,11 @@ pub fn tcp_view(bctx: &mut BoltContext) -> Html {
                 <div class="resizer"></div>
         
                 <div class="content">
-                    {view::request::http_request(bctx)}
+                    {view::request::tcp_out(bctx)}
                                 
                     <div class="resizer2"></div>     
         
-                    {view::response::http_response(bctx)}
+                    {view::response::tcp_history(bctx)}
                 </div>
             </div>
 

@@ -1,13 +1,15 @@
+pub mod collection;
 pub mod http;
+pub mod tcp;
 pub mod udp;
 pub mod ws;
-pub mod collection;
 
 pub mod prelude {
+    pub use crate::collection::*;
     pub use crate::http::*;
+    pub use crate::tcp::*;
     pub use crate::udp::*;
     pub use crate::ws::*;
-    pub use crate::collection::*;
 
     use serde::{Deserialize, Serialize};
 
@@ -30,10 +32,12 @@ pub mod prelude {
         pub http_current: usize,
         pub ws_current: usize,
         pub udp_current: usize,
+        pub tcp_current: usize,
         pub col_current: Vec<usize>,
 
         pub http_requests: Vec<HttpRequest>,
         pub ws_connections: Vec<WsConnection>,
+        pub tcp_connections: Vec<TcpConnection>,
         pub udp_connections: Vec<UdpConnection>,
         pub collections: Vec<Collection>,
     }
@@ -45,11 +49,13 @@ pub mod prelude {
 
                 http_current: 0,
                 ws_current: 0,
+                tcp_current: 0,
                 udp_current: 0,
                 col_current: vec![0, 0],
 
                 http_requests: vec![HttpRequest::new()],
                 ws_connections: vec![WsConnection::new()],
+                tcp_connections: vec![TcpConnection::new()],
                 udp_connections: vec![UdpConnection::new()],
                 collections: vec![],
             }
@@ -79,6 +85,13 @@ pub mod prelude {
         WS_MSG_SENT,
         WS_RECEIVED_MSG,
         WS_CONNECTION_FAILED,
+
+        ADD_TCP_CONNECTION,
+        TCP_CONNECTED,
+        TCP_DISCONNECTED,
+        TCP_MSG_SENT,
+        TCP_RECEIVED_MSG,
+        TCP_CONNECTION_FAILED,
 
         ADD_UDP_CONNECTION,
         UDP_CONNECTED,
@@ -123,5 +136,4 @@ pub mod prelude {
         pub msg_type: MsgType,
         pub save: String,
     }
-
 }

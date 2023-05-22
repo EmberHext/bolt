@@ -9,7 +9,7 @@ fn main() {
     // Spawn a separate thread to read and print messages
     
     let socket2 = socket.try_clone().unwrap();
-    let reader_thread = thread::spawn(move || {
+    thread::spawn(move || {
         let mut buf = [0; 1024];
         loop {
             match socket2.recv_from(&mut buf) {
