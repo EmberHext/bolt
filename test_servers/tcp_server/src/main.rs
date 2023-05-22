@@ -1,12 +1,12 @@
-use std::io::Write;
 use std::io::Read;
+use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 
 fn handle_client(mut stream: TcpStream) {
     let mut buf = [0; 128];
-    
+
     while stream.read(&mut buf).unwrap() != 0 {
-         stream.write(&buf).unwrap();
+        stream.write(&buf).unwrap();
     }
 }
 
@@ -16,6 +16,6 @@ fn main() {
     println!("Server listening on {}", listener.local_addr().unwrap());
 
     for stream in listener.incoming() {
-        handle_client(stream.unwrap());
+        std::thread::spawn(|| handle_client(stream.unwrap()));
     }
 }
