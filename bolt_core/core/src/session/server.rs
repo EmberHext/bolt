@@ -94,9 +94,9 @@ fn handle_add_tcp_connection(
     _session_id: &String,
     txt: String,
 ) {
-    let msg: AddTcpConnectionMsg = serde_json::from_str(&txt).unwrap();
+    let _msg: AddTcpConnectionMsg = serde_json::from_str(&txt).unwrap();
 
-    println!("adding tcp connection with id: {}", &msg.connection_id);
+    // println!("adding tcp connection with id: {}", &msg.connection_id);
 }
 
 fn handle_add_udp_connection(
@@ -104,9 +104,9 @@ fn handle_add_udp_connection(
     _session_id: &String,
     txt: String,
 ) {
-    let msg: AddUdpConnectionMsg = serde_json::from_str(&txt).unwrap();
+    let _msg: AddUdpConnectionMsg = serde_json::from_str(&txt).unwrap();
 
-    println!("adding udp connection with id: {}", &msg.connection_id);
+    // println!("adding udp connection with id: {}", &msg.connection_id);
 }
 
 fn handle_add_ws_connection(
@@ -114,9 +114,9 @@ fn handle_add_ws_connection(
     _session_id: &String,
     txt: String,
 ) {
-    let msg: AddWsConnectionMsg = serde_json::from_str(&txt).unwrap();
+    let _msg: AddWsConnectionMsg = serde_json::from_str(&txt).unwrap();
 
-    println!("adding ws connection with id: {}", &msg.connection_id);
+    // println!("adding ws connection with id: {}", &msg.connection_id);
 }
 
 #[tokio::main]
@@ -235,7 +235,7 @@ fn process_connection(_req: &Request, mut response: Response, _session_id: &Stri
 }
 
 pub fn launch_core_server(port: u16, address: String) {
-    println!("Starting WS server on ws://{}:{}", address, port);
+    // println!("Starting WS server on ws://{}:{}", address, port);
 
     let server = TcpListener::bind(address + ":" + &port.to_string()).unwrap();
 

@@ -38,7 +38,7 @@ impl TcpMessage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TcpConnection {
     pub connection_id: String,
-    pub host_address: String,
+    // pub host_address: String,
     pub peer_address: String,
     pub name: String,
 
@@ -72,7 +72,7 @@ impl TcpConnection {
 
         Self {
             connection_id: con_id,
-            host_address: String::new(),
+            // host_address: String::new(),
             peer_address: String::new(),
             name: "TCP connection ".to_string(),
             connecting: false,

@@ -109,14 +109,14 @@ pub fn tcp_out(bctx: &mut BoltContext) -> Html {
         <div class="req">
         if can_display {
             <div class="requestbar">
-                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.host_address.clone()} placeholder="your address e.g 127.0.0.1:4444" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectTcpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::UrlChanged })} />
+                <input id="urlinput" class="urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.peer_address.clone()} placeholder="peer address e.g 127.0.0.1:4444" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::ConnectTcpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::TcpPeerUrlChanged })} />
 
                 if connection.connecting {
                     <button class="ws-connecting-btn disabled-cursor" type="button">{"..."}</button>
                 } else if connection.connected {
                     <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectTcpPressed)}>{"Stop"}</button>
                 } else {
-                    <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectTcpPressed)}>{"Listen"}</button>
+                    <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectTcpPressed)}>{"Connect"}</button>
                 }
             </div>
 
@@ -124,7 +124,7 @@ pub fn tcp_out(bctx: &mut BoltContext) -> Html {
                 <div class="udp-reqtabs">
                     <div id="req_body_tab" class={if is_ws_tab_selected(&connection.out_tab, WsOutTabs::Message) {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::TcpOutMessagePressed)}>{"Data"}</div>
                 </div>
-                <input id="tcp-peer-urlinput" class="udp-peer-urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.peer_address.clone()} placeholder="peer address e.g 8.8.8.8:8080" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::SendTcpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::TcpPeerUrlChanged })} />
+                // <input id="tcp-peer-urlinput" class="udp-peer-urlinput" type="text" autocomplete="off" spellcheck="false" value={connection.peer_address.clone()} placeholder="peer address e.g 8.8.8.8:8080" onkeydown={link.callback(|e: KeyboardEvent| { if e.key() == "Enter" { Msg::SendTcpPressed } else { Msg::Nothing } })}  oninput={link.callback(|_|{ Msg::TcpPeerUrlChanged })} />
 
                 if connection.connected {
                     <button class="ws-send-btn pointer" type="button" onclick={link.callback(|_| Msg::SendTcpPressed)}>{"Send"}</button>

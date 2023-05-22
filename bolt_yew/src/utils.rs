@@ -600,7 +600,7 @@ pub fn get_url() -> String {
 pub fn get_tcp_peer_url() -> String {
     let window = web_sys::window().unwrap();
     let doc = web_sys::Window::document(&window).unwrap();
-    let div = web_sys::Document::get_element_by_id(&doc, "tcp-peer-urlinput").unwrap();
+    let div = web_sys::Document::get_element_by_id(&doc, "urlinput").unwrap();
 
     div.dyn_into::<web_sys::HtmlInputElement>().unwrap().value()
 }

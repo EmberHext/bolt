@@ -6,8 +6,6 @@ fn main() {
 
     println!("Server listening on {}", socket.local_addr().unwrap());
 
-    // Spawn a separate thread to read and print messages
-    
     let socket2 = socket.try_clone().unwrap();
     thread::spawn(move || {
         let mut buf = [0; 1024];
@@ -24,7 +22,6 @@ fn main() {
         }
     });
 
-    // Send messages to the peer
     loop {
         socket
             .send_to("Heyyyyyyyy".as_bytes(), "127.0.0.1:4445")
@@ -32,7 +29,4 @@ fn main() {
 
         std::thread::sleep(std::time::Duration::from_millis(1000));
     }
-
-    // Wait for the reader thread to finish (optional)
-    // reader_thread.join().expect("Failed to join the reader thread");
 }

@@ -101,6 +101,7 @@ fn start_services(session_id: String) {
 
     let ws_session_id = session_id.clone();
     let udp_session_id = session_id.clone();
+    let tcp_session_id = session_id.clone();
 
     std::thread::spawn(move || {
         start_core_ws_service(ws_session_id);
@@ -111,6 +112,6 @@ fn start_services(session_id: String) {
     });
 
     std::thread::spawn(move || {
-        start_core_udp_service(udp_session_id);
+        start_core_udp_service(tcp_session_id);
     });
 }

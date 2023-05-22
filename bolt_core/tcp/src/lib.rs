@@ -1,7 +1,9 @@
+use std::io::Read;
+use std::io::Write;
 mod utils;
 
 use bolt_common::prelude::*;
-use std::net::TcpSocket;
+use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use tungstenite::WebSocket;
 
@@ -75,14 +77,14 @@ pub fn start_core_tcp_service(_session_id: String) {
 }
 
 pub fn spawn_tcp_service(connection_id: String) {
-    println!("started tcp service for {}", connection_id);
+    // println!("started tcp service for {}", connection_id);
 
     let _handle = std::thread::Builder::new()
         .name(connection_id.clone())
         .spawn(move || {
             // comment
 
-            let mut tcp_socket: Option<TcpSocket> = None;
+            let mut tcp_stream: Option<TcpStream> = None;
             let mut channel_sender: Option<std::sync::mpsc::Sender<String>> = None;
 
             loop {
@@ -101,7 +103,7 @@ pub fn spawn_tcp_service(connection_id: String) {
                                 |(_ind, sv_mut)| sv_mut.connection_id == service.connection_id,
                             )
                         {
-                            println!("TCP KILLING {}", service.connection_id);
+                            // println!("TCP KILLING {}", service.connection_id);
 
                             core_state.tcp_services.remove(index);
                             return;
@@ -132,7 +134,7 @@ pub fn spawn_tcp_service(connection_id: String) {
                 let connected = tcp_con.connected;
 
                 if disconnecting {
-                    println!("TCP {} DISCONNECTING", connection_id);
+                    // println!("TCP {} DISCONNECTING", connection_id);
 
                     channel_sender
                         .as_mut()
@@ -156,15 +158,15 @@ pub fn spawn_tcp_service(connection_id: String) {
                         .write_message(msg)
                         .unwrap();
 
-                    tcp_socket = None;
+                    tcp_stream = None;
                 } else if connecting && !connected {
-                    println!("TCP {} CONNECTING", connection_id);
+                    // println!("TCP {} CONNECTING", connection_id);
 
-                    let (connected_succeded, mut new_socket) =
-                        open_tcp_connection(&tcp_con.host_address, tcp_con.connection_id.clone());
+                    let (connected_succeded, mut new_stream) =
+                        open_tcp_connection(&tcp_con.peer_address, tcp_con.connection_id.clone());
 
                     if connected_succeded {
-                        new_socket
+                        new_stream
                             .as_mut()
                             .unwrap()
                             .set_nonblocking(true)
@@ -203,14 +205,14 @@ pub fn spawn_tcp_service(connection_id: String) {
                         .write_message(msg)
                         .unwrap();
 
-                    tcp_socket = new_socket;
+                    tcp_stream = new_stream;
 
                     let (sender, receiver) = std::sync::mpsc::channel();
 
                     channel_sender = Some(sender);
 
                     spawn_read_service(
-                        tcp_socket.as_mut().unwrap().try_clone().unwrap(),
+                        tcp_stream.as_mut().unwrap().try_clone().unwrap(),
                         receiver,
                         connection_id.clone(),
                     );
@@ -226,12 +228,12 @@ pub fn spawn_tcp_service(connection_id: String) {
                     }
                 } else if connected {
                     for out_msg in tcp_con.out_queue.clone() {
-                        println!("TCP OUT MSG: {:?}", out_msg.data);
+                        // println!("TCP OUT MSG: {:?}", out_msg.data);
 
-                        tcp_socket
+                        tcp_stream
                             .as_mut()
                             .unwrap()
-                            .send_to(&out_msg.data, out_msg.peer_address.clone())
+                            .write(&out_msg.data)
                             .unwrap();
 
                         let mut new_msg = TcpMessage::new();
@@ -266,7 +268,7 @@ pub fn spawn_tcp_service(connection_id: String) {
 }
 
 pub fn spawn_read_service(
-    current_tcp: TcpSocket,
+    mut current_tcp: TcpStream,
     channel_receiver: std::sync::mpsc::Receiver<String>,
     connection_id: String,
 ) {
@@ -295,8 +297,8 @@ pub fn spawn_read_service(
                     break;
                 }
 
-                match current_tcp.recv_from(&mut buf) {
-                    Ok((_received_bytes, peer_addr)) => {
+                match current_tcp.read(&mut buf) {
+                    Ok(_received_bytes) => {
                         // println!("TCP RECEIVED");
 
                         let mut core_state = CORE_STATE.lock().unwrap();
@@ -304,7 +306,7 @@ pub fn spawn_read_service(
                         let mut new_msg = TcpMessage::new();
                         new_msg.msg_type = TcpMsgType::IN;
                         new_msg.data = buf.to_vec();
-                        new_msg.peer_address = peer_addr.to_string();
+                        // new_msg.peer_address = peer_addr.to_string();
                         new_msg.timestamp = utils::get_timestamp();
 
                         let out = TcpReceivedMsg {
@@ -324,18 +326,18 @@ pub fn spawn_read_service(
                             .unwrap();
                     }
 
-                    Err(err) => {}
+                    Err(_err) => {}
                 }
             }
         });
 }
 
 pub fn open_tcp_connection(
-    host_address: &String,
+    peer_address: &String,
     connection_id: String,
-) -> (bool, Option<TcpSocket>) {
-    match TcpSocket::bind(host_address) {
-        Ok(socket) => return (true, Some(socket)),
+) -> (bool, Option<TcpStream>) {
+    match TcpStream::connect(peer_address) {
+        Ok(stream) => return (true, Some(stream)),
 
         Err(err) => {
             let mut core_state = CORE_STATE.lock().unwrap();
