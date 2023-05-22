@@ -101,7 +101,7 @@ pub fn spawn_ws_service(connection_id: String) {
                                 |(_ind, sv_mut)| sv_mut.connection_id == service.connection_id,
                             )
                         {
-                            println!("WS KILLING {}", service.connection_id);
+                            // println!("WS KILLING {}", service.connection_id);
 
                             core_state.ws_services.remove(index);
                             return;
@@ -283,8 +283,8 @@ pub fn spawn_read_service(
                         .unwrap();
                 }
 
-                Err(err) => {
-                    println!("WS ERRO -> {err}");
+                Err(_err) => {
+                    // println!("WS ERROR -> {err}");
 
                     let mut core_state = CORE_STATE.lock().unwrap();
 

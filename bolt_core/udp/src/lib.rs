@@ -77,7 +77,7 @@ pub fn start_core_udp_service(_session_id: String) {
 }
 
 pub fn spawn_udp_service(connection_id: String) {
-    println!("started udp service for {}", connection_id);
+    // println!("started udp service for {}", connection_id);
 
     let _handle = std::thread::Builder::new()
         .name(connection_id.clone())
@@ -103,7 +103,7 @@ pub fn spawn_udp_service(connection_id: String) {
                                 |(_ind, sv_mut)| sv_mut.connection_id == service.connection_id,
                             )
                         {
-                            println!("UDP KILLING {}", service.connection_id);
+                            // println!("UDP KILLING {}", service.connection_id);
 
                             core_state.udp_services.remove(index);
                             return;
@@ -134,7 +134,7 @@ pub fn spawn_udp_service(connection_id: String) {
                 let connected = udp_con.connected;
 
                 if disconnecting {
-                    println!("UDP {} DISCONNECTING", connection_id);
+                    // println!("UDP {} DISCONNECTING", connection_id);
 
                     channel_sender
                         .as_mut()
@@ -158,9 +158,9 @@ pub fn spawn_udp_service(connection_id: String) {
                         .write_message(msg)
                         .unwrap();
 
-                    drop(udp_socket.as_mut().unwrap());
+                    udp_socket = None;
                 } else if connecting && !connected {
-                    println!("UDP {} CONNECTING", connection_id);
+                    // println!("UDP {} CONNECTING", connection_id);
 
                     let (connected_succeded, mut new_socket) =
                         open_udp_connection(&udp_con.host_address, udp_con.connection_id.clone());
@@ -228,7 +228,7 @@ pub fn spawn_udp_service(connection_id: String) {
                     }
                 } else if connected {
                     for out_msg in udp_con.out_queue.clone() {
-                        println!("UDP OUT MSG: {:?}", out_msg.data);
+                        // println!("UDP OUT MSG: {:?}", out_msg.data);
 
                         // let txt = serde_json::to_string(&out_msg.txt).unwrap();
                         // let msg = tungstenite::Message::Text(txt);
@@ -286,7 +286,7 @@ pub fn spawn_read_service(
             let mut kill_read_service = false;
 
             loop {
-                std::thread::sleep(std::time::Duration::from_millis(UDP_SERVICE_REFRESH_RATE));
+                // std::thread::sleep(std::time::Duration::from_millis(UDP_SERVICE_REFRESH_RATE));
 
                 let channel_message =
                     match channel_receiver.recv_timeout(std::time::Duration::from_millis(400)) {
@@ -331,7 +331,7 @@ pub fn spawn_read_service(
                             .unwrap();
                     }
 
-                    Err(err) => {
+                    Err(_err) => {
                         // println!("UDP FAILED TO READ -> {err}");
 
                         // let mut core_state = CORE_STATE.lock().unwrap();

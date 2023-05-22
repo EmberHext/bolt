@@ -20,6 +20,7 @@ use bolt_common::prelude::*;
 // Define the possible messages which can be sent to the component
 #[derive(Clone)]
 pub enum Msg {
+    // HTTP
     HttpReqSelectedMethod(HttpMethod),
     SendHttpPressed,
     RemoveHttpRequest(usize),
@@ -40,47 +41,46 @@ pub enum Msg {
     HttpReqAddParam,
     HttpReqRemoveParam(usize),
 
+    // WEBSOCKETS
     SendWsPressed,
     ConnectWsPressed,
     WsOutMessageChanged,
     WsOutMessagePressed,
-    // WsOutHeadersPressed,
-    // WsOutParamsPressed,
     DisconnectWsPressed,
-    // WsOutAddHeader,
-    // WsOutRemoveHeader(usize),
-    // WsOutAddParam,
-    // WsOutRemoveParam(usize),
-    // WsOutHeaderChanged(usize),
-    // WsOutParamChanged(usize),
     AddWsConnection,
     RemoveWsConnection(usize),
     SelectWsConnection(usize),
 
+    // TCP
+    SendTcpPressed,
+    ConnectTcpPressed,
+    TcpOutMessageChanged,
+    TcpOutMessagePressed,
+    TcpPeerUrlChanged,
+    DisconnectTcpPressed,
+    AddTcpConnection,
+    RemoveTcpConnection(usize),
+    SelectTcpConnection(usize),
+
+    // UDP
     SendUdpPressed,
     ConnectUdpPressed,
     UdpOutMessageChanged,
     UdpOutMessagePressed,
     UdpPeerUrlChanged,
-    // UdpOutHeadersPressed,
-    // UdpOutParamsPressed,
     DisconnectUdpPressed,
-    // UdpOutAddHeader,
-    // UdpOutRemoveHeader(usize),
-    // UdpOutAddParam,
-    // UdpOutRemoveParam(usize),
-    // UdpOutHeaderChanged(usize),
-    // UdpOutParamChanged(usize),
     AddUdpConnection,
     RemoveUdpConnection(usize),
     SelectUdpConnection(usize),
 
+    // COLLECTION
     AddCollection,
     RemoveCollection(usize),
     AddToCollection(usize),
     SelectFromCollection(usize, usize),
     RemoveFromCollection(usize, usize),
 
+    // OTHER
     UrlChanged,
     ToggleCollapsed(usize),
     Update,
@@ -242,6 +242,29 @@ fn send_ws(connection: &mut WsConnection) {
     connection.out_queue.push(msg);
 }
 
+
+fn connect_tcp(connection: &mut TcpConnection) {
+    connection.connecting = true;
+
+    // _bolt_log("connect ws was pressed");
+}
+
+fn disconnect_tcp(connection: &mut TcpConnection) {
+    connection.disconnecting = true;
+
+    // _bolt_log("disconnect ws was pressed");
+}
+
+fn send_tcp(connection: &mut TcpConnection) {
+    // _bolt_log("send ws was pressed");
+
+    let mut msg = TcpMessage::new();
+    msg.data = get_tcp_out_data();
+    msg.peer_address = get_tcp_peer_url();
+    msg.msg_type = TcpMsgType::OUT;
+
+    connection.out_queue.push(msg);
+}
 
 fn connect_udp(connection: &mut UdpConnection) {
     connection.connecting = true;

@@ -96,6 +96,7 @@ pub fn handle_ws_message(txt: String) {
             | MsgType::PANIC
             | MsgType::OPEN_LINK
             | MsgType::ADD_UDP_CONNECTION
+            | MsgType::ADD_TCP_CONNECTION
             | MsgType::ADD_WS_CONNECTION => {
                 return;
             }
@@ -124,6 +125,22 @@ pub fn handle_ws_message(txt: String) {
                 handle_ws_received_msg(txt);
             }
 
+            MsgType::TCP_CONNECTED => {
+                handle_tcp_connected_msg(txt);
+            }
+            MsgType::TCP_DISCONNECTED => {
+                handle_tcp_disconnected_msg(txt);
+            }
+            MsgType::TCP_CONNECTION_FAILED => {
+                handle_tcp_connection_failed_msg(txt);
+            }
+            MsgType::TCP_MSG_SENT => {
+                handle_tcp_sent_msg(txt);
+            }
+            MsgType::TCP_RECEIVED_MSG => {
+                handle_tcp_received_msg(txt);
+            }
+
             MsgType::UDP_CONNECTED => {
                 handle_udp_connected_msg(txt);
             }
@@ -146,6 +163,116 @@ pub fn handle_ws_message(txt: String) {
         }
     }
 }
+
+
+fn handle_tcp_connected_msg(txt: String) {
+    // _bolt_log("CONNECTED!!");
+
+    let msg: TcpConnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.tcp_connections {
+        if msg.connection_id == con.connection_id {
+            con.failed = false;
+            con.connecting = false;
+            con.connected = true;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_tcp_disconnected_msg(txt: String) {
+    // _bolt_log("DISCONNECTED!!");
+
+    let msg: TcpDisconnectedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.tcp_connections {
+        if msg.connection_id == con.connection_id {
+            con.disconnecting = false;
+            con.connecting = false;
+            con.connected = false;
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_tcp_connection_failed_msg(txt: String) {
+    let msg: TcpConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.tcp_connections {
+        if msg.connection_id == con.connection_id {
+            con.failed = true;
+            con.failed_reason = msg.reason.clone();
+            con.disconnecting = false;
+            con.connecting = false;
+            con.connected = false;
+        }
+    }
+
+    // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_tcp_sent_msg(txt: String) {
+    // _bolt_log("SENT!!!");
+
+    let sent_msg: TcpSentMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.tcp_connections {
+        if sent_msg.connection_id == con.connection_id {
+            for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
+                if out_msg.msg_id == sent_msg.msg.msg_id {
+                    con.msg_history.push(sent_msg.msg.clone());
+                    con.out_queue.remove(index);
+                }
+            }
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+fn handle_tcp_received_msg(txt: String) {
+    // _bolt_log("RECEIVED!!!");
+
+    let received_msg: TcpReceivedMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut global_state = GLOBAL_STATE.lock().unwrap();
+
+    for con in &mut global_state.bctx.main_state.tcp_connections {
+        if con.connection_id == received_msg.connection_id {
+            con.msg_history.push(received_msg.msg.clone());
+        }
+    }
+
+    let link = global_state.bctx.link.as_ref().unwrap();
+    link.send_message(Msg::Update);
+}
+
+
+
+
+
+
+
+
+
+
+
 
 fn handle_udp_connected_msg(txt: String) {
     // _bolt_log("CONNECTED!!");
@@ -470,6 +597,14 @@ pub fn get_url() -> String {
     div.dyn_into::<web_sys::HtmlInputElement>().unwrap().value()
 }
 
+pub fn get_tcp_peer_url() -> String {
+    let window = web_sys::window().unwrap();
+    let doc = web_sys::Window::document(&window).unwrap();
+    let div = web_sys::Document::get_element_by_id(&doc, "urlinput").unwrap();
+
+    div.dyn_into::<web_sys::HtmlInputElement>().unwrap().value()
+}
+
 pub fn get_udp_peer_url() -> String {
     let window = web_sys::window().unwrap();
     let doc = web_sys::Window::document(&window).unwrap();
@@ -488,7 +623,7 @@ pub fn get_body() -> String {
         .value()
 }
 
-pub fn get_udp_out_data() -> Vec<u8> {
+pub fn get_tcp_out_txt() -> String {
     let window = web_sys::window().unwrap();
     let doc = web_sys::Window::document(&window).unwrap();
     let div = web_sys::Document::get_element_by_id(&doc, "reqbody").unwrap();
@@ -497,6 +632,32 @@ pub fn get_udp_out_data() -> Vec<u8> {
         .dyn_into::<web_sys::HtmlTextAreaElement>()
         .unwrap()
         .value();
+
+    data_txt
+}
+pub fn get_tcp_out_data() -> Vec<u8> {
+    let data_txt = get_tcp_out_txt();
+
+    let data: Vec<u8> =
+        serde_json::from_str(&data_txt).expect("could not parse tcp data to vector");
+
+    data
+}
+
+pub fn get_udp_out_txt() -> String {
+    let window = web_sys::window().unwrap();
+    let doc = web_sys::Window::document(&window).unwrap();
+    let div = web_sys::Document::get_element_by_id(&doc, "reqbody").unwrap();
+
+    let data_txt = div
+        .dyn_into::<web_sys::HtmlTextAreaElement>()
+        .unwrap()
+        .value();
+
+    data_txt
+}
+pub fn get_udp_out_data() -> Vec<u8> {
+    let data_txt = get_udp_out_txt();
 
     let data: Vec<u8> =
         serde_json::from_str(&data_txt).expect("could not parse udp data to vector");
