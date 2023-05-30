@@ -164,7 +164,6 @@ pub fn handle_ws_message(txt: String) {
     }
 }
 
-
 fn handle_tcp_connected_msg(txt: String) {
     // _bolt_log("CONNECTED!!");
 
@@ -262,17 +261,6 @@ fn handle_tcp_received_msg(txt: String) {
     let link = global_state.bctx.link.as_ref().unwrap();
     link.send_message(Msg::Update);
 }
-
-
-
-
-
-
-
-
-
-
-
 
 fn handle_udp_connected_msg(txt: String) {
     // _bolt_log("CONNECTED!!");
@@ -635,11 +623,10 @@ pub fn get_tcp_out_txt() -> String {
 
     data_txt
 }
-pub fn get_tcp_out_data() -> Vec<u8> {
+pub fn get_tcp_out_data() -> Result<Vec<u8>, serde_json::Error> {
     let data_txt = get_tcp_out_txt();
 
-    let data: Vec<u8> =
-        serde_json::from_str(&data_txt).expect("could not parse tcp data to vector");
+    let data: Result<Vec<u8>, serde_json::Error> = serde_json::from_str(&data_txt);
 
     data
 }
@@ -656,11 +643,10 @@ pub fn get_udp_out_txt() -> String {
 
     data_txt
 }
-pub fn get_udp_out_data() -> Vec<u8> {
+pub fn get_udp_out_data() -> Result<Vec<u8>, serde_json::Error> {
     let data_txt = get_udp_out_txt();
 
-    let data: Vec<u8> =
-        serde_json::from_str(&data_txt).expect("could not parse udp data to vector");
+    let data: Result<Vec<u8>, serde_json::Error> = serde_json::from_str(&data_txt);
 
     data
 }

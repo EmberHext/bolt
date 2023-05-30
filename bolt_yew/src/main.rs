@@ -242,51 +242,78 @@ fn send_ws(connection: &mut WsConnection) {
     connection.out_queue.push(msg);
 }
 
-
 fn connect_tcp(connection: &mut TcpConnection) {
     connection.connecting = true;
 
-    // _bolt_log("connect ws was pressed");
+    // _bolt_log("connect tcp was pressed");
 }
 
 fn disconnect_tcp(connection: &mut TcpConnection) {
     connection.disconnecting = true;
 
-    // _bolt_log("disconnect ws was pressed");
+    // _bolt_log("disconnect tcp was pressed");
 }
 
-fn send_tcp(connection: &mut TcpConnection) {
-    // _bolt_log("send ws was pressed");
+fn send_tcp(bctx: &mut BoltContext) {
+    // _bolt_log("send tcp was pressed");
 
-    let mut msg = TcpMessage::new();
-    msg.data = get_tcp_out_data();
-    msg.peer_address = get_tcp_peer_url();
-    msg.msg_type = TcpMsgType::OUT;
+    let data = get_tcp_out_data();
+    match data {
+        Ok(data) => {
+            let connection = &mut bctx.main_state.tcp_connections[bctx.main_state.tcp_current];
+            connection.failed = false;
 
-    connection.out_queue.push(msg);
+            let mut msg = TcpMessage::new();
+            msg.peer_address = get_tcp_peer_url();
+            msg.msg_type = TcpMsgType::OUT;
+            msg.data = data;
+
+            connection.out_queue.push(msg);
+        }
+
+        Err(err) => {
+            bctx.main_state.tcp_connections[bctx.main_state.tcp_current].failed = true;
+            bctx.main_state.tcp_connections[bctx.main_state.tcp_current].failed_reason =
+                "Error while parsing OUT data: ".to_string() + &err.to_string();
+        }
+    }
 }
 
 fn connect_udp(connection: &mut UdpConnection) {
     connection.connecting = true;
 
-    // _bolt_log("connect ws was pressed");
+    // _bolt_log("connect udp was pressed");
 }
 
 fn disconnect_udp(connection: &mut UdpConnection) {
     connection.disconnecting = true;
 
-    // _bolt_log("disconnect ws was pressed");
+    // _bolt_log("disconnect udp was pressed");
 }
 
-fn send_udp(connection: &mut UdpConnection) {
-    // _bolt_log("send ws was pressed");
+fn send_udp(bctx: &mut BoltContext) {
+    // _bolt_log("send udp was pressed");
 
-    let mut msg = UdpMessage::new();
-    msg.data = get_udp_out_data();
-    msg.peer_address = get_udp_peer_url();
-    msg.msg_type = UdpMsgType::OUT;
+    let data = get_udp_out_data();
+    match data {
+        Ok(data) => {
+            let connection = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
+            connection.failed = false;
 
-    connection.out_queue.push(msg);
+            let mut msg = UdpMessage::new();
+            msg.peer_address = get_udp_peer_url();
+            msg.msg_type = UdpMsgType::OUT;
+            msg.data = data;
+
+            connection.out_queue.push(msg);
+        }
+
+        Err(err) => {
+            bctx.main_state.udp_connections[bctx.main_state.udp_current].failed = true;
+            bctx.main_state.udp_connections[bctx.main_state.udp_current].failed_reason =
+                "Error while parsing OUT data: ".to_string() + &err.to_string();
+        }
+    }
 }
 
 pub fn receive_response(data: String) {

@@ -114,7 +114,7 @@ pub fn tcp_out(bctx: &mut BoltContext) -> Html {
                 if connection.connecting {
                     <button class="ws-connecting-btn disabled-cursor" type="button">{"..."}</button>
                 } else if connection.connected {
-                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectTcpPressed)}>{"Stop"}</button>
+                    <button class="ws-disconnect-btn pointer" type="button" onclick={link.callback(|_| Msg::DisconnectTcpPressed)}>{"Disconnect"}</button>
                 } else {
                     <button class="ws-connect-btn pointer" type="button" onclick={link.callback(|_| Msg::ConnectTcpPressed)}>{"Connect"}</button>
                 }

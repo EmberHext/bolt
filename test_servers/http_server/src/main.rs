@@ -7,7 +7,7 @@ pub async fn e404(_req: HttpRequest) -> HttpResponse {
     return response;
 }
 
-#[actix_web::get]
+#[actix_web::get("/ping")]
 pub async fn ping(_req: HttpRequest) -> HttpResponse {
     let body = body::BoxBody::new("pong");
     let response: HttpResponse = HttpResponse::new(http::StatusCode::OK).set_body(body);
@@ -24,7 +24,7 @@ pub async fn main() {
     });
 
     let address = "127.0.0.1";
-    let port = "8181";
+    let port = 8181;
 
     println!("Starting asset server on http://{}:{}", address, port);
     server.bind((address, port)).unwrap().run().await.unwrap();

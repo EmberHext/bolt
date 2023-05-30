@@ -316,9 +316,9 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
         Msg::SendTcpPressed => {
-            let current = &mut bctx.main_state.tcp_connections[bctx.main_state.tcp_current];
+            // let current = &mut bctx.main_state.tcp_connections[bctx.main_state.tcp_current];
 
-            send_tcp(current);
+            send_tcp(bctx);
 
             true
         }
@@ -408,9 +408,9 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
         Msg::SendUdpPressed => {
-            let current = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
+            // let current = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
 
-            send_udp(current);
+            send_udp(bctx);
 
             true
         }
