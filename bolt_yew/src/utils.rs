@@ -1,14 +1,10 @@
 use crate::BoltContext;
 use crate::Msg;
-// use crate::SaveState;
 use crate::GLOBAL_STATE;
 
-use crate::receive_response;
 use futures::SinkExt;
 use gloo_net::websocket::Message;
-use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
-use web_sys::{EventTarget, MouseEvent};
 
 use syntect::highlighting::ThemeSet;
 use syntect::highlighting::{Color, Theme};
@@ -81,422 +77,6 @@ pub fn ws_write(msg: String) {
     });
 }
 
-pub fn handle_ws_message(txt: String) {
-    let rcv: Result<ReceivedMessage, serde_json::Error> = serde_json::from_str(&txt);
-
-    match rcv {
-        Ok(message) => match message.msg_type {
-            MsgType::PING => {
-                handle_ping_msg(txt);
-            }
-
-            MsgType::SEND_HTTP
-            | MsgType::SAVE_STATE
-            | MsgType::LOG
-            | MsgType::PANIC
-            | MsgType::OPEN_LINK
-            | MsgType::ADD_UDP_CONNECTION
-            | MsgType::ADD_TCP_CONNECTION
-            | MsgType::ADD_WS_CONNECTION => {
-                return;
-            }
-
-            MsgType::HTTP_RESPONSE => {
-                handle_http_response_msg(txt);
-            }
-
-            MsgType::RESTORE_STATE => {
-                handle_restore_response_msg(txt);
-            }
-
-            MsgType::WS_CONNECTED => {
-                handle_ws_connected_msg(txt);
-            }
-            MsgType::WS_DISCONNECTED => {
-                handle_ws_disconnected_msg(txt);
-            }
-            MsgType::WS_CONNECTION_FAILED => {
-                handle_ws_connection_failed_msg(txt);
-            }
-            MsgType::WS_MSG_SENT => {
-                handle_ws_sent_msg(txt);
-            }
-            MsgType::WS_RECEIVED_MSG => {
-                handle_ws_received_msg(txt);
-            }
-
-            MsgType::TCP_CONNECTED => {
-                handle_tcp_connected_msg(txt);
-            }
-            MsgType::TCP_DISCONNECTED => {
-                handle_tcp_disconnected_msg(txt);
-            }
-            MsgType::TCP_CONNECTION_FAILED => {
-                handle_tcp_connection_failed_msg(txt);
-            }
-            MsgType::TCP_MSG_SENT => {
-                handle_tcp_sent_msg(txt);
-            }
-            MsgType::TCP_RECEIVED_MSG => {
-                handle_tcp_received_msg(txt);
-            }
-
-            MsgType::UDP_CONNECTED => {
-                handle_udp_connected_msg(txt);
-            }
-            MsgType::UDP_DISCONNECTED => {
-                handle_udp_disconnected_msg(txt);
-            }
-            MsgType::UDP_CONNECTION_FAILED => {
-                handle_udp_connection_failed_msg(txt);
-            }
-            MsgType::UDP_MSG_SENT => {
-                handle_udp_sent_msg(txt);
-            }
-            MsgType::UDP_RECEIVED_MSG => {
-                handle_udp_received_msg(txt);
-            }
-        },
-
-        Err(_err) => {
-            handle_invalid_msg(txt);
-        }
-    }
-}
-
-fn handle_tcp_connected_msg(txt: String) {
-    // _bolt_log("CONNECTED!!");
-
-    let msg: TcpConnectedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.tcp_connections {
-        if msg.connection_id == con.connection_id {
-            con.failed = false;
-            con.connecting = false;
-            con.connected = true;
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_tcp_disconnected_msg(txt: String) {
-    // _bolt_log("DISCONNECTED!!");
-
-    let msg: TcpDisconnectedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.tcp_connections {
-        if msg.connection_id == con.connection_id {
-            con.disconnecting = false;
-            con.connecting = false;
-            con.connected = false;
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_tcp_connection_failed_msg(txt: String) {
-    let msg: TcpConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.tcp_connections {
-        if msg.connection_id == con.connection_id {
-            con.failed = true;
-            con.failed_reason = msg.reason.clone();
-            con.disconnecting = false;
-            con.connecting = false;
-            con.connected = false;
-        }
-    }
-
-    // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_tcp_sent_msg(txt: String) {
-    // _bolt_log("SENT!!!");
-
-    let sent_msg: TcpSentMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.tcp_connections {
-        if sent_msg.connection_id == con.connection_id {
-            for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
-                if out_msg.msg_id == sent_msg.msg.msg_id {
-                    con.msg_history.push(sent_msg.msg.clone());
-                    con.out_queue.remove(index);
-                }
-            }
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_tcp_received_msg(txt: String) {
-    // _bolt_log("RECEIVED!!!");
-
-    let received_msg: TcpReceivedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.tcp_connections {
-        if con.connection_id == received_msg.connection_id {
-            con.msg_history.push(received_msg.msg.clone());
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_udp_connected_msg(txt: String) {
-    // _bolt_log("CONNECTED!!");
-
-    let msg: UdpConnectedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.udp_connections {
-        if msg.connection_id == con.connection_id {
-            con.failed = false;
-            con.connecting = false;
-            con.connected = true;
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_udp_disconnected_msg(txt: String) {
-    // _bolt_log("DISCONNECTED!!");
-
-    let msg: UdpDisconnectedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.udp_connections {
-        if msg.connection_id == con.connection_id {
-            con.disconnecting = false;
-            con.connecting = false;
-            con.connected = false;
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_udp_connection_failed_msg(txt: String) {
-    let msg: UdpConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.udp_connections {
-        if msg.connection_id == con.connection_id {
-            con.failed = true;
-            con.failed_reason = msg.reason.clone();
-            con.disconnecting = false;
-            con.connecting = false;
-            con.connected = false;
-        }
-    }
-
-    // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_udp_sent_msg(txt: String) {
-    // _bolt_log("SENT!!!");
-
-    let sent_msg: UdpSentMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.udp_connections {
-        if sent_msg.connection_id == con.connection_id {
-            for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
-                if out_msg.msg_id == sent_msg.msg.msg_id {
-                    con.msg_history.push(sent_msg.msg.clone());
-                    con.out_queue.remove(index);
-                }
-            }
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_udp_received_msg(txt: String) {
-    // _bolt_log("RECEIVED!!!");
-
-    let received_msg: UdpReceivedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.udp_connections {
-        if con.connection_id == received_msg.connection_id {
-            con.msg_history.push(received_msg.msg.clone());
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_ws_connected_msg(txt: String) {
-    // _bolt_log("CONNECTED TO THE WS SERVER!!");
-
-    let msg: WsConnectedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.ws_connections {
-        if msg.connection_id == con.connection_id {
-            con.failed = false;
-            con.connecting = false;
-            con.connected = true;
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_ws_disconnected_msg(txt: String) {
-    // _bolt_log("DISCONNECTED FROM THE WS SERVER!!");
-
-    let msg: WsDisconnectedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.ws_connections {
-        if msg.connection_id == con.connection_id {
-            con.disconnecting = false;
-            con.connecting = false;
-            con.connected = false;
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_ws_connection_failed_msg(txt: String) {
-    let msg: WsConnectionFailedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.ws_connections {
-        if msg.connection_id == con.connection_id {
-            con.failed = true;
-            con.failed_reason = msg.reason.clone();
-            con.disconnecting = false;
-            con.connecting = false;
-            con.connected = false;
-        }
-    }
-
-    // _bolt_log(&format!("CONNECTION FAILED because -> {}", msg.reason) );
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_ws_sent_msg(txt: String) {
-    // _bolt_log("SENT!!!");
-
-    let sent_msg: WsSentMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.ws_connections {
-        if sent_msg.connection_id == con.connection_id {
-            for (index, out_msg) in con.out_queue.clone().iter().enumerate() {
-                if out_msg.msg_id == sent_msg.msg.msg_id {
-                    con.msg_history.push(sent_msg.msg.clone());
-                    con.out_queue.remove(index);
-                }
-            }
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_ws_received_msg(txt: String) {
-    // _bolt_log("SENT!!!");
-
-    let received_msg: WsReceivedMsg = serde_json::from_str(&txt).unwrap();
-
-    let mut global_state = GLOBAL_STATE.lock().unwrap();
-
-    for con in &mut global_state.bctx.main_state.ws_connections {
-        if con.connection_id == received_msg.connection_id {
-            con.msg_history.push(received_msg.msg.clone());
-        }
-    }
-
-    let link = global_state.bctx.link.as_ref().unwrap();
-    link.send_message(Msg::Update);
-}
-
-fn handle_http_response_msg(txt: String) {
-    // _bolt_log(&format!("received response"));
-
-    receive_response(txt);
-}
-
-fn handle_ping_msg(_txt: String) {
-    // _bolt_log(&format!("received pong"));
-}
-
-fn handle_invalid_msg(txt: String) {
-    _bolt_log(&format!("received invalid msg: {txt}"));
-}
-
-fn handle_restore_response_msg(txt: String) {
-    // _bolt_log(&format!("received restore resp"));
-
-    let msg: RestoreStateMsg = serde_json::from_str(&txt).unwrap();
-
-    set_save_state(msg.save);
-}
-
-pub fn invoke_send(request: &mut HttpRequest) {
-    let msg = SendHttpMsg {
-        msg_type: MsgType::SEND_HTTP,
-        url: parse_url(request.url.clone(), request.params.clone()),
-        method: request.method,
-        body: request.body.clone(),
-        headers: request.headers.clone(),
-        index: request.response.request_index,
-    };
-
-    let msg = serde_json::to_string(&msg).unwrap();
-
-    ws_write(msg);
-
-    send_ping();
-}
-
 pub fn save_state(bctx: &mut BoltContext) {
     let save = serde_json::to_string(&bctx.main_state).unwrap();
 
@@ -510,7 +90,7 @@ pub fn save_state(bctx: &mut BoltContext) {
     ws_write(msg);
 }
 
-fn set_save_state(state: String) {
+pub fn set_save_state(state: String) {
     let new_state: MainState = serde_json::from_str(&state).unwrap();
 
     let mut global_state = GLOBAL_STATE.lock().unwrap();
@@ -549,6 +129,18 @@ pub fn _set_focus(id: &str) {
 
     div.focus().unwrap();
 }
+
+// pub fn stop_event_propagation() {
+//     let document = web_sys::window().and_then(|w| w.document()).unwrap();
+
+//     let event = document.create_event("event").unwrap();
+
+//     let event_target = event.target().unwrap();
+
+//     let stop_propagation = event_target.dyn_into::<js_sys::Function>().unwrap();
+
+//     stop_propagation.call1(&wasm_bindgen::JsValue::NULL, &wasm_bindgen::JsValue::NULL);
+// }
 
 pub fn get_method() -> HttpMethod {
     let window = web_sys::window().unwrap();
@@ -689,20 +281,6 @@ pub fn get_param(index: usize) -> Vec<String> {
     vec![key.value(), value.value()]
 }
 
-// HACK: disables selecting text
-pub fn disable_text_selection() {
-    if let Some(document) = web_sys::window().and_then(|win| win.document()) {
-        if let Some(body) = document.body() {
-            let listener = Closure::wrap(Box::new(move |event: MouseEvent| {
-                event.prevent_default();
-            }) as Box<dyn FnMut(_)>);
-            let _ = EventTarget::from(body)
-                .add_event_listener_with_callback("selectstart", listener.as_ref().unchecked_ref());
-            listener.forget();
-        }
-    }
-}
-
 pub fn format_json(data: &str) -> String {
     let value: serde_json::Value = serde_json::from_str(data).unwrap();
 
@@ -712,7 +290,6 @@ pub fn format_json(data: &str) -> String {
 fn create_custom_theme() -> Theme {
     let mut theme = ThemeSet::load_defaults().themes["base16-eighties.dark"].clone();
 
-    // Change the background color
     theme.settings.background = Some(Color {
         r: 3,
         g: 7,
@@ -724,7 +301,6 @@ fn create_custom_theme() -> Theme {
 }
 
 pub fn highlight_body(body: &str) -> String {
-    // Add syntax highlighting
     let syntax_set = SyntaxSet::load_defaults_newlines();
     let theme = create_custom_theme();
     let syntax = syntax_set.find_syntax_by_extension("json").unwrap();
@@ -753,6 +329,16 @@ pub fn parse_url(url: String, params: Vec<Vec<String>>) -> String {
         }
     }
 
-    // bolt_log(&format!("url is: {new_url}"));
     new_url
+}
+
+pub fn copy_string_to_clipboard(value: String) {
+    let msg = CopyClipboardMsg {
+        msg_type: MsgType::COPY_CLIPBOARD,
+        value,
+    };
+
+    let msg = serde_json::to_string(&msg).unwrap();
+
+    ws_write(msg);
 }

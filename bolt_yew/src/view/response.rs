@@ -22,6 +22,8 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
             .clone();
     }
 
+    let copy_icon = crate::view::icons::copy_icon(20, 20);
+
     html! {
     <div class="resp">
         if can_display && !request.response.failed && !request.loading {
@@ -32,6 +34,7 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
                 </div>
 
                 <div class="respstats">
+                    <div class="pointer copy-msg-icon" title="copy response body" onclick={link.callback(move |_| Msg::CopyHttpResponsePressed)} >{copy_icon}</div>
                     <div id="status" class="respstat">{"Status: "} {request.response.status}</div>
                     <div id="time" class="respstat">{"Time: "} {request.response.time} {" ms"}</div>
                     <div id="size" class="respstat">{"Size: "} {request.response.size} {" B"}</div>
@@ -42,7 +45,7 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
                 if request.resp_tab == 1 {
                     <div id="respbody" class="respbody" >
                         if request.response.response_type == HttpResponseType::JSON {
-                            {Html::from_html_unchecked(AttrValue::from(request.response.body.clone()))}
+                            {Html::from_html_unchecked(AttrValue::from(request.response.body_highlight.clone()))}
                         } else {
                             {request.response.body.clone()}
                         }
@@ -69,72 +72,8 @@ pub fn http_response(bctx: &mut BoltContext) -> Html {
     }
 }
 
-// pub fn collection_response(bctx: &mut BoltContext) -> Html {
-//     let link = bctx.main_state.link.as_ref().unwrap();
-
-//     let can_display =
-//         !bctx.main_state.collections.is_empty() && !bctx.main_state.collections[bctx.main_state.col_current[0]].requests.is_empty();
-
-//     let mut request = HttpRequest::new();
-
-//     if bctx.main_state.page == Page::HttpPage && can_display {
-//         request = bctx.main_state.http_requests[bctx.main_state.http_current].clone();
-//     }
-
-//     if bctx.main_state.page == Page::Collections && can_display {
-//         request = bctx.main_state.collections[bctx.main_state.col_current[0]].requests[bctx.main_state.col_current[1]].clone();
-//     }
-
-//     html! {
-//     <div class="resp">
-//         if can_display && !request.response.failed && !request.loading {
-//             <div class="respline">
-//                 <div class="resptabs">
-//                     <div id="resp_body_tab" class={if request.resp_tab == 1  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespBodyPressed)}>{"Body"}</div>
-//                     <div id="resp_headers_tab" class={if request.resp_tab == 2  {"tab pointer tabSelected"} else {"tab pointer"}} onclick={link.callback(|_| Msg::RespHeadersPressed)}>{"Headers"}</div>
-//                 </div>
-
-//                 <div class="respstats">
-//                     <div id="status" class="respstat">{"Status: "} {request.response.status}</div>
-//                     <div id="time" class="respstat">{"Time: "} {request.response.time} {" ms"}</div>
-//                     <div id="size" class="respstat">{"Size: "} {request.response.size} {" B"}</div>
-//                 </div>
-//             </div>
-
-//             <div class="tabcontent">
-//                 if request.resp_tab == 1 {
-//                     <div id="respbody" class="respbody" >
-//                         if request.response.response_type == HttpResponseType::JSON {
-//                             {Html::from_html_unchecked(AttrValue::from(request.response.body.clone()))}
-//                         } else {
-//                             {request.response.body.clone()}
-//                         }
-//                     </div>
-//                 } else if request.resp_tab == 2 {
-//                     <div class="respheaders">
-//                         <table>
-//                             <tr>
-//                                 <th>{"Header"}</th>
-//                                 <th>{"Value"}</th>
-//                             </tr>
-//                             { for request.response.headers.iter().map(|header| view::header::render_header(&header[0], &header[1])) }
-//                         </table>
-//                     </div>
-//                 }
-//             </div>
-//         } else if can_display && request.loading {
-//             <div class="resploading"><img src="/icon/icon.png" /></div>
-//         } else if request.response.failed {
-//             <div class="resperror">{request.response.body.clone()}</div>
-//         }
-
-//     </div>
-//     }
-// }
-
-
 pub fn tcp_history(bctx: &mut BoltContext) -> Html {
-    // let link = bctx.main_state.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
     let can_display = !bctx.main_state.tcp_connections.is_empty();
 
@@ -165,7 +104,7 @@ pub fn tcp_history(bctx: &mut BoltContext) -> Html {
 
                 <div class="tabcontent">
                     <div class="atabs">
-                        { for connection.msg_history.iter().rev().map(|msg| view::msg::render_tcp_msg(&msg)) }
+                        { for connection.msg_history.iter().enumerate().rev().map(|(index, msg)| view::msg::render_tcp_msg(&msg, link, index)) }
                     </div>
                 </div>
             } else if can_display && connection.connecting {
@@ -179,7 +118,7 @@ pub fn tcp_history(bctx: &mut BoltContext) -> Html {
 }
 
 pub fn udp_history(bctx: &mut BoltContext) -> Html {
-    // let link = bctx.main_state.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
     let can_display = !bctx.main_state.udp_connections.is_empty();
 
@@ -210,7 +149,7 @@ pub fn udp_history(bctx: &mut BoltContext) -> Html {
 
                 <div class="tabcontent">
                     <div class="atabs">
-                        { for connection.msg_history.iter().rev().map(|msg| view::msg::render_udp_msg(&msg)) }
+                        { for connection.msg_history.iter().enumerate().rev().map(|(index, msg)| view::msg::render_udp_msg(&msg, link, index)) }
                     </div>
                 </div>
             } else if can_display && connection.connecting {
@@ -224,7 +163,7 @@ pub fn udp_history(bctx: &mut BoltContext) -> Html {
 }
 
 pub fn ws_history(bctx: &mut BoltContext) -> Html {
-    // let link = bctx.main_state.link.as_ref().unwrap();
+    let link = bctx.link.as_ref().unwrap();
 
     let can_display = !bctx.main_state.ws_connections.is_empty();
 
@@ -255,7 +194,7 @@ pub fn ws_history(bctx: &mut BoltContext) -> Html {
 
                 <div class="tabcontent">
                     <div class="atabs">
-                        { for connection.msg_history.iter().rev().map(|msg| view::msg::render_ws_msg(&msg)) }
+                        { for connection.msg_history.iter().enumerate().rev().map(|(index, msg)| view::msg::render_ws_msg(&msg, link, index)) }
                     </div>
                 </div>
             } else if can_display && connection.connecting {

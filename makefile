@@ -68,6 +68,17 @@ clean-cli:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 bump-version:
 	cd bolt_core/common && cargo bump $(VERSION)
 	

@@ -1,7 +1,10 @@
+use crate::BoltApp;
+use crate::Msg;
 use bolt_common::prelude::*;
+use yew::html::Scope;
 use yew::{html, Html};
 
-pub fn render_ws_msg(msg: &WsMessage) -> Html {
+pub fn render_ws_msg(msg: &WsMessage, link: &Scope<BoltApp>, index: usize) -> Html {
     let txt = msg.txt.clone();
 
     let txt = if txt.len() > 60 {
@@ -11,6 +14,8 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
     };
 
     let time = format_time(msg.timestamp);
+
+    let copy_icon = crate::view::icons::copy_icon(20, 20);
 
     match msg.msg_type {
         WsMsgType::IN => {
@@ -24,6 +29,7 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
                      </div>
 
                     <div class="ws-msg-right">
+                        <div class="copy-msg-icon" title="copy message" onclick={link.callback(move |_| Msg::CopyWsMsgClicked(index))} >{copy_icon}</div>
                         {time}
                         <div class="ws-open-arrow">{"❯"}</div>
                     </div>
@@ -47,6 +53,7 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
                      </div>
 
                     <div class="ws-msg-right">
+                        <div class="copy-msg-icon" title="copy message" onclick={link.callback(move |_| Msg::CopyWsMsgClicked(index))} >{copy_icon}</div>
                         {time}
                         <div class="ws-open-arrow">{"❯"}</div>
                     </div>
@@ -61,7 +68,7 @@ pub fn render_ws_msg(msg: &WsMessage) -> Html {
     }
 }
 
-pub fn render_tcp_msg(msg: &TcpMessage) -> Html {
+pub fn render_tcp_msg(msg: &TcpMessage, link: &Scope<BoltApp>, index: usize) -> Html {
     let data = format!("{:?}", msg.data.clone());
 
     let txt = if data.len() > 60 {
@@ -71,6 +78,8 @@ pub fn render_tcp_msg(msg: &TcpMessage) -> Html {
     };
 
     let time = format_time(msg.timestamp);
+
+    let copy_icon = crate::view::icons::copy_icon(20, 20);
 
     match msg.msg_type {
         TcpMsgType::IN => {
@@ -85,6 +94,7 @@ pub fn render_tcp_msg(msg: &TcpMessage) -> Html {
                      </div>
 
                     <div class="ws-msg-right">
+                        <div class="copy-msg-icon" title="copy message" onclick={link.callback(move |_| Msg::CopyTcpMsgClicked(index))} >{copy_icon}</div>
                         {time}
                         <div class="ws-open-arrow">{"❯"}</div>
                     </div>
@@ -109,6 +119,7 @@ pub fn render_tcp_msg(msg: &TcpMessage) -> Html {
                      </div>
 
                     <div class="ws-msg-right">
+                        <div class="copy-msg-icon" title="copy message" onclick={link.callback(move |_| Msg::CopyTcpMsgClicked(index))} >{copy_icon}</div>
                         {time}
                         <div class="ws-open-arrow">{"❯"}</div>
                     </div>
@@ -123,7 +134,7 @@ pub fn render_tcp_msg(msg: &TcpMessage) -> Html {
     }
 }
 
-pub fn render_udp_msg(msg: &UdpMessage) -> Html {
+pub fn render_udp_msg(msg: &UdpMessage, link: &Scope<BoltApp>, index: usize) -> Html {
     let data = format!("{:?}", msg.data.clone());
 
     let txt = if data.len() > 60 {
@@ -133,6 +144,8 @@ pub fn render_udp_msg(msg: &UdpMessage) -> Html {
     };
 
     let time = format_time(msg.timestamp);
+
+    let copy_icon = crate::view::icons::copy_icon(20, 20);
 
     match msg.msg_type {
         UdpMsgType::IN => {
@@ -147,6 +160,7 @@ pub fn render_udp_msg(msg: &UdpMessage) -> Html {
                      </div>
 
                     <div class="ws-msg-right">
+                        <div class="copy-msg-icon" title="copy message" onclick={link.callback(move |_| Msg::CopyUdpMsgClicked(index))} >{copy_icon}</div>
                         {time}
                         <div class="ws-open-arrow">{"❯"}</div>
                     </div>
@@ -171,6 +185,7 @@ pub fn render_udp_msg(msg: &UdpMessage) -> Html {
                      </div>
 
                     <div class="ws-msg-right">
+                        <div class="copy-msg-icon" title="copy message" onclick={link.callback(move |_| Msg::CopyUdpMsgClicked(index))} >{copy_icon}</div>
                         {time}
                         <div class="ws-open-arrow">{"❯"}</div>
                     </div>

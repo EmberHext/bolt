@@ -1,3 +1,4 @@
+use clipboard::ClipboardProvider;
 use std::{
     net::{TcpListener, TcpStream},
     thread::spawn,
@@ -36,6 +37,10 @@ fn process_message(websocket: &mut WebSocket<TcpStream>, session_id: &String, ms
 
                 MsgType::OPEN_LINK => {
                     handle_open_link(websocket, session_id, txt);
+                }
+
+                MsgType::COPY_CLIPBOARD => {
+                    handle_copy_clipboard(websocket, session_id, txt);
                 }
 
                 MsgType::SAVE_STATE => {
@@ -176,6 +181,15 @@ fn handle_open_link(_websocket: &mut WebSocket<TcpStream>, _session_id: &String,
     println!("opening {}", &msg.link);
 
     webbrowser::open(&msg.link).unwrap();
+}
+
+fn handle_copy_clipboard(_websocket: &mut WebSocket<TcpStream>, _session_id: &String, txt: String) {
+    let msg: CopyClipboardMsg = serde_json::from_str(&txt).unwrap();
+
+    let mut clipboard_ctx: clipboard::ClipboardContext =
+        clipboard::ClipboardProvider::new().unwrap();
+
+    clipboard_ctx.set_contents(msg.value).unwrap();
 }
 
 fn handle_log(_websocket: &mut WebSocket<TcpStream>, _session_id: &String, txt: String) {

@@ -1,6 +1,6 @@
+use crate::prelude::MsgType;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use crate::prelude::MsgType;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct HttpRequest {
@@ -52,6 +52,7 @@ pub enum HttpResponseType {
 pub struct HttpResponse {
     pub status: u16,
     pub body: String,
+    pub body_highlight: String,
     pub headers: Vec<Vec<String>>,
     pub time: u32,
     pub size: u64,
@@ -65,6 +66,7 @@ impl HttpResponse {
         HttpResponse {
             status: 0,
             body: String::new(),
+            body_highlight: String::new(),
             headers: Vec::new(),
             time: 0,
             size: 0,
@@ -186,6 +188,7 @@ pub struct SendHttpResponse {
     pub msg_type: MsgType,
     pub status: u16,
     pub body: String,
+    pub body_highlight: String,
     pub headers: Vec<Vec<String>>,
     pub time: u32,
     pub size: u64,
@@ -200,6 +203,7 @@ impl SendHttpResponse {
             msg_type: MsgType::HTTP_RESPONSE,
             status: 0,
             body: String::new(),
+            body_highlight: String::new(),
             headers: Vec::new(),
             time: 0,
             size: 0,

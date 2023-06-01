@@ -146,8 +146,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
             if bctx.main_state.http_requests.len() == 0 {
                 bctx.main_state.http_current = new_index;
-
-                // bctx.main_state.main_col.requests[new_index].response.request_index = new_index;
             } else {
                 if index >= bctx.main_state.http_requests.len() {
                     new_index = bctx.main_state.http_requests.len() - 1;
@@ -164,6 +162,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
                         .request_index = new_index;
                 }
             }
+
+            true
+        }
+        Msg::CopyHttpResponsePressed => {
+            let current = &mut bctx.main_state.http_requests[bctx.main_state.http_current];
+
+            let current_body = current.response.body.clone();
+
+            crate::utils::copy_string_to_clipboard(current_body);
 
             true
         }
@@ -209,8 +216,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
             if bctx.main_state.ws_connections.len() == 0 {
                 bctx.main_state.ws_current = new_index;
-
-                // bctx.main_state.main_col.requests[new_index].response.request_index = new_index;
             } else {
                 if index >= bctx.main_state.ws_connections.len() {
                     new_index = bctx.main_state.ws_connections.len() - 1;
@@ -246,6 +251,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
 
             send_ws(current);
+
+            true
+        }
+        Msg::CopyWsMsgClicked(index) => {
+            let current = &mut bctx.main_state.ws_connections[bctx.main_state.ws_current];
+
+            let current_msg = current.msg_history[index].clone();
+
+            crate::utils::copy_string_to_clipboard(current_msg.txt);
 
             true
         }
@@ -288,8 +302,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
             if bctx.main_state.tcp_connections.len() == 0 {
                 bctx.main_state.tcp_current = new_index;
-
-                // bctx.main_state.main_col.requests[new_index].response.request_index = new_index;
             } else {
                 if index >= bctx.main_state.tcp_connections.len() {
                     new_index = bctx.main_state.tcp_connections.len() - 1;
@@ -316,8 +328,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
         Msg::SendTcpPressed => {
-            // let current = &mut bctx.main_state.tcp_connections[bctx.main_state.tcp_current];
-
             send_tcp(bctx);
 
             true
@@ -338,6 +348,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             ws_write(msg);
 
             bctx.main_state.tcp_connections.push(new_connection);
+
+            true
+        }
+        Msg::CopyTcpMsgClicked(index) => {
+            let current = &mut bctx.main_state.tcp_connections[bctx.main_state.tcp_current];
+
+            let current_msg = current.msg_history[index].clone();
+
+            crate::utils::copy_string_to_clipboard(format!("{:?}", current_msg.data));
 
             true
         }
@@ -380,8 +399,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
 
             if bctx.main_state.udp_connections.len() == 0 {
                 bctx.main_state.udp_current = new_index;
-
-                // bctx.main_state.main_col.requests[new_index].response.request_index = new_index;
             } else {
                 if index >= bctx.main_state.udp_connections.len() {
                     new_index = bctx.main_state.udp_connections.len() - 1;
@@ -408,8 +425,6 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             true
         }
         Msg::SendUdpPressed => {
-            // let current = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
-
             send_udp(bctx);
 
             true
@@ -430,6 +445,15 @@ pub fn process(bctx: &mut BoltContext, msg: Msg) -> bool {
             ws_write(msg);
 
             bctx.main_state.udp_connections.push(new_connection);
+
+            true
+        }
+        Msg::CopyUdpMsgClicked(index) => {
+            let current = &mut bctx.main_state.udp_connections[bctx.main_state.udp_current];
+
+            let current_msg = current.msg_history[index].clone();
+
+            crate::utils::copy_string_to_clipboard(format!("{:?}", current_msg.data));
 
             true
         }

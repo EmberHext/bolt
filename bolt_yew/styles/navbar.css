@@ -6,6 +6,10 @@
 	background-color: rgb(4, 12, 23);
 	padding: 0 20px;
 	border-bottom: 0.5px solid gray;
+
+	user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 
 .logo {
