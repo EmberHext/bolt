@@ -9,7 +9,6 @@ use url::Url;
 const WS_SERVICE_REFRESH_RATE: u64 = 500;
 const SERVICE_SYNC_REFRESH_RATE: u64 = 1000;
 
-// Create a shared global state variable
 lazy_static::lazy_static! {
  static ref CORE_STATE: Arc<Mutex<CoreState>> = Arc::new(Mutex::new(CoreState::new()));
 }
@@ -76,8 +75,6 @@ pub fn start_core_ws_service(_session_id: String) {
 }
 
 pub fn spawn_ws_service(connection_id: String) {
-    // println!("started service for {}", connection_id);
-
     let _handle = std::thread::Builder::new()
         .name(connection_id.clone())
         .spawn(move || {
@@ -101,8 +98,6 @@ pub fn spawn_ws_service(connection_id: String) {
                                 |(_ind, sv_mut)| sv_mut.connection_id == service.connection_id,
                             )
                         {
-                            // println!("WS KILLING {}", service.connection_id);
-
                             core_state.ws_services.remove(index);
                             return;
                         }
@@ -132,8 +127,6 @@ pub fn spawn_ws_service(connection_id: String) {
                 let connected = ws_con.connected;
 
                 if disconnecting {
-                    // println!("WS {} DISCONNECTING", connection_id);
-
                     socket.as_mut().unwrap().close(None).unwrap();
 
                     let disconnected_msg = WsDisconnectedMsg {
@@ -152,8 +145,6 @@ pub fn spawn_ws_service(connection_id: String) {
                         .write_message(msg)
                         .unwrap();
                 } else if connecting && !connected {
-                    // println!("WS {} CONNECTING", connection_id);
-
                     let (connected_succeded, w_socket, _response) =
                         open_ws_connection(&ws_con.url, ws_con.connection_id.clone());
 
@@ -207,8 +198,6 @@ pub fn spawn_ws_service(connection_id: String) {
                     }
                 } else if connected {
                     for out_msg in ws_con.out_queue.clone() {
-                        // println!("OUT MSG: {}", out_msg.txt);
-
                         let txt = serde_json::to_string(&out_msg.txt).unwrap();
                         let msg = tungstenite::Message::Text(txt);
 
@@ -257,13 +246,11 @@ pub fn spawn_read_service(
         .spawn(move || loop {
             match new_ws.read_message() {
                 Ok(txt) => {
-                    // println!("RECEIVED: {}", txt);
-
                     let mut core_state = CORE_STATE.lock().unwrap();
 
                     let mut new_msg = WsMessage::new();
                     new_msg.msg_type = WsMsgType::IN;
-                    new_msg.txt = txt.into_text().unwrap();
+                    new_msg.txt = txt.to_string();
                     new_msg.timestamp = utils::get_timestamp();
 
                     let out = WsReceivedMsg {
@@ -284,8 +271,6 @@ pub fn spawn_read_service(
                 }
 
                 Err(_err) => {
-                    // println!("WS ERROR -> {err}");
-
                     let mut core_state = CORE_STATE.lock().unwrap();
 
                     let disconnected_msg = WsDisconnectedMsg {
@@ -342,8 +327,6 @@ pub fn open_ws_connection(
             return (false, None, None);
         }
     };
-
-    // println!("Connected to the server");
 }
 
 fn _close_ws_connection(socket: &mut WebSocket<MaybeTlsStream<std::net::TcpStream>>) {

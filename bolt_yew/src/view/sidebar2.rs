@@ -162,7 +162,7 @@ fn render_http_request(
     html! {
         <div onclick={link.callback(move |_| Msg::SelectHttpRequest(index))} id={"request".to_string() + &index.to_string()} class={if index == current { "pointer sidebar2item sidebar2item-selected" } else { "pointer sidebar2item" }} >
             <div class="requestname">{request_name}</div>
-            <div class="pointer bin-req" onclick={link.callback(move |_| Msg::RemoveHttpRequest(index))}>
+            <div class="pointer bin-req" title="delete" onclick={link.callback(move |_| Msg::RemoveHttpRequest(index))}>
                 <svg viewBox="0 0 1024 1024" fill="currentColor" height="1em" width="1em"> <path d="M864 256H736v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zm-200 0H360v-72h304v72z" /> </svg>
             </div>
         </div>
@@ -186,7 +186,7 @@ fn render_tcp_connection(
     html! {
         <div onclick={link.callback(move |_| Msg::SelectTcpConnection(index))} id={"request".to_string() + &index.to_string()} class={if index == current { "pointer sidebar2item sidebar2item-selected" } else { "pointer sidebar2item" }} >
             <div class="requestname">{request_name}</div>
-            <div class="pointer bin-req" onclick={link.callback(move |_| Msg::RemoveTcpConnection(index))}>
+            <div class="pointer bin-req" title="delete" onclick={link.callback(move |_| Msg::RemoveTcpConnection(index))}>
                 <svg viewBox="0 0 1024 1024" fill="currentColor" height="1em" width="1em"> <path d="M864 256H736v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zm-200 0H360v-72h304v72z" /> </svg>
             </div>
         </div>
@@ -210,7 +210,7 @@ fn render_udp_connection(
     html! {
         <div onclick={link.callback(move |_| Msg::SelectUdpConnection(index))} id={"request".to_string() + &index.to_string()} class={if index == current { "pointer sidebar2item sidebar2item-selected" } else { "pointer sidebar2item" }} >
             <div class="requestname">{request_name}</div>
-            <div class="pointer bin-req" onclick={link.callback(move |_| Msg::RemoveUdpConnection(index))}>
+            <div class="pointer bin-req" title="delete" onclick={link.callback(move |_| Msg::RemoveUdpConnection(index))}>
                 <svg viewBox="0 0 1024 1024" fill="currentColor" height="1em" width="1em"> <path d="M864 256H736v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zm-200 0H360v-72h304v72z" /> </svg>
             </div>
         </div>
@@ -235,7 +235,7 @@ fn render_ws_connection(
     html! {
         <div onclick={link.callback(move |_| Msg::SelectWsConnection(index))} id={"request".to_string() + &index.to_string()} class={if index == current { "pointer sidebar2item sidebar2item-selected" } else { "pointer sidebar2item" }} >
             <div class="requestname">{request_name}</div>
-            <div class="pointer bin-req" onclick={link.callback(move |_| Msg::RemoveWsConnection(index))}>
+            <div class="pointer bin-req" title="delete" onclick={link.callback(move |_| Msg::RemoveWsConnection(index))}>
                 <svg viewBox="0 0 1024 1024" fill="currentColor" height="1em" width="1em"> <path d="M864 256H736v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zm-200 0H360v-72h304v72z" /> </svg>
             </div>
         </div>

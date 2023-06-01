@@ -20,6 +20,19 @@ pub fn http_icon(height: u32, width: u32) -> Html {
     }
 }
 
+pub fn copy_icon(height: u32, width: u32) -> Html {
+    html! {
+    <svg fill="none" viewBox="0 0 15 15" height={height.to_string() + "px"} width={width.to_string() + "px"}>
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M1 9.5A1.5 1.5 0 002.5 11H4v-1H2.5a.5.5 0 01-.5-.5v-7a.5.5 0 01.5-.5h7a.5.5 0 01.5.5V4H5.5A1.5 1.5 0 004 5.5v7A1.5 1.5 0 005.5 14h7a1.5 1.5 0 001.5-1.5v-7A1.5 1.5 0 0012.5 4H11V2.5A1.5 1.5 0 009.5 1h-7A1.5 1.5 0 001 2.5v7zm4-4a.5.5 0 01.5-.5h7a.5.5 0 01.5.5v7a.5.5 0 01-.5.5h-7a.5.5 0 01-.5-.5v-7z"
+        clipRule="evenodd"
+      />
+    </svg>
+    }
+}
+
 pub fn websocket_icon(height: u32, width: u32) -> Html {
     html! {
         <svg viewBox="0 0 32 32" fill="currentColor" height={height.to_string() + "px"} width={width.to_string() + "px"}>
@@ -57,6 +70,6 @@ pub fn tcp_icon(height: u32, width: u32) -> Html {
 
 // pub fn collections_icon(height: u32, width: u32) -> Html {
 //     html! {
-//         <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height={height.to_string() + "px"} width={width.to_string() + "px"} xmlns="http://www.w3.org/2000/svg"><path d="M0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6v7zM2 3a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11A.5.5 0 0 0 2 3zm2-2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7A.5.5 0 0 0 4 1z"></path></svg>  
+//         <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height={height.to_string() + "px"} width={width.to_string() + "px"} xmlns="http://www.w3.org/2000/svg"><path d="M0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6v7zM2 3a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11A.5.5 0 0 0 2 3zm2-2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7A.5.5 0 0 0 4 1z"></path></svg>
 //     }
 // }

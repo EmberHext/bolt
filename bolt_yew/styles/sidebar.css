@@ -3,6 +3,10 @@
 	background-color: rgb(4, 12, 23);
 	height: 95vh;
 	border-right: 0.5px solid gray;
+
+  user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 
 .sidebar2 {
@@ -11,6 +15,10 @@
 	height: 95vh;
 
 	overflow-y: scroll;
+
+  user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 
 ::-webkit-scrollbar {
@@ -69,11 +77,15 @@
 	z-index: 1;
 }
 
-.bin-req {
+.bin-req, .bin-col, .add-col, .copy-msg-icon {
 	z-index: 2;
 }
 
-.bin-req, .bin-col, .add-col {
+.copy-msg-icon {
+	margin-right: 10px;	
+}
+
+.bin-req, .bin-col, .add-col, .copy-msg-icon {
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
@@ -81,7 +93,7 @@
 	border-radius: 100px;
 }
 
-.bin-req:hover, .bin-col:hover, .add-col:hover {
+.bin-req:hover, .bin-col:hover, .add-col:hover, .copy-msg-icon:hover {
 	background: gray;
 }
 

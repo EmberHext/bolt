@@ -99,6 +99,8 @@ pub mod prelude {
         UDP_MSG_SENT,
         UDP_RECEIVED_MSG,
         UDP_CONNECTION_FAILED,
+    
+        COPY_CLIPBOARD,
     }
 
     #[derive(Serialize, Deserialize)]
@@ -135,5 +137,11 @@ pub mod prelude {
     pub struct SaveStateMsg {
         pub msg_type: MsgType,
         pub save: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct CopyClipboardMsg {
+        pub msg_type: MsgType,
+        pub value: String,
     }
 }

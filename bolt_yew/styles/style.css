@@ -3,7 +3,6 @@
 }
 
 body {
-	user-select: none;
 	color: white;
 	font-family: Arial, Helvetica, sans-serif;
 	background: rgb(4, 12, 23);
@@ -324,12 +323,20 @@ body {
 	flex-direction: row;
   width: 100%;
 	margin-left: 10px;
+
+	user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 .udp-reqtabs {
   display: flex;
 	flex-direction: row;
   width: 20%;
 	margin-left: 10px;
+
+	user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 
 .resptabs {
@@ -363,6 +370,10 @@ body {
 	align-items: center;
 	justify-content: space-between;
   background-color: rgb(3, 7, 13);
+
+	user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 
 .reqline {
@@ -371,11 +382,20 @@ body {
 	align-items: center;
 	justify-content: space-between;
   background-color: rgb(3, 7, 13);
+
+	user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 
 .respstats {
 	display: flex;
 	flex-direction: row;
+	align-items: center;
+
+	user-select: none;
+	-webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
 }
 
 .respstat {
